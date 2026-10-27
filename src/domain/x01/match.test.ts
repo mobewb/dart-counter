@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { dartScore, isValidDart, type Dart } from '../shared-kernel/dart'
+import { replayLog } from '../shared-kernel/events'
 import { newMatch, replay, applyDart } from './match'
 import type { X01Config } from './types'
 
@@ -19,6 +20,8 @@ const config = (over: Partial<X01Config> = {}): X01Config => ({
 })
 
 const play = (cfg: X01Config, darts: Dart[]) => replay(cfg, darts)
+/** Events of the last dart in the log. */
+const eventsOf = (cfg: X01Config, darts: Dart[]) => replayLog(newMatch(cfg), applyDart, darts).events
 
 describe('dart values', () => {
   it('scores segment times multiplier', () => {
@@ -79,10 +82,12 @@ describe('bust', () => {
     expect(m.status).toBe('playing')
   })
 
-  it('flags the bust until the next dart', () => {
-    const busted = play(config({ startScore: 40 }), [s(20), t(20)])
-    expect(busted.busted).toBe(true)
-    expect(applyDart(busted, s(1)).busted).toBe(false)
+  it('emits Bust on the busting dart only', () => {
+    expect(eventsOf(config({ startScore: 40 }), [s(20), t(20)])).toEqual([
+      { type: 'Bust', player: 0 },
+      { type: 'TurnEnded', player: 0 },
+    ])
+    expect(eventsOf(config({ startScore: 40 }), [s(20), t(20), s(1)])).toEqual([])
   })
 
   it('does not count a busted turn towards points scored', () => {
@@ -140,9 +145,39 @@ describe('legs, sets and match', () => {
     expect(m.status).toBe('playing')
   })
 
+  it('emits LegWon when a leg is won and play continues', () => {
+    expect(eventsOf(config({ startScore: 40, legsToWinSet: 2 }), [d(20)])).toEqual([
+      { type: 'LegWon', player: 0 },
+      { type: 'TurnEnded', player: 0 },
+    ])
+  })
+
+  it('emits SetWon with the leg that wins the set', () => {
+    expect(eventsOf(config({ startScore: 40, setsToWinMatch: 2 }), [d(20)])).toEqual([
+      { type: 'LegWon', player: 0 },
+      { type: 'SetWon', player: 0 },
+      { type: 'TurnEnded', player: 0 },
+    ])
+  })
+
+  it('emits MatchWon and no TurnEnded when the match is over', () => {
+    expect(eventsOf(config({ startScore: 40 }), [d(20)])).toEqual([
+      { type: 'LegWon', player: 0 },
+      { type: 'SetWon', player: 0 },
+      { type: 'MatchWon', player: 0 },
+    ])
+  })
+
   it('rejects darts after the match is over', () => {
     const m = play(config({ startScore: 40 }), [d(20)])
     expect(() => applyDart(m, s(1))).toThrow()
+  })
+})
+
+describe('turns', () => {
+  it('emits TurnEnded after the third dart only', () => {
+    expect(eventsOf(config(), [s(1), s(1)])).toEqual([])
+    expect(eventsOf(config(), [s(1), s(1), s(1)])).toEqual([{ type: 'TurnEnded', player: 0 }])
   })
 })
 

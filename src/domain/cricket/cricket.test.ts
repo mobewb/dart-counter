@@ -9,6 +9,7 @@ import {
   type CricketConfig,
 } from './cricket'
 import type { Dart } from '../shared-kernel/dart'
+import { replayLog } from '../shared-kernel/events'
 
 const s = (n: number): Dart => ({ segment: n, multiplier: 1 })
 const d = (n: number): Dart => ({ segment: n, multiplier: 2 })
@@ -124,6 +125,9 @@ describe('winning', () => {
     const log = [t(20), t(19), t(18), t(17), t(16), t(15), d(25), s(25)]
     const m = replay(config({ playerCount: 1 }), log)
     expect(m.status).toBe('finished')
+    expect(replayLog(newMatch(config({ playerCount: 1 })), applyDart, log).events).toEqual([
+      { type: 'MatchWon', player: 0 },
+    ])
   })
 
   it('rejects darts after the match is over', () => {
@@ -164,7 +168,7 @@ describe('undo via replay', () => {
   it('replaying one dart fewer restores the earlier state', () => {
     const log = [t(20), s(19), d(18)]
     expect(replay(config(), log.slice(0, 2))).toEqual(
-      applyDart(applyDart(newMatch(config()), t(20)), s(19)),
+      applyDart(applyDart(newMatch(config()), t(20)).state, s(19)).state,
     )
   })
 })
@@ -172,18 +176,24 @@ describe('undo via replay', () => {
 describe('crazy rerolls', () => {
   const pool = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
   const crazy = (over: Partial<CricketConfig> = {}) => config({ rerollPool: pool, ...over })
+  /** Events of the last dart in the log. */
+  const eventsOf = (cfg: CricketConfig, darts: Dart[]) => replayLog(newMatch(cfg), applyDart, darts).events
+  const rerolled = (cfg: CricketConfig, darts: Dart[]) =>
+    eventsOf(cfg, darts).some((e) => e.type === 'TargetsRerolled')
 
   it('does nothing before the round is complete', () => {
     const m = replay(crazy(), [s(20), miss, miss])
     expect(m.targets).toEqual(CRICKET_TARGETS)
-    expect(m.rollCount).toBe(0)
+    expect(rerolled(crazy(), [s(20), miss, miss])).toBe(false)
   })
 
   it('replaces numbers nobody marked once every player has thrown', () => {
     const m = replay(crazy(), [s(20), miss, miss, miss, miss, miss])
     expect(m.targets).toEqual([20, 1, 2, 3, 4, 5, 25])
-    expect(m.lastRoll).toEqual([1, 2, 3, 4, 5])
-    expect(m.rollCount).toBe(1)
+    expect(eventsOf(crazy(), [s(20), miss, miss, miss, miss, miss])).toEqual([
+      { type: 'TurnEnded', player: 1 },
+      { type: 'TargetsRerolled', replaced: [1, 2, 3, 4, 5] },
+    ])
   })
 
   it('keeps numbers that have marks, even from a single player', () => {
@@ -218,7 +228,7 @@ describe('crazy rerolls', () => {
   it('does not reroll in standard cricket', () => {
     const m = replay(config(), [s(20), miss, miss, miss, miss, miss])
     expect(m.targets).toEqual(CRICKET_TARGETS)
-    expect(m.rollCount).toBe(0)
+    expect(rerolled(config(), [s(20), miss, miss, miss, miss, miss])).toBe(false)
   })
 
   it('marks land on the new numbers', () => {
@@ -236,7 +246,7 @@ describe('crazy rerolls', () => {
     const log = [s(20), miss, miss, miss, miss, miss, s(1)]
     const before = replay(crazy(), log.slice(0, -1))
     expect(replay(crazy(), log.slice(0, -1))).toEqual(before)
-    expect(before.rollCount).toBe(1)
+    expect(before.targets).not.toEqual(CRICKET_TARGETS)
   })
 
   it('crazyDeal pairs six targets with a pool of the unused numbers', () => {

@@ -1,4 +1,5 @@
 import { dartScore, isValidDart, type Dart } from '../shared-kernel/dart'
+import { replayLog, type DomainEvent, type Move } from '../shared-kernel/events'
 import type { X01Config, X01Match, X01Player } from './types'
 
 const DARTS_PER_TURN = 3
@@ -23,7 +24,6 @@ export function newMatch(config: X01Config): X01Match {
     legStarter: 0,
     turnDarts: [],
     turnStart: { remaining: config.startScore, in: !config.doubleIn },
-    busted: false,
     status: 'playing',
     winner: null,
   }
@@ -55,13 +55,15 @@ function updatePlayer(state: X01Match, index: number, patch: Partial<X01Player>)
   return { ...state, players }
 }
 
-function winLeg(state: X01Match, index: number): X01Match {
+function winLeg(state: X01Match, index: number): Move<X01Match> {
   const { config } = state
   const player = state.players[index]!
   const legs = player.legs + 1
+  const legWon: DomainEvent = { type: 'LegWon', player: index }
+  const turnEnded: DomainEvent = { type: 'TurnEnded', player: index }
 
   if (legs < config.legsToWinSet) {
-    return startLeg(updatePlayer(state, index, { legs }))
+    return { state: startLeg(updatePlayer(state, index, { legs })), events: [legWon, turnEnded] }
   }
 
   const sets = player.sets + 1
@@ -71,18 +73,18 @@ function winLeg(state: X01Match, index: number): X01Match {
     sets: i === index ? sets : p.sets,
   }))
   const afterSet = { ...state, players: resetLegs }
+  const setWon: DomainEvent = { type: 'SetWon', player: index }
 
   if (sets >= config.setsToWinMatch) {
-    return { ...afterSet, status: 'finished', winner: index, turnDarts: [] }
+    return {
+      state: { ...afterSet, status: 'finished', winner: index, turnDarts: [] },
+      events: [legWon, setWon, { type: 'MatchWon', player: index }],
+    }
   }
-  return startLeg(afterSet)
+  return { state: startLeg(afterSet), events: [legWon, setWon, turnEnded] }
 }
 
-export function applyDart(state: X01Match, dart: Dart): X01Match {
-  return scoreDart({ ...state, busted: false }, dart)
-}
-
-function scoreDart(state: X01Match, dart: Dart): X01Match {
+export function applyDart(state: X01Match, dart: Dart): Move<X01Match> {
   if (state.status === 'finished') throw new Error('Match is finished')
   if (!isValidDart(dart)) throw new Error(`Invalid dart: ${dart.multiplier}x${dart.segment}`)
 
@@ -92,6 +94,8 @@ function scoreDart(state: X01Match, dart: Dart): X01Match {
   const next = counts ? player.remaining - dartScore(dart) : player.remaining
   const dartsThrown = player.dartsThrown + 1
   const turnDarts = [...state.turnDarts, dart]
+  const nextPlayer = (currentPlayer + 1) % config.playerCount
+  const turnEnded: DomainEvent = { type: 'TurnEnded', player: currentPlayer }
 
   const finished = next === 0 && (!config.doubleOut || dart.multiplier === 2)
   const bust = next < 0 || (next === 0 && !finished) || (config.doubleOut && next === 1)
@@ -103,7 +107,7 @@ function scoreDart(state: X01Match, dart: Dart): X01Match {
       dartsThrown,
       pointsScored: player.pointsScored - (state.turnStart.remaining - player.remaining),
     })
-    return { ...startTurn(patched, (currentPlayer + 1) % config.playerCount), busted: true }
+    return { state: startTurn(patched, nextPlayer), events: [{ type: 'Bust', player: currentPlayer }, turnEnded] }
   }
 
   const pointsScored = player.pointsScored + (player.remaining - next)
@@ -117,12 +121,12 @@ function scoreDart(state: X01Match, dart: Dart): X01Match {
   if (finished) return winLeg(patched, currentPlayer)
 
   if (turnDarts.length >= DARTS_PER_TURN) {
-    return startTurn(patched, (currentPlayer + 1) % config.playerCount)
+    return { state: startTurn(patched, nextPlayer), events: [turnEnded] }
   }
-  return { ...patched, turnDarts }
+  return { state: { ...patched, turnDarts }, events: [] }
 }
 
 /** Rebuilds the match from its dart log; undo is replaying one dart fewer. */
 export function replay(config: X01Config, darts: readonly Dart[]): X01Match {
-  return darts.reduce(applyDart, newMatch(config))
+  return replayLog(newMatch(config), applyDart, darts).state
 }

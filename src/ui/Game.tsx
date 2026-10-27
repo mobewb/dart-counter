@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { x01, type Dart } from '../engine'
+import { replayLog, x01, type Dart } from '../engine'
 import { dartLabel } from './dartLabel'
 import { Dartboard } from './Dartboard'
 import { useI18n } from './i18n'
@@ -27,7 +27,8 @@ export function Game({ setup, onRematch, onExit }: Props) {
   const [input, setInput] = useState<'board' | 'pad'>('board')
   useWakeLock()
 
-  const match = useMemo(() => x01.replay(config, darts), [config, darts])
+  const { state: match, events } = useMemo(() => replayLog(x01.newMatch(config), x01.applyDart, darts), [config, darts])
+  const busted = events.some((e) => e.type === 'Bust')
   const finished = match.status === 'finished'
   const current = match.players[match.currentPlayer]!
   const dartsLeft = 3 - match.turnDarts.length
@@ -100,7 +101,7 @@ export function Game({ setup, onRematch, onExit }: Props) {
             )
           })}
         </div>
-        {match.busted && (
+        {busted && (
           <div className="bust" role="status">
             <strong>{t('bust')}</strong> {t('bustHint')}
           </div>

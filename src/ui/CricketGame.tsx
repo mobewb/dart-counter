@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
-import { cricket, type Dart } from '../engine'
+import { cricket, replayLog, type Dart } from '../engine'
 import { dartLabel } from './dartLabel'
 import { Dartboard } from './Dartboard'
 import { useI18n } from './i18n'
@@ -22,7 +22,10 @@ export function CricketGame({ setup, onRematch, onExit }: Props) {
   const [darts, setDarts] = useState<Dart[]>([])
   const [input, setInput] = useState<'board' | 'pad'>('board')
 
-  const match = useMemo(() => cricket.replay(config, darts), [config, darts])
+  const { state: match, events } = useMemo(
+    () => replayLog(cricket.newMatch(config), cricket.applyDart, darts),
+    [config, darts],
+  )
   const finished = match.status === 'finished'
 
   // Crazy cricket spins a roulette for the opening numbers and for every reroll.
@@ -30,11 +33,13 @@ export function CricketGame({ setup, onRematch, onExit }: Props) {
   const [spin, setSpin] = useState<number[] | null>(() =>
     setup.kind === 'crazy' && !reduced ? config.targets.flatMap((n, i) => (n === 25 ? [] : [i])) : null,
   )
-  const [seenRolls, setSeenRolls] = useState(0)
-  if (match.rollCount !== seenRolls) {
+  const [seenDarts, setSeenDarts] = useState(0)
+  if (darts.length !== seenDarts) {
     // Derived during render so the new numbers never flash before the spin.
-    setSeenRolls(match.rollCount)
-    if (match.rollCount > seenRolls && !reduced) setSpin(match.lastRoll)
+    // Only a newly thrown dart spins; undoing back onto a reroll does not.
+    setSeenDarts(darts.length)
+    const roll = events.find((e) => e.type === 'TargetsRerolled')
+    if (darts.length > seenDarts && roll?.type === 'TargetsRerolled' && !reduced) setSpin(roll.replaced)
   }
   const spinning = spin !== null
   const endSpin = useCallback(() => setSpin(null), [])

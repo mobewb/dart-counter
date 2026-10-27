@@ -28,8 +28,6 @@ export interface X01Match {
   turnDarts: Dart[]
   /** Snapshot of the current player at turn start, used to undo a bust. */
   turnStart: { remaining: number; in: boolean }
-  /** True when the last dart busted the turn; reset on the next dart. */
-  busted: boolean
   status: 'playing' | 'finished'
   winner: number | null
 }
