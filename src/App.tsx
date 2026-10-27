@@ -1,23 +1,22 @@
 import { useState } from 'react'
-import { cricketConfig } from './application/cricket-config'
+import { rematch as dealRematch, type MatchSetup } from './application/match-setup'
 import { CricketGame } from './ui/CricketGame'
 import { Game } from './ui/Game'
 import { I18nProvider } from './ui/i18n'
-import { Setup, type GameSetup } from './ui/Setup'
+import { Setup } from './ui/Setup'
 
 export function App() {
-  const [setup, setSetup] = useState<GameSetup | null>(null)
-  const [last, setLast] = useState<GameSetup | undefined>()
+  const [setup, setSetup] = useState<MatchSetup | null>(null)
+  const [last, setLast] = useState<MatchSetup | undefined>()
   const [round, setRound] = useState(0)
 
-  const start = (s: GameSetup) => {
+  const start = (s: MatchSetup) => {
     setSetup(s)
     setLast(s)
   }
 
   const rematch = () => {
-    // Crazy cricket deals a fresh set of numbers.
-    if (setup?.kind === 'crazy') start({ ...setup, config: cricketConfig('crazy', setup.config.playerCount) })
+    if (setup) start(dealRematch(setup))
     setRound((r) => r + 1)
   }
   const exit = () => setSetup(null)
@@ -26,7 +25,7 @@ export function App() {
     <I18nProvider>
       {!setup ? (
         <Setup initial={last} onStart={start} />
-      ) : setup.kind === 'x01' ? (
+      ) : setup.mode === 'x01' ? (
         <Game key={round} setup={setup} onRematch={rematch} onExit={exit} />
       ) : (
         <CricketGame key={round} setup={setup} onRematch={rematch} onExit={exit} />

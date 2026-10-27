@@ -1,14 +1,15 @@
 import { useCallback, useMemo, useState } from 'react'
-import { cricket, replayLog, type Dart } from '../engine'
+import type { MatchSetup } from '../application/match-setup'
+import { cricket, type Dart } from '../engine'
 import { dartLabel } from './dartLabel'
 import { Dartboard } from './Dartboard'
 import { useI18n } from './i18n'
 import { Keypad } from './Keypad'
-import type { CricketSetup } from './Setup'
 import { TargetsStrip } from './TargetsStrip'
+import { useMatch } from './use-match'
 
 interface Props {
-  setup: CricketSetup
+  setup: Extract<MatchSetup, { mode: 'cricket' | 'crazy' }>
   onRematch: () => void
   onExit: () => void
 }
@@ -19,27 +20,22 @@ const targetLabel = (target: number) => (target === 25 ? 'B' : String(target))
 export function CricketGame({ setup, onRematch, onExit }: Props) {
   const { t } = useI18n()
   const { config, names } = setup
-  const [darts, setDarts] = useState<Dart[]>([])
+  const { state: match, events, dartCount, hit: record, undo } = useMatch(cricket.mode, config)
   const [input, setInput] = useState<'board' | 'pad'>('board')
-
-  const { state: match, events } = useMemo(
-    () => replayLog(cricket.newMatch(config), cricket.applyDart, darts),
-    [config, darts],
-  )
   const finished = match.status === 'finished'
 
   // Crazy cricket spins a roulette for the opening numbers and for every reroll.
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const [spin, setSpin] = useState<number[] | null>(() =>
-    setup.kind === 'crazy' && !reduced ? config.targets.flatMap((n, i) => (n === 25 ? [] : [i])) : null,
+    setup.mode === 'crazy' && !reduced ? config.targets.flatMap((n, i) => (n === 25 ? [] : [i])) : null,
   )
   const [seenDarts, setSeenDarts] = useState(0)
-  if (darts.length !== seenDarts) {
+  if (dartCount !== seenDarts) {
     // Derived during render so the new numbers never flash before the spin.
     // Only a newly thrown dart spins; undoing back onto a reroll does not.
-    setSeenDarts(darts.length)
+    setSeenDarts(dartCount)
     const roll = events.find((e) => e.type === 'TargetsRerolled')
-    if (darts.length > seenDarts && roll?.type === 'TargetsRerolled' && !reduced) setSpin(roll.replaced)
+    if (dartCount > seenDarts && roll?.type === 'TargetsRerolled' && !reduced) setSpin(roll.replaced)
   }
   const spinning = spin !== null
   const endSpin = useCallback(() => setSpin(null), [])
@@ -48,8 +44,7 @@ export function CricketGame({ setup, onRematch, onExit }: Props) {
     [match.targets, match.players],
   )
 
-  const hit = (dart: Dart) => !finished && !spinning && setDarts((log) => [...log, dart])
-  const undo = () => setDarts((log) => log.slice(0, -1))
+  const hit = (dart: Dart) => !spinning && record(dart)
   const quit = () => window.confirm(t('confirmQuit')) && onExit()
 
   return (
@@ -57,9 +52,9 @@ export function CricketGame({ setup, onRematch, onExit }: Props) {
       <header className="topbar">
         <button className="ghost" onClick={quit} aria-label={t('quit')}>✕<span className="label"> {t('quit')}</span></button>
         <div className="topbar__info">
-          <strong>{setup.kind === 'crazy' ? t('crazy') : t('cricket')}</strong>
+          <strong>{setup.mode === 'crazy' ? t('crazy') : t('cricket')}</strong>
         </div>
-        <button className="ghost undo" onClick={undo} disabled={darts.length === 0 || spinning} aria-label={t('undo')}>↶<span className="label"> {t('undo')}</span></button>
+        <button className="ghost undo" onClick={undo} disabled={dartCount === 0 || spinning} aria-label={t('undo')}>↶<span className="label"> {t('undo')}</span></button>
       </header>
 
       <TargetsStrip targets={match.targets} dead={dead} spin={spin} onSpinEnd={endSpin} />

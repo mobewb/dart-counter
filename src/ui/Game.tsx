@@ -1,13 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
-import { replayLog, x01, type Dart } from '../engine'
+import { useEffect, useState } from 'react'
+import type { MatchSetup } from '../application/match-setup'
+import { x01 } from '../engine'
 import { dartLabel } from './dartLabel'
 import { Dartboard } from './Dartboard'
 import { useI18n } from './i18n'
 import { Keypad } from './Keypad'
-import type { X01Setup } from './Setup'
+import { useMatch } from './use-match'
 
 interface Props {
-  setup: X01Setup
+  setup: Extract<MatchSetup, { mode: 'x01' }>
   onRematch: () => void
   onExit: () => void
 }
@@ -23,11 +24,10 @@ function useWakeLock() {
 export function Game({ setup, onRematch, onExit }: Props) {
   const { t } = useI18n()
   const { config, names } = setup
-  const [darts, setDarts] = useState<Dart[]>([])
+  const { state: match, events, dartCount, hit, undo } = useMatch(x01.mode, config)
   const [input, setInput] = useState<'board' | 'pad'>('board')
   useWakeLock()
 
-  const { state: match, events } = useMemo(() => replayLog(x01.newMatch(config), x01.applyDart, darts), [config, darts])
   const busted = events.some((e) => e.type === 'Bust')
   const finished = match.status === 'finished'
   const current = match.players[match.currentPlayer]!
@@ -36,8 +36,6 @@ export function Game({ setup, onRematch, onExit }: Props) {
     ? x01.checkout(current.remaining, config.doubleOut, dartsLeft)
     : null
 
-  const hit = (dart: Dart) => !finished && setDarts((log) => [...log, dart])
-  const undo = () => setDarts((log) => log.slice(0, -1))
   const quit = () => window.confirm(t('confirmQuit')) && onExit()
 
   // Keep the active player in view on small screens.
@@ -57,7 +55,7 @@ export function Game({ setup, onRematch, onExit }: Props) {
           <span>{config.doubleIn ? 'DI · ' : ''}{config.doubleOut ? 'DO' : 'SO'}</span>
           {showLegs && <span>· {t('firstTo')} {config.legsToWinSet}{showSets ? ` / ${config.setsToWinMatch}` : ''}</span>}
         </div>
-        <button className="ghost undo" onClick={undo} disabled={darts.length === 0} aria-label={t('undo')}>↶<span className="label"> {t('undo')}</span></button>
+        <button className="ghost undo" onClick={undo} disabled={dartCount === 0} aria-label={t('undo')}>↶<span className="label"> {t('undo')}</span></button>
       </header>
 
       <section className="players" data-count={match.players.length}>

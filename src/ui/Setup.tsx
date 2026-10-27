@@ -1,25 +1,10 @@
 import { useState } from 'react'
-import { cricketConfig } from '../application/cricket-config'
-import type { cricket, x01 } from '../engine'
+import { startMatch, type GameModeId, type MatchSetup } from '../application/match-setup'
 import { useI18n } from './i18n'
 
-export interface X01Setup {
-  kind: 'x01'
-  config: x01.X01Config
-  names: string[]
-}
-
-export interface CricketSetup {
-  kind: 'cricket' | 'crazy'
-  config: cricket.CricketConfig
-  names: string[]
-}
-
-export type GameSetup = X01Setup | CricketSetup
-
 interface Props {
-  initial?: GameSetup
-  onStart: (setup: GameSetup) => void
+  initial?: MatchSetup
+  onStart: (setup: MatchSetup) => void
 }
 
 const SCORES = [301, 501, 701]
@@ -46,8 +31,8 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
 
 export function Setup({ initial, onStart }: Props) {
   const { t, lang, setLang } = useI18n()
-  const x01 = initial?.kind === 'x01' ? initial.config : undefined
-  const [kind, setKind] = useState<GameSetup['kind']>(initial?.kind ?? 'x01')
+  const x01 = initial?.mode === 'x01' ? initial.config : undefined
+  const [kind, setKind] = useState<GameModeId>(initial?.mode ?? 'x01')
   const [startScore, setStartScore] = useState(x01?.startScore ?? 501)
   const [doubleIn, setDoubleIn] = useState(x01?.doubleIn ?? false)
   const [doubleOut, setDoubleOut] = useState(x01?.doubleOut ?? true)
@@ -60,18 +45,11 @@ export function Setup({ initial, onStart }: Props) {
 
   const start = () => {
     const finalNames = names.map((n, i) => n.trim() || `${t('player')} ${i + 1}`)
-    if (kind === 'x01') {
-      onStart({
-        kind,
-        config: { startScore, doubleIn, doubleOut, playerCount: names.length, legsToWinSet: legs, setsToWinMatch: sets },
-        names: finalNames,
-      })
-    } else {
-      onStart({ kind, config: cricketConfig(kind, names.length), names: finalNames })
-    }
+    const rules = { startScore, doubleIn, doubleOut, legsToWinSet: legs, setsToWinMatch: sets }
+    onStart(startMatch(kind === 'x01' ? { mode: kind, names: finalNames, rules } : { mode: kind, names: finalNames }))
   }
 
-  const games: [GameSetup['kind'], string][] = [['x01', t('x01')], ['cricket', t('cricket')], ['crazy', t('crazy')]]
+  const games: [GameModeId, string][] = [['x01', t('x01')], ['cricket', t('cricket')], ['crazy', t('crazy')]]
 
   return (
     <main className="screen setup">
