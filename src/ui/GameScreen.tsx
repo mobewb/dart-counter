@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { MatchSetup } from '../application/match-setup'
+import { matchStats } from '../application/match-stats'
 import { sideNames, teamPlay } from '../application/sides'
 import { results, type Dart, type MatchCore } from '../domain'
 import { dartLabel } from './dartLabel'
@@ -46,6 +47,12 @@ export function GameScreen<Setup extends MatchSetup, State extends MatchCore>({ 
   const { info, board, turnExtras, afterTurn, targets, locked = false } = view.useView({ setup, sides, state: match, events, dartCount })
 
   const finished = match.status === 'finished'
+  const stats = useMemo(() => (finished ? matchStats(setup, darts) : []), [finished, setup, darts])
+  const chips = (player: number) => (
+    <div className="statline">
+      {view.details(stats[player]!, t).map((chip) => <span key={chip}>{chip}</span>)}
+    </div>
+  )
   const hit = (dart: Dart) => !locked && record(dart)
   const quit = () => window.confirm(t('confirmQuit')) && onExit()
 
@@ -104,6 +111,7 @@ export function GameScreen<Setup extends MatchSetup, State extends MatchCore>({ 
                   <span>{sides[i]}</span>
                   <b>{view.result.format(r.value)}</b>
                   <small>{t(view.result.label)} · {r.dartsThrown} {t('darts').toLowerCase()}</small>
+                  {!setup.teams && chips(i)}
                 </div>
               ))}
             </div>
@@ -114,6 +122,7 @@ export function GameScreen<Setup extends MatchSetup, State extends MatchCore>({ 
                     <span>{names[i]}</span>
                     <b>{view.result.format(r.value)}</b>
                     <small>{t(view.result.label)} · {r.dartsThrown} {t('darts').toLowerCase()}</small>
+                    {chips(i)}
                   </div>
                 ))}
               </div>

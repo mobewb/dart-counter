@@ -1,7 +1,8 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { MatchSetup } from '../../../application/match-setup'
+import type { PlayerStats } from '../../../application/match-stats'
 import { cricket } from '../../../domain'
-import { useI18n } from '../../i18n'
+import { useI18n, type Key } from '../../i18n'
 import type { ModeView, ViewProps } from '../types'
 import { TargetsStrip } from './TargetsStrip'
 
@@ -76,12 +77,18 @@ function useCricketView({ setup, sides, state: match, events, dartCount }: ViewP
   }
 }
 
+function cricketDetails(stats: PlayerStats, t: (key: Key) => string): string[] {
+  if (stats.kind !== 'cricket') return []
+  return [`MPR ${stats.marksPerRound.toFixed(2)}`, `${t('marks')} ${stats.marks}`]
+}
+
 export const cricketView: ModeView<CricketSetup, cricket.CricketMatch> = {
   rules: cricket.mode,
   label: 'cricket',
   hint: 'cricketHint',
   result: { label: 'points', format: String },
   useView: useCricketView,
+  details: cricketDetails,
 }
 
 export const crazyCricketView: ModeView<CricketSetup, cricket.CricketMatch> = { ...cricketView, label: 'crazy', hint: 'crazyHint' }

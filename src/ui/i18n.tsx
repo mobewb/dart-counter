@@ -53,6 +53,10 @@ const dict = {
     teamsHint: 'Tap a badge to change team. Team members take turns.',
     needTwoTeams: 'Pick at least 2 teams.',
     winTeam: 'win the match!',
+    firstNine: 'First 9',
+    highest: 'High',
+    bestLeg: 'Best leg',
+    marks: 'Marks',
   },
   fr: {
     tagline: 'Comptez. Visez les doubles.',
@@ -105,6 +109,10 @@ const dict = {
     teamsHint: 'Touchez un badge pour changer d\'équipe. Les coéquipiers lancent à tour de rôle.',
     needTwoTeams: 'Il faut au moins 2 équipes.',
     winTeam: 'remportent le match !',
+    firstNine: '9 premières',
+    highest: 'Max',
+    bestLeg: 'Meilleure manche',
+    marks: 'Marques',
   },
 }
 

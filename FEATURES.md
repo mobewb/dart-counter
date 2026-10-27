@@ -127,6 +127,9 @@ A winner overlay shows:
 - the winner's name (or team) and a trophy,
 - stats for every player or team — 3-dart average and darts thrown in X01, points and darts thrown in Cricket,
 - in team play, each player's own stats as well,
+- **match stats** for every player (in team play, under each player):
+  - X01: first-9 average, highest visit, 180 / 140+ / 100+ counts, checkout rate (checkouts hit / darts thrown at a finishing double, with double-out), best leg in darts.
+  - Cricket: marks per round (MPR) and total marks (scoring marks included).
 - three actions: **Undo** (reopen the game), **Rematch** (same settings, same players) and **New game** (back to setup).
 
 ## 9. Languages
@@ -182,6 +185,7 @@ src/
 │   ├── match-repository.ts    MatchRepository port: current match and history
 │   ├── match-persistence.ts   saveProgress, resumeMatch, leaveMatch
 │   ├── sides.ts               Team play: side names, who throws next, per-player stats
+│   ├── match-stats.ts         Match stats per player (first 9, 180s, checkout %, MPR…)
 │   └── cricket-config.ts      Cricket configs; crazy deal with an injected random source
 ├── infrastructure/          Adapters to the browser
 │   ├── indexeddb-repository.ts   MatchRepository on IndexedDB

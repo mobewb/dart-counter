@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { MatchSetup } from '../../application/match-setup'
+import type { PlayerStats } from '../../application/match-stats'
 import type { DomainEvent, GameMode, MatchCore } from '../../domain'
 import type { Key } from '../i18n'
 
@@ -39,4 +40,6 @@ export interface ModeView<Setup extends MatchSetup, State extends MatchCore> {
   /** The headline stat of each player on the winner screen. */
   result: { label: Key; format: (value: number) => string }
   useView(props: ViewProps<Setup, State>): View
+  /** A player's match stats as short chips for the winner screen. */
+  details(stats: PlayerStats, t: (key: Key) => string): string[]
 }

@@ -419,3 +419,7 @@ button.team-badge { min-height: 44px; }
 .overlay__stats--players { margin-top: 0; }
 .overlay__stats--players > div { padding: 6px 14px; background: rgb(255 255 255 / 0.03); }
 .overlay__stats--players b { font-size: 1rem; }
+
+/* Match stats on the winner screen */
+.statline { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.statline span { padding: 2px 8px; border-radius: 99px; font-size: 0.72rem; background: rgb(255 255 255 / 0.07); color: var(--text); white-space: nowrap; }

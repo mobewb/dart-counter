@@ -53,3 +53,31 @@ The order is reliability first, then the stats players care about, then reach (n
 - *Manifest icons (192/512) are not precached.* They are only used when installing to the home screen, which needs a network anyway. **Kept as is.**
 - *The worker has no automated test* (Vitest runs in Node, without service workers). It is covered by the headless-browser check only. **Accepted:** this is the main risk of this iteration.
 - *Missing:* nothing tells the user the app works offline. Low value. **Skipped.**
+
+## Iteration 2 — Match stats
+
+**Why:** darts players judge a match by a handful of standard numbers. The app only showed the 3-dart average, while the dart log holds everything needed to compute the rest.
+
+**What was built**
+- `matchStats(setup, darts)` in the application layer computes per-player stats from the dart log. It works in team play too: each dart is credited to the team member who threw it.
+  - **X01:** first-9 average (each leg's first three visits), highest visit, 100+/140+/180 counts, checkout rate (checkouts / darts thrown at a finishing double), highest checkout, best leg.
+  - **Cricket:** marks per round (MPR), total marks.
+- `steps(setup, darts)` was extracted from team play: a replay that tags each dart with its side, its thrower and the state before and after. Team play and the stats share it.
+- The winner screen shows the stats as compact chips under each player; zero counts are hidden.
+
+**Decisions**
+- *Computed from the dart log, not stored.* The history keeps the full log, so stats can be recomputed, and later corrected, for every saved match. No migration is needed.
+- *Standard definitions:*
+  - A busted visit counts its darts and scores 0.
+  - "Darts at a double" means darts thrown while the score left is finishable with one dart (2–40 even, or 50) and the player is in.
+  - MPR counts every mark hit on a target, scoring marks included.
+- *Best leg is credited to the player who checked out*, counting their side's darts in that leg. In team play, the side's darts are the honest measure of how fast the leg went.
+- *Stats live on the winner screen only*, for now. During play the board stays uncluttered; the live 3-dart average already exists.
+
+**Verified:** 8 unit tests with hand-checked numbers (a 9-dart 501 with two 180s and a 141 checkout, a bust, the first nine across legs, no double-out, team attribution, cricket MPR). Browser check of the winner screen in X01 solo and cricket teams.
+
+**Challenge — what could be better**
+- *A test was wrong, not the code.* The first-nine-across-legs expectation forgot one visit. Hand-computed fixtures are error-prone, so I added a second test whose data can only pass if the per-leg reset works.
+- *Checkout rate ignores double-in.* Darts at a double for getting in are not tracked ("double-in %"). Rare format. **Skipped.**
+- *Stats are per match only.* Their real value is over time (is my average improving?). **That's iteration 3.**
+- *No live highlight.* A 180 passes silently. **Iteration 5 (caller) covers it.**
