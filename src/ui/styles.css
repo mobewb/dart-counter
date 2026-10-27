@@ -329,3 +329,63 @@ body { overscroll-behavior-y: none; }
   .pcard__score { font-size: 2.2rem; }
   .targets { --reel-h: 50px; }
 }
+
+/* ---------- compact phone layout ---------- */
+@media (max-width: 480px) {
+  .screen { gap: 8px; padding: max(8px, env(safe-area-inset-top)) 10px max(14px, env(safe-area-inset-bottom)); }
+  .card { padding: 12px; gap: 8px; border-radius: 16px; }
+  .card h2 { font-size: 0.7rem; }
+  .seg-control button { padding: 9px 6px; }
+  .stepper button { width: 32px; height: 32px; }
+  .names { gap: 6px; }
+  .names input { padding: 9px 12px; }
+  .cta { padding: 14px; }
+  .hero { padding: 8px 0 0; gap: 2px; }
+  .hero__logo { font-size: 2.2rem; }
+  .hero h1 { font-size: 1.9rem; }
+  .hero p { font-size: 0.85rem; }
+
+  /* game header: icon-only buttons */
+  .topbar .label { display: none; }
+  .topbar .ghost { padding: 6px 10px; font-size: 1.1rem; }
+  .topbar__info strong { font-size: 1rem; }
+
+  .players { gap: 6px; padding: 2px 0 6px; }
+  .pcard { flex-basis: 108px; padding: 7px 8px; gap: 1px; border-radius: 14px; }
+  .pcard.is-active { transform: none; }
+  .pcard__name { font-size: 0.78rem; }
+  .pcard__score { font-size: clamp(1.9rem, 9vw, 2.4rem); }
+  .pcard__meta { font-size: 0.66rem; gap: 4px; }
+
+  .turn { padding: 8px 10px; gap: 6px; border-radius: 14px; }
+  .turn__who { font-size: 0.85rem; }
+  .slots { gap: 6px; }
+  .slot { height: 34px; font-size: 1rem; border-radius: 10px; }
+  .bust { padding: 6px 10px; font-size: 0.8rem; }
+
+  .input { gap: 6px; }
+  .seg-control--small button { padding: 6px; font-size: 0.78rem; }
+  .miss { padding: 8px; }
+  .pad { gap: 6px; }
+  .pad__grid button { height: 42px; font-size: 1rem; border-radius: 10px; }
+
+  .targets { --reel-h: 46px; gap: 4px; }
+  .targets h2 { display: none; }
+  .targets--spin h2 { display: block; }
+  .targets--spin { padding: 8px 6px 10px; }
+  .target { font-size: 1.15rem; border-radius: 10px; }
+
+  .cricket__head, .cricket__row { min-width: calc(44px + var(--cols) * 56px); grid-template-columns: 44px repeat(var(--cols), minmax(56px, 1fr)); }
+  .cricket__player { padding: 5px 4px; }
+  .cricket__name { font-size: 0.7rem; }
+  .cricket__points { font-size: 1.25rem; }
+  .cricket__cell { min-height: 30px; font-size: 1.15rem; }
+  .cricket__target { font-size: 0.95rem; padding: 4px 0; }
+}
+
+/* short phones: squeeze vertical space further */
+@media (max-width: 480px) and (max-height: 700px) {
+  .board { width: min(100%, 440px, 40dvh); }
+  .pcard__meta { display: none; }
+  .hero__logo { display: none; }
+}

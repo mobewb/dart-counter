@@ -50,13 +50,13 @@ export function Game({ setup, onRematch, onExit }: Props) {
   return (
     <main className="screen game">
       <header className="topbar">
-        <button className="ghost" onClick={quit}>✕ {t('quit')}</button>
+        <button className="ghost" onClick={quit} aria-label={t('quit')}>✕<span className="label"> {t('quit')}</span></button>
         <div className="topbar__info">
           <strong>{config.startScore}</strong>
           <span>{config.doubleIn ? 'DI · ' : ''}{config.doubleOut ? 'DO' : 'SO'}</span>
           {showLegs && <span>· {t('firstTo')} {config.legsToWinSet}{showSets ? ` / ${config.setsToWinMatch}` : ''}</span>}
         </div>
-        <button className="ghost" onClick={undo} disabled={darts.length === 0}>↶ {t('undo')}</button>
+        <button className="ghost" onClick={undo} disabled={darts.length === 0} aria-label={t('undo')}>↶<span className="label"> {t('undo')}</span></button>
       </header>
 
       <section className="players" data-count={match.players.length}>

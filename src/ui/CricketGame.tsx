@@ -50,11 +50,11 @@ export function CricketGame({ setup, onRematch, onExit }: Props) {
   return (
     <main className="screen game">
       <header className="topbar">
-        <button className="ghost" onClick={quit}>✕ {t('quit')}</button>
+        <button className="ghost" onClick={quit} aria-label={t('quit')}>✕<span className="label"> {t('quit')}</span></button>
         <div className="topbar__info">
           <strong>{setup.kind === 'crazy' ? t('crazy') : t('cricket')}</strong>
         </div>
-        <button className="ghost" onClick={undo} disabled={darts.length === 0 || spinning}>↶ {t('undo')}</button>
+        <button className="ghost" onClick={undo} disabled={darts.length === 0 || spinning} aria-label={t('undo')}>↶<span className="label"> {t('undo')}</span></button>
       </header>
 
       <TargetsStrip targets={game.targets} dead={dead} spin={spin} onSpinEnd={endSpin} />
