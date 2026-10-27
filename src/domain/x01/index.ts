@@ -1,4 +1,5 @@
 export * from './checkout'
 export * from './match'
+export * from './mode'
 export * from './stats'
 export * from './types'
