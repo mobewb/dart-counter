@@ -32,6 +32,7 @@ export function newMatch(config: MatchConfig): MatchState {
     legStarter: 0,
     turnDarts: [],
     turnStart: { remaining: config.startScore, in: !config.doubleIn },
+    busted: false,
     status: 'playing',
     winner: null,
   }
@@ -87,6 +88,10 @@ function winLeg(state: MatchState, index: number): MatchState {
 }
 
 export function throwDart(state: MatchState, dart: Dart): MatchState {
+  return applyDart({ ...state, busted: false }, dart)
+}
+
+function applyDart(state: MatchState, dart: Dart): MatchState {
   if (state.status === 'finished') throw new Error('Match is finished')
   if (!isValidDart(dart)) throw new Error(`Invalid dart: ${dart.multiplier}x${dart.segment}`)
 
@@ -107,7 +112,7 @@ export function throwDart(state: MatchState, dart: Dart): MatchState {
       dartsThrown,
       pointsScored: player.pointsScored - (state.turnStart.remaining - player.remaining),
     })
-    return startTurn(patched, (currentPlayer + 1) % config.playerCount)
+    return { ...startTurn(patched, (currentPlayer + 1) % config.playerCount), busted: true }
   }
 
   const pointsScored = player.pointsScored + (player.remaining - next)

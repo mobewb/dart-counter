@@ -78,6 +78,12 @@ describe('bust', () => {
     expect(m.status).toBe('playing')
   })
 
+  it('flags the bust until the next dart', () => {
+    const busted = play(config({ startScore: 40 }), [s(20), t(20)])
+    expect(busted.busted).toBe(true)
+    expect(throwDart(busted, s(1)).busted).toBe(false)
+  })
+
   it('does not count a busted turn towards points scored', () => {
     const m = play(config({ startScore: 40 }), [s(5), s(20), t(20)])
     expect(m.players[0]!.pointsScored).toBe(0)
