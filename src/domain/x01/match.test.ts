@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { dartScore, isValidDart, newMatch, replay, throwDart } from './match'
-import type { Dart, MatchConfig } from './types'
+import { dartScore, isValidDart, type Dart } from '../shared-kernel/dart'
+import { newMatch, replay, throwDart } from './match'
+import type { MatchConfig } from './types'
 
 const s = (n: number): Dart => ({ segment: n, multiplier: 1 })
 const d = (n: number): Dart => ({ segment: n, multiplier: 2 })

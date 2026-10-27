@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { dartScore, type Dart } from '../shared-kernel/dart'
 import { checkout } from './checkout'
-import { dartScore } from './match'
-import type { Dart } from './types'
 
 const s = (n: number): Dart => ({ segment: n, multiplier: 1 })
 const d = (n: number): Dart => ({ segment: n, multiplier: 2 })

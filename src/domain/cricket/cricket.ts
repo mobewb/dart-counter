@@ -1,5 +1,4 @@
-import { isValidDart } from './match'
-import type { Dart } from './types'
+import { isValidDart, type Dart } from '../shared-kernel/dart'
 
 const DARTS_PER_TURN = 3
 const MARKS_TO_CLOSE = 3

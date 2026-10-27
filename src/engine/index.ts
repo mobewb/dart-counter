@@ -1,5 +1,2 @@
-export * from './checkout'
-export * from './match'
-export * from './stats'
-export * from './types'
-export * from './cricket'
+/** Temporary re-export while the UI migrates to src/domain. */
+export * from '../domain'

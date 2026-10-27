@@ -8,7 +8,7 @@ import {
   throwCricketDart,
   type CricketConfig,
 } from './cricket'
-import type { Dart } from './types'
+import type { Dart } from '../shared-kernel/dart'
 
 const s = (n: number): Dart => ({ segment: n, multiplier: 1 })
 const d = (n: number): Dart => ({ segment: n, multiplier: 2 })

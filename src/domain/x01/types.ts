@@ -1,10 +1,4 @@
-export type Multiplier = 1 | 2 | 3
-
-/** segment: 0 = miss, 1-20 = numbered segments, 25 = bull (double = 50). */
-export interface Dart {
-  segment: number
-  multiplier: Multiplier
-}
+import type { Dart } from '../shared-kernel/dart'
 
 export interface MatchConfig {
   startScore: number

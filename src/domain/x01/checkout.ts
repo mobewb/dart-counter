@@ -1,4 +1,4 @@
-import type { Dart } from './types'
+import type { Dart } from '../shared-kernel/dart'
 
 const SEGMENTS = [...Array.from({ length: 20 }, (_, i) => i + 1), 25]
 

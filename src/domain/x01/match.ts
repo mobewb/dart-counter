@@ -1,16 +1,7 @@
-import type { Dart, MatchConfig, MatchState, PlayerState } from './types'
+import { dartScore, isValidDart, type Dart } from '../shared-kernel/dart'
+import type { MatchConfig, MatchState, PlayerState } from './types'
 
 const DARTS_PER_TURN = 3
-
-export function dartScore(dart: Dart): number {
-  return dart.segment * dart.multiplier
-}
-
-export function isValidDart({ segment, multiplier }: Dart): boolean {
-  if (segment === 0) return multiplier === 1
-  if (segment === 25) return multiplier !== 3
-  return Number.isInteger(segment) && segment >= 1 && segment <= 20
-}
 
 function freshPlayer(config: MatchConfig): PlayerState {
   return {
