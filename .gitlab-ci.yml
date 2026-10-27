@@ -1,0 +1,27 @@
+image: node:24
+
+cache:
+  paths:
+    - node_modules/
+
+stages: [check, deploy]
+
+check:
+  stage: check
+  script:
+    - npm ci
+    - npm run typecheck
+    - npm test
+    - npm run build
+  artifacts:
+    paths: [dist]
+
+pages:
+  stage: deploy
+  needs: [check]
+  script:
+    - mkdir -p public && cp -r dist/. public/
+  artifacts:
+    paths: [public]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
