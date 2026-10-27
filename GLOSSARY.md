@@ -16,6 +16,8 @@ The ubiquitous language of Dart Counter. Code, docs and commits use these terms;
 | **Multiplier** | Single (1), double (2) or triple (3). The bull has no triple. | Single, Double, Triple / Simple, Double, Triple |
 | **Bull** | Segment 25. Outer bull is a single (25), bull's eye is a double (50). | Bull / Bull |
 | **Miss** | A dart that scores nothing (segment 0). | Miss / Raté |
+| **Current match** | The match being played, saved after every dart so it can be resumed. | — |
+| **Match history** | The finished matches kept on the device, most recent first. | — |
 
 ## X01
 

@@ -16,11 +16,12 @@ function useCricketView({ setup, state: match, events, dartCount }: ViewProps<Cr
   const finished = match.status === 'finished'
 
   // Crazy cricket spins a roulette for the opening numbers and for every reroll.
+  // A resumed match (darts already thrown) does not spin again.
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const [spin, setSpin] = useState<number[] | null>(() =>
-    setup.mode === 'crazy' && !reduced ? config.targets.flatMap((n, i) => (n === 25 ? [] : [i])) : null,
+    setup.mode === 'crazy' && !reduced && dartCount === 0 ? config.targets.flatMap((n, i) => (n === 25 ? [] : [i])) : null,
   )
-  const [seenDarts, setSeenDarts] = useState(0)
+  const [seenDarts, setSeenDarts] = useState(dartCount)
   if (dartCount !== seenDarts) {
     // Derived during render so the new numbers never flash before the spin.
     // Only a newly thrown dart spins; undoing back onto a reroll does not.

@@ -13,9 +13,10 @@ A mobile-first dart scoring web app. Pick a game, enter the players, and tap the
 7. [In-game controls](#7-in-game-controls)
 8. [End of game](#8-end-of-game)
 9. [Languages](#9-languages)
-10. [Mobile and display](#10-mobile-and-display)
-11. [Technical overview](#11-technical-overview)
-12. [Build, test and deploy](#12-build-test-and-deploy)
+10. [Saved data](#10-saved-data)
+11. [Mobile and display](#11-mobile-and-display)
+12. [Technical overview](#12-technical-overview)
+13. [Build, test and deploy](#13-build-test-and-deploy)
 
 ---
 
@@ -38,7 +39,7 @@ A mobile-first dart scoring web app. Pick a game, enter the players, and tap the
   - Double out (on by default).
   - Legs to win a set: 1 to 11 (default 3).
   - Sets to win the match: 1 to 7 (default 1).
-- **Settings memory** — after a game, the setup screen is pre-filled with the previous game's mode, rules and names.
+- **Settings memory** — the setup screen is pre-filled with the last match's mode, rules and names, even after the app is closed.
 - **Language toggle** — FR / EN button on the setup screen.
 
 ## 3. X01 (301 / 501 / 701)
@@ -116,10 +117,21 @@ A winner overlay shows:
 ## 9. Languages
 
 - English and French, with the language auto-detected from the browser (French if the browser language is French, English otherwise).
-- Can be switched manually on the setup screen.
+- Can be switched manually on the setup screen; the choice is remembered.
 - All UI texts, hints and rule explanations are translated.
 
-## 10. Mobile and display
+## 10. Saved data
+
+Everything is stored on the device, in the browser; nothing is sent anywhere.
+
+- **Resume after a refresh** — the match in progress is saved after every dart and undo. Reloading the page, closing the tab or restarting the phone brings back the exact same match, including the current turn and Crazy Cricket's numbers.
+- **Match history** — every finished match is kept: players, game mode and rules, winner, per-player results (average or points, darts thrown) and the full dart log. Undoing the winning dart takes the match out of the history again. *(No screen shows the history yet; it is the base for a future history and stats feature.)*
+- **Leaving a match** — Quit or New game clears the saved match in progress. A quit match is not added to the history.
+- **Preferences** — the language and the last setup are remembered.
+- **Storage** — IndexedDB for matches, `localStorage` for preferences. The app asks the browser to keep this data persistent. Clearing the site data deletes it, and it is not synced between devices.
+- **Fail-safe** — if storage is unavailable (blocked, private mode, full), the app keeps working without saving.
+
+## 11. Mobile and display
 
 - Designed first for phones: compact layouts for game and setup screens on small screens.
 - Landscape layout for short viewports.
@@ -127,18 +139,18 @@ A winner overlay shows:
 - Responsive layout capped at a comfortable width on tablets and desktops.
 - Respects `prefers-reduced-motion`.
 
-## 11. Technical overview
+## 12. Technical overview
 
 | Area | Details |
 | --- | --- |
 | Stack | React 19, TypeScript, Vite, Vitest |
 | Dependencies | Only `react` and `react-dom` at runtime |
-| Persistence | None — the game state lives in memory; a refresh resets the game |
+| Persistence | IndexedDB (match in progress, match history) and `localStorage` (language, last setup); see [ADR-004](docs/adr/004-indexeddb-match-repository.md) |
 | Backend | None — fully static front-end |
 
 ### Architecture
 
-A lightweight domain-driven design: see [`GLOSSARY.md`](GLOSSARY.md), the [ADRs](docs/adr/) and the [migration plan](docs/ddd-migration-plan.md). Dependencies only point inward: `ui → application → domain`.
+A lightweight domain-driven design: see [`GLOSSARY.md`](GLOSSARY.md), the [ADRs](docs/adr/) and the [migration plan](docs/ddd-migration-plan.md). Dependencies only point inward: `ui → application → domain`, and `infrastructure → application`.
 
 ```
 src/
@@ -150,7 +162,13 @@ src/
 ├── application/             Use cases in plain TypeScript
 │   ├── match-setup.ts         startMatch, rematch (deals crazy cricket again)
 │   ├── match-session.ts       recordDart, undo, replaySession
+│   ├── match-repository.ts    MatchRepository port: current match and history
+│   ├── match-persistence.ts   saveProgress, resumeMatch, leaveMatch
 │   └── cricket-config.ts      Cricket configs; crazy deal with an injected random source
+├── infrastructure/          Adapters to the browser
+│   ├── indexeddb-repository.ts   MatchRepository on IndexedDB
+│   ├── preferences.ts            Language and last setup in localStorage
+│   └── persistent-storage.ts     Asks the browser not to evict our data
 └── ui/                      React
     ├── registry.ts            One entry per game mode
     ├── GameScreen.tsx         Generic game screen: turn, input, undo, winner overlay
@@ -168,7 +186,7 @@ Design notes:
 - **One contract per game mode** — adding a mode means implementing `GameMode` and adding one registry entry.
 - **Tests** — unit tests for each game mode, a contract suite run against every mode, and use-case tests.
 
-## 12. Build, test and deploy
+## 13. Build, test and deploy
 
 | Command | Purpose |
 | --- | --- |

@@ -6,8 +6,9 @@ export interface MatchSession<Config> {
   darts: readonly Dart[]
 }
 
-export function newSession<Config>(config: Config): MatchSession<Config> {
-  return { config, darts: [] }
+/** A new session, or a resumed one when `darts` is given. */
+export function newSession<Config>(config: Config, darts: readonly Dart[] = []): MatchSession<Config> {
+  return { config, darts }
 }
 
 /** The current state and the events of the last dart. */

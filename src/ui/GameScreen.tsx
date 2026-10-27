@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { MatchSetup } from '../application/match-setup'
 import type { Dart, MatchCore } from '../domain'
 import { dartLabel } from './dartLabel'
@@ -11,6 +11,10 @@ import { useMatch } from './use-match'
 interface Props<Setup extends MatchSetup, State extends MatchCore> {
   view: ModeView<Setup, State>
   setup: Setup
+  /** The dart log the screen opens with, when resuming a saved match. */
+  initialDarts?: readonly Dart[]
+  /** Called with the new dart log after every dart or undo. */
+  onProgress: (darts: readonly Dart[]) => void
   onRematch: () => void
   onExit: () => void
 }
@@ -25,10 +29,15 @@ function useWakeLock(enabled: boolean) {
 }
 
 /** The game screen of every mode; the mode's view fills in its own parts. */
-export function GameScreen<Setup extends MatchSetup, State extends MatchCore>({ view, setup, onRematch, onExit }: Props<Setup, State>) {
+export function GameScreen<Setup extends MatchSetup, State extends MatchCore>({ view, setup, initialDarts, onProgress, onRematch, onExit }: Props<Setup, State>) {
   const { t } = useI18n()
   const { names } = setup
-  const { state: match, events, dartCount, hit: record, undo } = useMatch(view.rules, setup.config)
+  const { state: match, events, darts, dartCount, hit: record, undo } = useMatch(view.rules, setup.config, initialDarts)
+  // Report changes only, not the log the screen opened with.
+  const opened = useRef(darts)
+  useEffect(() => {
+    if (darts !== opened.current) onProgress(darts)
+  }, [darts, onProgress])
   const [input, setInput] = useState<'board' | 'pad'>('board')
   useWakeLock(view.keepAwake ?? false)
   const { info, board, turnExtras, afterTurn, targets, locked = false } = view.useView({ setup, state: match, events, dartCount })

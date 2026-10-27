@@ -1,4 +1,4 @@
-import type { cricket, x01 } from '../domain'
+import { cricket, x01, type GameMode, type MatchCore } from '../domain'
 import { cricketConfig, type Random } from './cricket-config'
 
 export type GameModeId = 'x01' | 'cricket' | 'crazy'
@@ -7,6 +7,14 @@ export type GameModeId = 'x01' | 'cricket' | 'crazy'
 export type MatchSetup =
   | { mode: 'x01'; config: x01.X01Config; names: string[] }
   | { mode: 'cricket' | 'crazy'; config: cricket.CricketConfig; names: string[] }
+
+/**
+ * The rules of a game mode. TypeScript cannot correlate `mode` with its config,
+ * so the result takes any config of a setup.
+ */
+export function rulesFor(mode: GameModeId): GameMode<MatchSetup['config'], MatchCore> {
+  return (mode === 'x01' ? x01.mode : cricket.mode) as GameMode<MatchSetup['config'], MatchCore>
+}
 
 /** What the player picks before a match; the player count comes from the names. */
 export type MatchRequest =

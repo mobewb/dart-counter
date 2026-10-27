@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from 'react'
+import { loadLanguage, saveLanguage } from '../infrastructure/preferences'
 
 const dict = {
   en: {
@@ -109,7 +110,13 @@ interface I18n {
 const I18nContext = createContext<I18n | null>(null)
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>(navigator.language.startsWith('fr') ? 'fr' : 'en')
+  const [lang, setLangState] = useState<Lang>(
+    () => loadLanguage(['en', 'fr'] as const) ?? (navigator.language.startsWith('fr') ? 'fr' : 'en'),
+  )
+  const setLang = (next: Lang) => {
+    setLangState(next)
+    saveLanguage(next)
+  }
   const t = (key: Key) => dict[lang][key]
   return <I18nContext.Provider value={{ lang, setLang, t }}>{children}</I18nContext.Provider>
 }

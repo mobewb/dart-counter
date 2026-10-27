@@ -1,32 +1,72 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { leaveMatch, newCurrentMatch, progress, resumeMatch, saveProgress } from './application/match-persistence'
+import type { CurrentMatch, MatchRepository } from './application/match-repository'
 import { rematch as dealRematch, type MatchSetup } from './application/match-setup'
+import type { Dart } from './domain'
+import { requestPersistentStorage } from './infrastructure/persistent-storage'
+import { loadLastSetup, saveLastSetup } from './infrastructure/preferences'
 import { GameScreen } from './ui/GameScreen'
 import { I18nProvider } from './ui/i18n'
 import { viewFor } from './ui/registry'
 import { Setup } from './ui/Setup'
 
-export function App() {
-  const [setup, setSetup] = useState<MatchSetup | null>(null)
-  const [last, setLast] = useState<MatchSetup | undefined>()
-  const [round, setRound] = useState(0)
+/** Saving is best effort: the match goes on if storage fails. */
+const warn = (error: unknown) => console.warn('Could not save the match', error)
 
-  const start = (s: MatchSetup) => {
-    setSetup(s)
-    setLast(s)
+export function App({ repository }: { repository: MatchRepository }) {
+  const [current, setCurrent] = useState<CurrentMatch | null>(null)
+  const [resuming, setResuming] = useState(true)
+  const [last, setLast] = useState<MatchSetup | undefined>(() => loadLastSetup())
+
+  // Pick up the match in progress after a refresh.
+  useEffect(() => {
+    let active = true
+    resumeMatch(repository)
+      .then((match) => active && match && setCurrent(match))
+      .catch(warn)
+      .finally(() => active && setResuming(false))
+    return () => void (active = false)
+  }, [repository])
+
+  const start = (setup: MatchSetup) => {
+    const match = newCurrentMatch(setup)
+    setCurrent(match)
+    setLast(setup)
+    saveLastSetup(setup)
+    requestPersistentStorage()
+    repository.saveCurrent(match).catch(warn)
   }
 
-  const rematch = () => {
-    if (setup) start(dealRematch(setup))
-    setRound((r) => r + 1)
+  const record = useCallback(
+    (darts: readonly Dart[]) => {
+      if (!current) return
+      const next = progress(current, darts)
+      saveProgress(repository, next.match, next.outcome).catch(warn)
+    },
+    [current, repository],
+  )
+
+  // The finished match is already in the history; a rematch is a new match.
+  const rematch = () => current && start(dealRematch(current.setup))
+  const exit = () => {
+    leaveMatch(repository).catch(warn)
+    setCurrent(null)
   }
-  const exit = () => setSetup(null)
 
   return (
     <I18nProvider>
-      {!setup ? (
+      {resuming ? null : !current ? (
         <Setup initial={last} onStart={start} />
       ) : (
-        <GameScreen key={round} view={viewFor(setup)} setup={setup} onRematch={rematch} onExit={exit} />
+        <GameScreen
+          key={current.id}
+          view={viewFor(current.setup)}
+          setup={current.setup}
+          initialDarts={current.darts}
+          onProgress={record}
+          onRematch={rematch}
+          onExit={exit}
+        />
       )}
     </I18nProvider>
   )
