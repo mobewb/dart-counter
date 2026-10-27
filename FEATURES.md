@@ -138,30 +138,35 @@ A winner overlay shows:
 
 ### Architecture
 
+A lightweight domain-driven design: see [`GLOSSARY.md`](GLOSSARY.md), the [ADRs](docs/adr/) and the [migration plan](docs/ddd-migration-plan.md). Dependencies only point inward: `ui → application → domain`.
+
 ```
 src/
-├── engine/          Pure, UI-independent game logic (unit-tested)
-│   ├── types.ts       Darts, X01 config and state
-│   ├── match.ts       X01 rules: bust, double in/out, legs, sets, replay
-│   ├── cricket.ts     Cricket and Crazy Cricket rules, reroll, replay
-│   ├── checkout.ts    Checkout route suggestions
-│   └── stats.ts       3-dart average
-└── ui/              React components
-    ├── Setup.tsx        Game selection and options
-    ├── Game.tsx         X01 game screen
-    ├── CricketGame.tsx  Cricket / Crazy Cricket game screen
-    ├── Dartboard.tsx    SVG dartboard input
-    ├── Keypad.tsx       Numeric pad input
-    ├── TargetsStrip.tsx Cricket targets and roulette animation
-    ├── dartLabel.ts     Dart display labels (D16, T20, BULL…)
-    ├── i18n.tsx         EN / FR translations
-    └── styles.css
+├── domain/                  Pure, deterministic game rules (no React, no randomness)
+│   ├── shared-kernel/         Dart, domain events, replayLog, GameMode contract
+│   ├── x01/                   X01 match: bust, double in/out, legs, sets, checkout, average
+│   ├── cricket/               Cricket match, fixed and reroll (crazy) target policies
+│   └── game-mode.contract.test.ts   Rules every game mode must follow
+├── application/             Use cases in plain TypeScript
+│   ├── match-setup.ts         startMatch, rematch (deals crazy cricket again)
+│   ├── match-session.ts       recordDart, undo, replaySession
+│   └── cricket-config.ts      Cricket configs; crazy deal with an injected random source
+└── ui/                      React
+    ├── registry.ts            One entry per game mode
+    ├── GameScreen.tsx         Generic game screen: turn, input, undo, winner overlay
+    ├── modes/x01/             X01 player cards, checkout chip, bust banner
+    ├── modes/cricket/         Marks grid, targets strip and roulette
+    ├── use-match.ts           Adapts the match session to React
+    ├── Setup.tsx              Game mode selection and options
+    ├── Dartboard.tsx, Keypad.tsx, dartLabel.ts, i18n.tsx, styles.css
 ```
 
 Design notes:
-- **Event-sourced state** — each game is a log of darts; the state is derived with `replay` / `replayCricket`. Undo is simply replaying one dart fewer.
-- **Deterministic Crazy Cricket** — the reroll pool is fixed at the start of the game, so replaying the log always yields the same targets.
-- **Engine tests** — unit tests cover X01 rules, Cricket, checkout suggestions and stats.
+- **Event-sourced state** — a match is its config plus a log of darts; the state is derived by replaying the log. Undo is simply replaying one dart fewer.
+- **Domain events** — each dart returns the events it caused (`Bust`, `LegWon`, `TargetsRerolled`…); the UI reacts to the events of the last dart.
+- **Deterministic Crazy Cricket** — the reroll pool is dealt before the match starts, so replaying the log always yields the same targets.
+- **One contract per game mode** — adding a mode means implementing `GameMode` and adding one registry entry.
+- **Tests** — unit tests for each game mode, a contract suite run against every mode, and use-case tests.
 
 ## 12. Build, test and deploy
 

@@ -1,4 +1,4 @@
-import type { Dart } from '../engine'
+import type { Dart } from '../domain'
 
 export function dartLabel({ segment, multiplier }: Dart, missLabel = '—'): string {
   if (segment === 0) return missLabel

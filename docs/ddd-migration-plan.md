@@ -2,6 +2,21 @@
 
 Move Dart Counter to a lightweight domain-driven design, so that adding game modes and persistence later is cheap.
 
+## Status
+
+✅ **Done** — all 9 steps landed on `main` (2026-10-28). Typecheck, build and the 99 tests pass; both game modes were played through in a headless browser after step 8.
+
+Where the implementation differs from the plan below:
+
+| Plan | Implemented | Why |
+| --- | --- | --- |
+| Domain modules exported with `export *` | Each game mode is a namespace (`x01.applyDart`, `cricket.applyDart`) | Both modes use the same names (`newMatch`, `applyDart`, `replay`) |
+| `GameMode` with `id`, `start`, `status()`, `winner()`… | `GameMode` = `newMatch`, `applyDart`, `results`; match states share a `MatchCore` shape | Leaner; ids live in the UI registry since cricket and crazy share one mode |
+| One file per use case | `match-setup.ts` (`startMatch`, `rematch`) and `match-session.ts` (`recordDart`, `undo`, `replaySession`) | Each use case is a few lines |
+| Registry entry with `Scoreboard`, `SetupOptions`, `ResultStats` components | `ModeView` with label, hint, result format, `keepAwake` and a `useView` hook filling the screen's slots | The crazy roulette state must also lock input and undo; X01 setup options stay in `Setup.tsx` to keep the layout |
+| Wake lock in `GameScreen` | Wake lock only for modes with `keepAwake` (X01) | No behaviour change; set `keepAwake: true` on cricket to extend it |
+| `feat(...)` commits for steps 6 and 7 | `refactor(...)` | No user-facing feature |
+
 ## Ground rules
 
 - **No behaviour change.** Every step is a pure refactor.

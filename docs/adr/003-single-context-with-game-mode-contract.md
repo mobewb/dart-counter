@@ -11,9 +11,9 @@ X01 and Cricket share a small kernel (darts, multipliers, turns of 3 darts, play
 
 - One bounded context, "Darts Match", split into modules: `shared-kernel`, `x01`, `cricket`.
 - Crazy Cricket is not a separate module: it is Cricket with a *reroll* target policy.
-- Every game mode implements one `GameMode` contract: initial state from a config, apply a dart (returning state and events), status, winner and per-player results.
+- Every game mode implements one `GameMode` contract: `newMatch` from a config, `applyDart` (returning state and events) and per-player `results`. Every match state shares a `MatchCore` shape: current player, turn darts, status and winner.
 - Layers: `domain ← application ← ui`. Dependencies only point inward.
-- The UI has one registry entry per game mode, bundling its rules with its `Scoreboard`, `SetupOptions` and `ResultStats` components. A generic `GameScreen` handles turn slots, input, undo and the winner overlay.
+- The UI has one registry entry per game mode (a `ModeView`), bundling its rules with its label, hint, result format and a `useView` hook that fills the mode-specific parts of the screen (scoreboard, top bar info, turn extras, faded targets, input lock). A generic `GameScreen` handles turn slots, input, undo and the winner overlay.
 
 ## Consequences
 

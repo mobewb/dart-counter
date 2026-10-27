@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Dart, Multiplier } from '../engine'
+import type { Dart, Multiplier } from '../domain'
 import { useI18n } from './i18n'
 
 interface Props {
