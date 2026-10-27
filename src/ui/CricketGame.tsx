@@ -54,7 +54,7 @@ export function CricketGame({ setup, onRematch, onExit }: Props) {
         <div className="topbar__info">
           <strong>{setup.kind === 'crazy' ? t('crazy') : t('cricket')}</strong>
         </div>
-        <button className="ghost" onClick={undo} disabled={darts.length === 0 || spinning} aria-label={t('undo')}>↶<span className="label"> {t('undo')}</span></button>
+        <button className="ghost undo" onClick={undo} disabled={darts.length === 0 || spinning} aria-label={t('undo')}>↶<span className="label"> {t('undo')}</span></button>
       </header>
 
       <TargetsStrip targets={game.targets} dead={dead} spin={spin} onSpinEnd={endSpin} />

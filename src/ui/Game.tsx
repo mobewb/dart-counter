@@ -56,7 +56,7 @@ export function Game({ setup, onRematch, onExit }: Props) {
           <span>{config.doubleIn ? 'DI · ' : ''}{config.doubleOut ? 'DO' : 'SO'}</span>
           {showLegs && <span>· {t('firstTo')} {config.legsToWinSet}{showSets ? ` / ${config.setsToWinMatch}` : ''}</span>}
         </div>
-        <button className="ghost" onClick={undo} disabled={darts.length === 0} aria-label={t('undo')}>↶<span className="label"> {t('undo')}</span></button>
+        <button className="ghost undo" onClick={undo} disabled={darts.length === 0} aria-label={t('undo')}>↶<span className="label"> {t('undo')}</span></button>
       </header>
 
       <section className="players" data-count={match.players.length}>

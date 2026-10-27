@@ -389,3 +389,17 @@ body { overscroll-behavior-y: none; }
   .pcard__meta { display: none; }
   .hero__logo { display: none; }
 }
+
+/* ---------- prominent undo ---------- */
+.topbar .undo {
+  color: #1a1203; font-weight: 800; padding: 9px 16px; border-radius: 99px;
+  background: linear-gradient(135deg, var(--gold), #ffdf9a);
+  box-shadow: 0 6px 18px -6px var(--gold);
+  transition: transform 0.1s, box-shadow 0.2s;
+}
+.topbar .undo:not(:disabled):hover { background: linear-gradient(135deg, var(--gold), #ffdf9a); color: #1a1203; }
+.topbar .undo:not(:disabled):active { transform: scale(0.92); box-shadow: 0 0 22px var(--gold); }
+.topbar .undo:disabled { background: rgb(255 255 255 / 0.08); box-shadow: none; color: var(--muted); }
+@media (max-width: 480px) {
+  .topbar .undo { padding: 8px 18px; font-size: 1.25rem; line-height: 1; }
+}
