@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { dartScore, isValidDart, type Dart } from '../shared-kernel/dart'
-import { newMatch, replay, throwDart } from './match'
-import type { MatchConfig } from './types'
+import { newMatch, replay, applyDart } from './match'
+import type { X01Config } from './types'
 
 const s = (n: number): Dart => ({ segment: n, multiplier: 1 })
 const d = (n: number): Dart => ({ segment: n, multiplier: 2 })
 const t = (n: number): Dart => ({ segment: n, multiplier: 3 })
 const miss: Dart = { segment: 0, multiplier: 1 }
 
-const config = (over: Partial<MatchConfig> = {}): MatchConfig => ({
+const config = (over: Partial<X01Config> = {}): X01Config => ({
   startScore: 501,
   doubleIn: false,
   doubleOut: true,
@@ -18,7 +18,7 @@ const config = (over: Partial<MatchConfig> = {}): MatchConfig => ({
   ...over,
 })
 
-const play = (cfg: MatchConfig, darts: Dart[]) => replay(cfg, darts)
+const play = (cfg: X01Config, darts: Dart[]) => replay(cfg, darts)
 
 describe('dart values', () => {
   it('scores segment times multiplier', () => {
@@ -36,7 +36,7 @@ describe('dart values', () => {
   })
 
   it('throws on an invalid dart', () => {
-    expect(() => throwDart(newMatch(config()), { segment: 25, multiplier: 3 })).toThrow()
+    expect(() => applyDart(newMatch(config()), { segment: 25, multiplier: 3 })).toThrow()
   })
 })
 
@@ -82,7 +82,7 @@ describe('bust', () => {
   it('flags the bust until the next dart', () => {
     const busted = play(config({ startScore: 40 }), [s(20), t(20)])
     expect(busted.busted).toBe(true)
-    expect(throwDart(busted, s(1)).busted).toBe(false)
+    expect(applyDart(busted, s(1)).busted).toBe(false)
   })
 
   it('does not count a busted turn towards points scored', () => {
@@ -142,7 +142,7 @@ describe('legs, sets and match', () => {
 
   it('rejects darts after the match is over', () => {
     const m = play(config({ startScore: 40 }), [d(20)])
-    expect(() => throwDart(m, s(1))).toThrow()
+    expect(() => applyDart(m, s(1))).toThrow()
   })
 })
 

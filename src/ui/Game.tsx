@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { checkout, replay, threeDartAverage, type Dart } from '../engine'
+import { x01, type Dart } from '../engine'
 import { dartLabel } from './dartLabel'
 import { Dartboard } from './Dartboard'
 import { useI18n } from './i18n'
@@ -27,12 +27,12 @@ export function Game({ setup, onRematch, onExit }: Props) {
   const [input, setInput] = useState<'board' | 'pad'>('board')
   useWakeLock()
 
-  const match = useMemo(() => replay(config, darts), [config, darts])
+  const match = useMemo(() => x01.replay(config, darts), [config, darts])
   const finished = match.status === 'finished'
   const current = match.players[match.currentPlayer]!
   const dartsLeft = 3 - match.turnDarts.length
   const hint = !finished && current.in && current.remaining <= 170
-    ? checkout(current.remaining, config.doubleOut, dartsLeft)
+    ? x01.checkout(current.remaining, config.doubleOut, dartsLeft)
     : null
 
   const hit = (dart: Dart) => !finished && setDarts((log) => [...log, dart])
@@ -74,7 +74,7 @@ export function Game({ setup, onRematch, onExit }: Props) {
                   {t('leg')} <b>{p.legs}</b>
                 </span>
               )}
-              <span>{t('avg')} <b>{threeDartAverage(p).toFixed(1)}</b></span>
+              <span>{t('avg')} <b>{x01.threeDartAverage(p).toFixed(1)}</b></span>
             </div>
           </article>
         ))}
@@ -132,7 +132,7 @@ export function Game({ setup, onRematch, onExit }: Props) {
               {match.players.map((p, i) => (
                 <div key={i} className={i === match.winner ? 'is-winner' : ''}>
                   <span>{names[i]}</span>
-                  <b>{threeDartAverage(p).toFixed(1)}</b>
+                  <b>{x01.threeDartAverage(p).toFixed(1)}</b>
                   <small>{t('avg')} · {p.dartsThrown} {t('darts').toLowerCase()}</small>
                 </div>
               ))}

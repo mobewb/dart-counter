@@ -1,6 +1,6 @@
 import type { Dart } from '../shared-kernel/dart'
 
-export interface MatchConfig {
+export interface X01Config {
   startScore: number
   doubleIn: boolean
   doubleOut: boolean
@@ -9,7 +9,7 @@ export interface MatchConfig {
   setsToWinMatch: number
 }
 
-export interface PlayerState {
+export interface X01Player {
   remaining: number
   /** false until a double is hit when double-in is on. */
   in: boolean
@@ -19,9 +19,9 @@ export interface PlayerState {
   pointsScored: number
 }
 
-export interface MatchState {
-  config: MatchConfig
-  players: PlayerState[]
+export interface X01Match {
+  config: X01Config
+  players: X01Player[]
   currentPlayer: number
   legStarter: number
   /** Darts thrown in the current turn, in order. */

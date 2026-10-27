@@ -1,3 +1,3 @@
 export * from './shared-kernel'
-export * from './x01'
-export * from './cricket'
+export * as x01 from './x01'
+export * as cricket from './cricket'

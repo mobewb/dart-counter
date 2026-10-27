@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
-import { isClosed, marksOn, replayCricket, type Dart } from '../engine'
+import { cricket, type Dart } from '../engine'
 import { dartLabel } from './dartLabel'
 import { Dartboard } from './Dartboard'
 import { useI18n } from './i18n'
@@ -22,8 +22,8 @@ export function CricketGame({ setup, onRematch, onExit }: Props) {
   const [darts, setDarts] = useState<Dart[]>([])
   const [input, setInput] = useState<'board' | 'pad'>('board')
 
-  const game = useMemo(() => replayCricket(config, darts), [config, darts])
-  const finished = game.status === 'finished'
+  const match = useMemo(() => cricket.replay(config, darts), [config, darts])
+  const finished = match.status === 'finished'
 
   // Crazy cricket spins a roulette for the opening numbers and for every reroll.
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -31,16 +31,16 @@ export function CricketGame({ setup, onRematch, onExit }: Props) {
     setup.kind === 'crazy' && !reduced ? config.targets.flatMap((n, i) => (n === 25 ? [] : [i])) : null,
   )
   const [seenRolls, setSeenRolls] = useState(0)
-  if (game.rollCount !== seenRolls) {
+  if (match.rollCount !== seenRolls) {
     // Derived during render so the new numbers never flash before the spin.
-    setSeenRolls(game.rollCount)
-    if (game.rollCount > seenRolls && !reduced) setSpin(game.lastRoll)
+    setSeenRolls(match.rollCount)
+    if (match.rollCount > seenRolls && !reduced) setSpin(match.lastRoll)
   }
   const spinning = spin !== null
   const endSpin = useCallback(() => setSpin(null), [])
   const dead = useMemo(
-    () => new Set(game.targets.filter((target) => game.players.every((p) => isClosed(p, target)))),
-    [game.targets, game.players],
+    () => new Set(match.targets.filter((target) => match.players.every((p) => cricket.isClosed(p, target)))),
+    [match.targets, match.players],
   )
 
   const hit = (dart: Dart) => !finished && !spinning && setDarts((log) => [...log, dart])
@@ -57,27 +57,27 @@ export function CricketGame({ setup, onRematch, onExit }: Props) {
         <button className="ghost undo" onClick={undo} disabled={darts.length === 0 || spinning} aria-label={t('undo')}>↶<span className="label"> {t('undo')}</span></button>
       </header>
 
-      <TargetsStrip targets={game.targets} dead={dead} spin={spin} onSpinEnd={endSpin} />
+      <TargetsStrip targets={match.targets} dead={dead} spin={spin} onSpinEnd={endSpin} />
 
-      <section className={`cricket${spinning ? ' cricket--hidden' : ''}`} style={{ ['--cols' as string]: game.players.length }}>
+      <section className={`cricket${spinning ? ' cricket--hidden' : ''}`} style={{ ['--cols' as string]: match.players.length }}>
         <div className="cricket__head">
           <div className="cricket__corner">{t('points')}</div>
-          {game.players.map((p, i) => (
-            <div key={i} className={`cricket__player${i === game.currentPlayer && !finished ? ' is-active' : ''}${game.winner === i ? ' is-winner' : ''}`}>
+          {match.players.map((p, i) => (
+            <div key={i} className={`cricket__player${i === match.currentPlayer && !finished ? ' is-active' : ''}${match.winner === i ? ' is-winner' : ''}`}>
               <span className="cricket__name">{names[i]}</span>
               <span className="cricket__points">{p.points}</span>
             </div>
           ))}
         </div>
-        {game.targets.map((target) => {
-          const dead = game.players.every((p) => isClosed(p, target))
+        {match.targets.map((target) => {
+          const dead = match.players.every((p) => cricket.isClosed(p, target))
           return (
             <div key={target} className={`cricket__row${dead ? ' is-dead' : ''}`} title={dead ? t('closedByAll') : undefined}>
               <div className="cricket__target">{targetLabel(target)}</div>
-              {game.players.map((p, i) => {
-                const marks = marksOn(p, target)
+              {match.players.map((p, i) => {
+                const marks = cricket.marksOn(p, target)
                 return (
-                  <div key={i} className={`cricket__cell marks-${marks}${i === game.currentPlayer && !finished ? ' is-active' : ''}`}>
+                  <div key={i} className={`cricket__cell marks-${marks}${i === match.currentPlayer && !finished ? ' is-active' : ''}`}>
                     {MARK[marks]}
                   </div>
                 )
@@ -89,11 +89,11 @@ export function CricketGame({ setup, onRematch, onExit }: Props) {
 
       <section className="turn">
         <div className="turn__head">
-          <span className="turn__who">{names[game.currentPlayer]} <small>{t('toThrow')}</small></span>
+          <span className="turn__who">{names[match.currentPlayer]} <small>{t('toThrow')}</small></span>
         </div>
         <div className="slots">
           {[0, 1, 2].map((i) => {
-            const d = game.turnDarts[i]
+            const d = match.turnDarts[i]
             return (
               <div key={i} className={`slot${d ? ' is-filled' : ''}`}>
                 {d ? dartLabel(d, t('miss')) : '·'}
@@ -110,23 +110,23 @@ export function CricketGame({ setup, onRematch, onExit }: Props) {
         </div>
         {input === 'board' ? (
           <>
-            <Dartboard onHit={hit} disabled={finished || spinning} targets={game.targets} />
+            <Dartboard onHit={hit} disabled={finished || spinning} targets={match.targets} />
             <button className="miss" disabled={finished || spinning} onClick={() => hit({ segment: 0, multiplier: 1 })}>{t('miss')}</button>
           </>
         ) : (
-          <Keypad onHit={hit} disabled={finished || spinning} targets={game.targets} />
+          <Keypad onHit={hit} disabled={finished || spinning} targets={match.targets} />
         )}
       </section>
 
-      {finished && game.winner !== null && (
+      {finished && match.winner !== null && (
         <div className="overlay">
           <div className="overlay__card">
             <div className="trophy" aria-hidden>🏆</div>
-            <h2>{names[game.winner]}</h2>
+            <h2>{names[match.winner]}</h2>
             <p>{t('wins')}</p>
             <div className="overlay__stats">
-              {game.players.map((p, i) => (
-                <div key={i} className={i === game.winner ? 'is-winner' : ''}>
+              {match.players.map((p, i) => (
+                <div key={i} className={i === match.winner ? 'is-winner' : ''}>
                   <span>{names[i]}</span>
                   <b>{p.points}</b>
                   <small>{t('points')} · {p.dartsThrown} {t('darts').toLowerCase()}</small>

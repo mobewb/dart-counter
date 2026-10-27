@@ -1,9 +1,9 @@
 import { dartScore, isValidDart, type Dart } from '../shared-kernel/dart'
-import type { MatchConfig, MatchState, PlayerState } from './types'
+import type { X01Config, X01Match, X01Player } from './types'
 
 const DARTS_PER_TURN = 3
 
-function freshPlayer(config: MatchConfig): PlayerState {
+function freshPlayer(config: X01Config): X01Player {
   return {
     remaining: config.startScore,
     in: !config.doubleIn,
@@ -14,7 +14,7 @@ function freshPlayer(config: MatchConfig): PlayerState {
   }
 }
 
-export function newMatch(config: MatchConfig): MatchState {
+export function newMatch(config: X01Config): X01Match {
   const players = Array.from({ length: config.playerCount }, () => freshPlayer(config))
   return {
     config,
@@ -29,7 +29,7 @@ export function newMatch(config: MatchConfig): MatchState {
   }
 }
 
-function startTurn(state: MatchState, player: number): MatchState {
+function startTurn(state: X01Match, player: number): X01Match {
   const p = state.players[player]!
   return {
     ...state,
@@ -39,7 +39,7 @@ function startTurn(state: MatchState, player: number): MatchState {
   }
 }
 
-function startLeg(state: MatchState): MatchState {
+function startLeg(state: X01Match): X01Match {
   const { config } = state
   const players = state.players.map((p) => ({
     ...p,
@@ -50,12 +50,12 @@ function startLeg(state: MatchState): MatchState {
   return startTurn({ ...state, players, legStarter }, legStarter)
 }
 
-function updatePlayer(state: MatchState, index: number, patch: Partial<PlayerState>): MatchState {
+function updatePlayer(state: X01Match, index: number, patch: Partial<X01Player>): X01Match {
   const players = state.players.map((p, i) => (i === index ? { ...p, ...patch } : p))
   return { ...state, players }
 }
 
-function winLeg(state: MatchState, index: number): MatchState {
+function winLeg(state: X01Match, index: number): X01Match {
   const { config } = state
   const player = state.players[index]!
   const legs = player.legs + 1
@@ -78,11 +78,11 @@ function winLeg(state: MatchState, index: number): MatchState {
   return startLeg(afterSet)
 }
 
-export function throwDart(state: MatchState, dart: Dart): MatchState {
-  return applyDart({ ...state, busted: false }, dart)
+export function applyDart(state: X01Match, dart: Dart): X01Match {
+  return scoreDart({ ...state, busted: false }, dart)
 }
 
-function applyDart(state: MatchState, dart: Dart): MatchState {
+function scoreDart(state: X01Match, dart: Dart): X01Match {
   if (state.status === 'finished') throw new Error('Match is finished')
   if (!isValidDart(dart)) throw new Error(`Invalid dart: ${dart.multiplier}x${dart.segment}`)
 
@@ -123,6 +123,6 @@ function applyDart(state: MatchState, dart: Dart): MatchState {
 }
 
 /** Rebuilds the match from its dart log; undo is replaying one dart fewer. */
-export function replay(config: MatchConfig, darts: readonly Dart[]): MatchState {
-  return darts.reduce(throwDart, newMatch(config))
+export function replay(config: X01Config, darts: readonly Dart[]): X01Match {
+  return darts.reduce(applyDart, newMatch(config))
 }

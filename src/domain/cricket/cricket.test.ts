@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
+  applyDart,
   CRICKET_TARGETS,
   crazyDeal,
   crazyTargets,
-  newCricket,
-  replayCricket,
-  throwCricketDart,
+  newMatch,
+  replay,
   type CricketConfig,
 } from './cricket'
 import type { Dart } from '../shared-kernel/dart'
@@ -23,54 +23,54 @@ const config = (over: Partial<CricketConfig> = {}): CricketConfig => ({
 
 describe('marks', () => {
   it('adds one mark per multiplier', () => {
-    const m = replayCricket(config(), [d(20)])
+    const m = replay(config(), [d(20)])
     expect(m.players[0]!.marks[20]).toBe(2)
   })
 
   it('closes a number with a triple', () => {
-    const m = replayCricket(config(), [t(19)])
+    const m = replay(config(), [t(19)])
     expect(m.players[0]!.marks[19]).toBe(3)
     expect(m.players[0]!.points).toBe(0)
   })
 
   it('ignores numbers that are not targets and misses', () => {
-    const m = replayCricket(config(), [s(14), miss, s(1)])
+    const m = replay(config(), [s(14), miss, s(1)])
     expect(m.players[0]!.marks).toEqual({})
     expect(m.players[0]!.points).toBe(0)
   })
 
   it('treats the bull as 1 mark single and 2 marks double', () => {
-    const m = replayCricket(config(), [s(25), d(25)])
+    const m = replay(config(), [s(25), d(25)])
     expect(m.players[0]!.marks[25]).toBe(3)
   })
 })
 
 describe('scoring', () => {
   it('scores overflow marks when opponents have not closed the number', () => {
-    const m = replayCricket(config(), [t(20), t(20)])
+    const m = replay(config(), [t(20), t(20)])
     expect(m.players[0]!.points).toBe(60)
   })
 
   it('scores only the overflow of the dart that closes the number', () => {
-    const m = replayCricket(config(), [s(20), t(20)])
+    const m = replay(config(), [s(20), t(20)])
     expect(m.players[0]!.marks[20]).toBe(3)
     expect(m.players[0]!.points).toBe(20 * 1)
   })
 
   it('scores the bull at 25 points per mark', () => {
-    const m = replayCricket(config(), [d(25), d(25)])
+    const m = replay(config(), [d(25), d(25)])
     expect(m.players[0]!.points).toBe(25)
   })
 
   it('stops scoring once every opponent has closed the number', () => {
     // P0 closes 20, P1 closes 20, then P0 hits 20 again for nothing.
     const log = [t(20), miss, miss, t(20), miss, miss, t(20)]
-    const m = replayCricket(config(), log)
+    const m = replay(config(), log)
     expect(m.players[0]!.points).toBe(0)
   })
 
   it('keeps scoring while at least one opponent is still open', () => {
-    const three = replayCricket(config({ playerCount: 3 }), [
+    const three = replay(config({ playerCount: 3 }), [
       t(20), miss, miss, // P0 closes
       t(20), miss, miss, // P1 closes
       miss, miss, miss,  // P2
@@ -82,7 +82,7 @@ describe('scoring', () => {
 
 describe('turns', () => {
   it('passes to the next player after three darts', () => {
-    const m = replayCricket(config(), [s(20), s(20), s(20)])
+    const m = replay(config(), [s(20), s(20), s(20)])
     expect(m.currentPlayer).toBe(1)
     expect(m.turnDarts).toEqual([])
     expect(m.players[0]!.dartsThrown).toBe(3)
@@ -101,7 +101,7 @@ describe('winning', () => {
       log.push(...turn)
       if (turn !== turns.at(-1)) log.push(miss, miss, miss)
     }
-    const m = replayCricket(config(), log)
+    const m = replay(config(), log)
     expect(m.status).toBe('finished')
     expect(m.winner).toBe(0)
   })
@@ -116,19 +116,19 @@ describe('winning', () => {
       miss, miss, miss,
       d(25), s(25), miss,
     ]
-    const m = replayCricket(config(), log)
+    const m = replay(config(), log)
     expect(m.status).toBe('playing')
   })
 
   it('lets a solo player win by closing everything', () => {
     const log = [t(20), t(19), t(18), t(17), t(16), t(15), d(25), s(25)]
-    const m = replayCricket(config({ playerCount: 1 }), log)
+    const m = replay(config({ playerCount: 1 }), log)
     expect(m.status).toBe('finished')
   })
 
-  it('rejects darts after the game is over', () => {
-    const m = replayCricket(config({ playerCount: 1 }), [t(20), t(19), t(18), t(17), t(16), t(15), d(25), s(25)])
-    expect(() => throwCricketDart(m, s(1))).toThrow()
+  it('rejects darts after the match is over', () => {
+    const m = replay(config({ playerCount: 1 }), [t(20), t(19), t(18), t(17), t(16), t(15), d(25), s(25)])
+    expect(() => applyDart(m, s(1))).toThrow()
   })
 })
 
@@ -154,7 +154,7 @@ describe('targets', () => {
   })
 
   it('works with custom targets', () => {
-    const m = replayCricket(config({ targets: [7, 12, 25] }), [t(7), s(20)])
+    const m = replay(config({ targets: [7, 12, 25] }), [t(7), s(20)])
     expect(m.players[0]!.marks[7]).toBe(3)
     expect(m.players[0]!.marks[20]).toBeUndefined()
   })
@@ -163,8 +163,8 @@ describe('targets', () => {
 describe('undo via replay', () => {
   it('replaying one dart fewer restores the earlier state', () => {
     const log = [t(20), s(19), d(18)]
-    expect(replayCricket(config(), log.slice(0, 2))).toEqual(
-      throwCricketDart(throwCricketDart(newCricket(config()), t(20)), s(19)),
+    expect(replay(config(), log.slice(0, 2))).toEqual(
+      applyDart(applyDart(newMatch(config()), t(20)), s(19)),
     )
   })
 })
@@ -174,68 +174,68 @@ describe('crazy rerolls', () => {
   const crazy = (over: Partial<CricketConfig> = {}) => config({ rerollPool: pool, ...over })
 
   it('does nothing before the round is complete', () => {
-    const m = replayCricket(crazy(), [s(20), miss, miss])
+    const m = replay(crazy(), [s(20), miss, miss])
     expect(m.targets).toEqual(CRICKET_TARGETS)
     expect(m.rollCount).toBe(0)
   })
 
   it('replaces numbers nobody marked once every player has thrown', () => {
-    const m = replayCricket(crazy(), [s(20), miss, miss, miss, miss, miss])
+    const m = replay(crazy(), [s(20), miss, miss, miss, miss, miss])
     expect(m.targets).toEqual([20, 1, 2, 3, 4, 5, 25])
     expect(m.lastRoll).toEqual([1, 2, 3, 4, 5])
     expect(m.rollCount).toBe(1)
   })
 
   it('keeps numbers that have marks, even from a single player', () => {
-    const m = replayCricket(crazy(), [miss, miss, miss, s(19), miss, miss])
+    const m = replay(crazy(), [miss, miss, miss, s(19), miss, miss])
     expect(m.targets).toEqual([1, 19, 2, 3, 4, 5, 25])
   })
 
   it('rerolls a number hit in an earlier round but not in the latest one', () => {
     // Round 1: P0 marks 20. Round 2: nobody touches 20 (or anything else).
-    const m = replayCricket(crazy(), [s(20), miss, miss, miss, miss, miss, miss, miss, miss, miss, miss, miss])
+    const m = replay(crazy(), [s(20), miss, miss, miss, miss, miss, miss, miss, miss, miss, miss, miss])
     expect(m.targets[0]).not.toBe(20)
     expect(m.players[0]!.marks[20]).toBeUndefined()
   })
 
   it('keeps a number that is hit again in the latest round', () => {
-    const m = replayCricket(crazy(), [s(20), miss, miss, miss, miss, miss, s(20), miss, miss, miss, miss, miss])
+    const m = replay(crazy(), [s(20), miss, miss, miss, miss, miss, s(20), miss, miss, miss, miss, miss])
     expect(m.targets[0]).toBe(20)
     expect(m.players[0]!.marks[20]).toBe(2)
   })
 
   it('keeps points when a number is rerolled', () => {
-    const m = replayCricket(crazy(), [t(20), t(20), miss, miss, miss, miss, miss, miss, miss, miss, miss, miss])
+    const m = replay(crazy(), [t(20), t(20), miss, miss, miss, miss, miss, miss, miss, miss, miss, miss])
     expect(m.players[0]!.points).toBe(60)
     expect(m.players[0]!.marks[20]).toBeUndefined()
   })
 
   it('never replaces the bull', () => {
-    const m = replayCricket(crazy(), [miss, miss, miss, miss, miss, miss])
+    const m = replay(crazy(), [miss, miss, miss, miss, miss, miss])
     expect(m.targets.at(-1)).toBe(25)
   })
 
   it('does not reroll in standard cricket', () => {
-    const m = replayCricket(config(), [s(20), miss, miss, miss, miss, miss])
+    const m = replay(config(), [s(20), miss, miss, miss, miss, miss])
     expect(m.targets).toEqual(CRICKET_TARGETS)
     expect(m.rollCount).toBe(0)
   })
 
   it('marks land on the new numbers', () => {
-    const m = replayCricket(crazy(), [miss, miss, miss, miss, miss, miss, t(1)])
+    const m = replay(crazy(), [miss, miss, miss, miss, miss, miss, t(1)])
     expect(m.players[0]!.marks[1]).toBe(3)
   })
 
   it('stops rerolling when the pool runs out', () => {
     const small = crazy({ rerollPool: [1, 2] })
-    const m = replayCricket(small, [miss, miss, miss, miss, miss, miss])
+    const m = replay(small, [miss, miss, miss, miss, miss, miss])
     expect(m.targets).toEqual([1, 2, 18, 17, 16, 15, 25])
   })
 
   it('is deterministic so undo by replay survives a reroll', () => {
     const log = [s(20), miss, miss, miss, miss, miss, s(1)]
-    const before = replayCricket(crazy(), log.slice(0, -1))
-    expect(replayCricket(crazy(), log.slice(0, -1))).toEqual(before)
+    const before = replay(crazy(), log.slice(0, -1))
+    expect(replay(crazy(), log.slice(0, -1))).toEqual(before)
     expect(before.rollCount).toBe(1)
   })
 

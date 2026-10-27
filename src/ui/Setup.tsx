@@ -1,16 +1,16 @@
 import { useState } from 'react'
-import { CRICKET_TARGETS, crazyDeal, type CricketConfig, type MatchConfig } from '../engine'
+import { cricket, x01 } from '../engine'
 import { useI18n } from './i18n'
 
 export interface X01Setup {
   kind: 'x01'
-  config: MatchConfig
+  config: x01.X01Config
   names: string[]
 }
 
 export interface CricketSetup {
   kind: 'cricket' | 'crazy'
-  config: CricketConfig
+  config: cricket.CricketConfig
   names: string[]
 }
 
@@ -66,7 +66,7 @@ export function Setup({ initial, onStart }: Props) {
         names: finalNames,
       })
     } else {
-      const deal = kind === 'crazy' ? crazyDeal() : { targets: CRICKET_TARGETS, rerollPool: undefined }
+      const deal = kind === 'crazy' ? cricket.crazyDeal() : { targets: cricket.CRICKET_TARGETS, rerollPool: undefined }
       onStart({ kind, config: { playerCount: names.length, ...deal }, names: finalNames })
     }
   }

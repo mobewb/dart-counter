@@ -25,7 +25,7 @@ export interface CricketPlayer {
   dartsThrown: number
 }
 
-export interface CricketState {
+export interface CricketMatch {
   config: CricketConfig
   players: CricketPlayer[]
   currentPlayer: number
@@ -66,7 +66,7 @@ export function isClosed(player: CricketPlayer, target: number): boolean {
   return marksOn(player, target) >= MARKS_TO_CLOSE
 }
 
-export function newCricket(config: CricketConfig): CricketState {
+export function newMatch(config: CricketConfig): CricketMatch {
   return {
     config,
     players: Array.from({ length: config.playerCount }, () => ({ marks: {}, points: 0, dartsThrown: 0 })),
@@ -86,7 +86,7 @@ export function newCricket(config: CricketConfig): CricketState {
  * After a full round, swap numbers nobody hit during that round for fresh ones
  * from the pool. Marks on a replaced number are discarded; points are kept.
  */
-function reroll(state: CricketState, players: CricketPlayer[]): CricketState {
+function reroll(state: CricketMatch, players: CricketPlayer[]): CricketMatch {
   const pool = state.config.rerollPool ?? []
   const targets = [...state.targets]
   const replaced: number[] = []
@@ -108,8 +108,8 @@ function reroll(state: CricketState, players: CricketPlayer[]): CricketState {
   return { ...base, players: cleaned, targets, poolIndex, rollCount: state.rollCount + 1, lastRoll: replaced }
 }
 
-export function throwCricketDart(state: CricketState, dart: Dart): CricketState {
-  if (state.status === 'finished') throw new Error('Game is finished')
+export function applyDart(state: CricketMatch, dart: Dart): CricketMatch {
+  if (state.status === 'finished') throw new Error('Match is finished')
   if (!isValidDart(dart)) throw new Error(`Invalid dart: ${dart.multiplier}x${dart.segment}`)
 
   const { config, currentPlayer } = state
@@ -147,7 +147,7 @@ export function throwCricketDart(state: CricketState, dart: Dart): CricketState 
   return { ...state, players, turnDarts, lastRoll: [] }
 }
 
-/** Rebuilds the game from its dart log; undo is replaying one dart fewer. */
-export function replayCricket(config: CricketConfig, darts: readonly Dart[]): CricketState {
-  return darts.reduce(throwCricketDart, newCricket(config))
+/** Rebuilds the match from its dart log; undo is replaying one dart fewer. */
+export function replay(config: CricketConfig, darts: readonly Dart[]): CricketMatch {
+  return darts.reduce(applyDart, newMatch(config))
 }
