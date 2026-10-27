@@ -34,6 +34,8 @@ export interface CricketState {
   /** Current targets; crazy cricket swaps untouched ones between rounds. */
   targets: number[]
   poolIndex: number
+  /** Targets hit by anyone since the round began. */
+  roundHits: number[]
   /** Number of rerolls so far; the UI animates when it increases. */
   rollCount: number
   /** Target indexes replaced by the most recent dart's reroll, if any. */
@@ -73,6 +75,7 @@ export function newCricket(config: CricketConfig): CricketState {
     turnDarts: [],
     targets: config.targets,
     poolIndex: 0,
+    roundHits: [],
     rollCount: 0,
     lastRoll: [],
     status: 'playing',
@@ -80,21 +83,30 @@ export function newCricket(config: CricketConfig): CricketState {
   }
 }
 
-/** After a full round, swap numbers nobody has marked for fresh ones from the pool. */
+/**
+ * After a full round, swap numbers nobody hit during that round for fresh ones
+ * from the pool. Marks on a replaced number are discarded; points are kept.
+ */
 function reroll(state: CricketState, players: CricketPlayer[]): CricketState {
   const pool = state.config.rerollPool ?? []
   const targets = [...state.targets]
   const replaced: number[] = []
+  const dropped: number[] = []
   let poolIndex = state.poolIndex
   targets.forEach((target, index) => {
-    const untouched = target !== BULL && players.every((p) => marksOn(p, target) === 0)
-    if (untouched && poolIndex < pool.length) {
+    if (target !== BULL && !state.roundHits.includes(target) && poolIndex < pool.length) {
+      dropped.push(target)
       targets[index] = pool[poolIndex++]!
       replaced.push(index)
     }
   })
-  if (replaced.length === 0) return { ...state, players }
-  return { ...state, players, targets, poolIndex, rollCount: state.rollCount + 1, lastRoll: replaced }
+  const base = { ...state, roundHits: [] }
+  if (replaced.length === 0) return { ...base, players }
+  const cleaned = players.map((p) => ({
+    ...p,
+    marks: Object.fromEntries(Object.entries(p.marks).filter(([target]) => !dropped.includes(Number(target)))),
+  }))
+  return { ...base, players: cleaned, targets, poolIndex, rollCount: state.rollCount + 1, lastRoll: replaced }
 }
 
 export function throwCricketDart(state: CricketState, dart: Dart): CricketState {
@@ -107,6 +119,7 @@ export function throwCricketDart(state: CricketState, dart: Dart): CricketState 
 
   let marks = me.marks
   let points = me.points
+  const roundHits = isTarget && !state.roundHits.includes(dart.segment) ? [...state.roundHits, dart.segment] : state.roundHits
   if (isTarget) {
     const have = marksOn(me, dart.segment)
     const applied = Math.min(dart.multiplier, MARKS_TO_CLOSE - have)
@@ -119,6 +132,7 @@ export function throwCricketDart(state: CricketState, dart: Dart): CricketState 
   const updated: CricketPlayer = { marks, points, dartsThrown: me.dartsThrown + 1 }
   const players = state.players.map((p, i) => (i === currentPlayer ? updated : p))
 
+  state = { ...state, roundHits }
   const allClosed = state.targets.every((target) => isClosed(updated, target))
   const bestOpponent = Math.max(0, ...players.filter((_, i) => i !== currentPlayer).map((p) => p.points))
   if (allClosed && updated.points >= bestOpponent) {

@@ -191,6 +191,25 @@ describe('crazy rerolls', () => {
     expect(m.targets).toEqual([1, 19, 2, 3, 4, 5, 25])
   })
 
+  it('rerolls a number hit in an earlier round but not in the latest one', () => {
+    // Round 1: P0 marks 20. Round 2: nobody touches 20 (or anything else).
+    const m = replayCricket(crazy(), [s(20), miss, miss, miss, miss, miss, miss, miss, miss, miss, miss, miss])
+    expect(m.targets[0]).not.toBe(20)
+    expect(m.players[0]!.marks[20]).toBeUndefined()
+  })
+
+  it('keeps a number that is hit again in the latest round', () => {
+    const m = replayCricket(crazy(), [s(20), miss, miss, miss, miss, miss, s(20), miss, miss, miss, miss, miss])
+    expect(m.targets[0]).toBe(20)
+    expect(m.players[0]!.marks[20]).toBe(2)
+  })
+
+  it('keeps points when a number is rerolled', () => {
+    const m = replayCricket(crazy(), [t(20), t(20), miss, miss, miss, miss, miss, miss, miss, miss, miss, miss])
+    expect(m.players[0]!.points).toBe(60)
+    expect(m.players[0]!.marks[20]).toBeUndefined()
+  })
+
   it('never replaces the bull', () => {
     const m = replayCricket(crazy(), [miss, miss, miss, miss, miss, miss])
     expect(m.targets.at(-1)).toBe(25)
