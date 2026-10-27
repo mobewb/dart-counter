@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { rematch as dealRematch, type MatchSetup } from './application/match-setup'
-import { CricketGame } from './ui/CricketGame'
-import { Game } from './ui/Game'
+import { GameScreen } from './ui/GameScreen'
 import { I18nProvider } from './ui/i18n'
+import { viewFor } from './ui/registry'
 import { Setup } from './ui/Setup'
 
 export function App() {
@@ -25,10 +25,8 @@ export function App() {
     <I18nProvider>
       {!setup ? (
         <Setup initial={last} onStart={start} />
-      ) : setup.mode === 'x01' ? (
-        <Game key={round} setup={setup} onRematch={rematch} onExit={exit} />
       ) : (
-        <CricketGame key={round} setup={setup} onRematch={rematch} onExit={exit} />
+        <GameScreen key={round} view={viewFor(setup)} setup={setup} onRematch={rematch} onExit={exit} />
       )}
     </I18nProvider>
   )

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { startMatch, type GameModeId, type MatchSetup } from '../application/match-setup'
 import { useI18n } from './i18n'
+import { gameModes, registry } from './registry'
 
 interface Props {
   initial?: MatchSetup
@@ -43,13 +44,14 @@ export function Setup({ initial, onStart }: Props) {
   const resize = (count: number) =>
     setNames((prev) => Array.from({ length: count }, (_, i) => prev[i] ?? ''))
 
+  const hint = registry[kind].hint
+
   const start = () => {
     const finalNames = names.map((n, i) => n.trim() || `${t('player')} ${i + 1}`)
     const rules = { startScore, doubleIn, doubleOut, legsToWinSet: legs, setsToWinMatch: sets }
     onStart(startMatch(kind === 'x01' ? { mode: kind, names: finalNames, rules } : { mode: kind, names: finalNames }))
   }
 
-  const games: [GameModeId, string][] = [['x01', t('x01')], ['cricket', t('cricket')], ['crazy', t('crazy')]]
 
   return (
     <main className="screen setup">
@@ -63,12 +65,11 @@ export function Setup({ initial, onStart }: Props) {
       <section className="card">
         <h2>{t('game')}</h2>
         <div className="seg-control">
-          {games.map(([k, label]) => (
-            <button key={k} className={k === kind ? 'is-active' : ''} onClick={() => setKind(k)}>{label}</button>
+          {gameModes.map((k) => (
+            <button key={k} className={k === kind ? 'is-active' : ''} onClick={() => setKind(k)}>{t(registry[k].label)}</button>
           ))}
         </div>
-        {kind === 'cricket' && <p className="hint">{t('cricketHint')}</p>}
-        {kind === 'crazy' && <p className="hint">{t('crazyHint')}</p>}
+        {hint && <p className="hint">{t(hint)}</p>}
       </section>
 
       {kind === 'x01' && (
