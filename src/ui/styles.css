@@ -275,3 +275,57 @@ h1, h2, p { margin: 0; }
   animation: spark 0.75s ease-out forwards;
 }
 @keyframes spark { from { transform: rotate(var(--a)) translateY(0) scale(1.3); opacity: 1; } to { transform: rotate(var(--a)) translateY(calc(var(--d) * -1)) scale(0); opacity: 0; } }
+
+/* ---------- mobile ---------- */
+body { overscroll-behavior-y: none; }
+.screen { min-height: 100dvh; padding-bottom: max(24px, env(safe-area-inset-bottom)); }
+.card__row > span { min-width: 0; }
+.topbar > * { min-width: 0; }
+.topbar__info { flex-wrap: wrap; justify-content: center; text-align: center; }
+.topbar .ghost { white-space: nowrap; }
+.board { width: min(100%, 440px, 46dvh); }
+.overlay__card { max-height: 100%; overflow-y: auto; }
+
+/* Cricket grid scrolls sideways as one unit; target column stays visible. */
+.cricket__head, .cricket__row { min-width: calc(56px + var(--cols) * 64px); }
+.cricket__corner, .cricket__target { position: sticky; left: 0; z-index: 1; background: #0d1226; }
+
+@media (max-width: 480px) {
+  .screen { gap: 10px; padding-top: max(10px, env(safe-area-inset-top)); }
+  .card { padding: 14px; }
+  .hero { padding-top: 18px; }
+  .hero h1 { font-size: 2.2rem; }
+
+  .pcard { flex-basis: 128px; padding: 10px 10px; }
+  .pcard__score { font-size: clamp(2.1rem, 10vw, 2.8rem); }
+  .pcard__meta { font-size: 0.7rem; gap: 6px; }
+
+  .turn { padding: 10px; gap: 8px; }
+  .slot { height: 42px; font-size: 1.1rem; }
+  .chip { font-size: 0.75rem; padding: 4px 10px; }
+
+  .targets { --reel-h: 58px; }
+  .targets__row { flex-wrap: nowrap; gap: 5px; }
+  .target-wrap { flex: 1 1 0; min-width: 0; max-width: 56px; }
+  .target, .targets--spin .target { width: 100%; font-size: 1.35rem; }
+  .crazy-title { font-size: 0.8rem; letter-spacing: 0.14em; }
+
+  .cricket__points { font-size: 1.5rem; }
+  .cricket__cell { min-height: 40px; font-size: 1.4rem; }
+  .cricket__target { font-size: 1.1rem; padding: 8px 0; }
+
+  .pad__grid { gap: 6px; }
+  .pad__grid button { height: 48px; }
+}
+
+/* Phones held sideways: scoreboard left, input right. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .screen.game { max-width: none; grid-template-columns: minmax(0, 1fr) minmax(0, 48%); align-items: start; column-gap: 16px; }
+  .screen.game > * { grid-column: 1; }
+  .screen.game > .topbar { grid-column: 1 / -1; }
+  .screen.game > .input { grid-column: 2; grid-row: 2 / span 8; position: sticky; top: 8px; }
+  .board { width: min(100%, 440px, 78dvh); }
+  .pad__grid button { height: 40px; }
+  .pcard__score { font-size: 2.2rem; }
+  .targets { --reel-h: 50px; }
+}
