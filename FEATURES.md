@@ -28,6 +28,8 @@ A mobile-first dart scoring web app. Pick a game, enter the players, and tap the
 | **Cricket** | Close 20 → 15 and the bull with 3 marks each, and score points on numbers your opponents have not closed. |
 | **Crazy Cricket** | Cricket with six random numbers plus the bull; numbers nobody hits are rerolled each round. |
 
+Every mode can be played solo (each player for themselves) or in **teams** — see [Team play](#team-play).
+
 ## 2. Match setup
 
 - **Game selector** — switch between X01, Cricket and Crazy Cricket; a short rules hint is shown for the two Cricket variants.
@@ -39,8 +41,20 @@ A mobile-first dart scoring web app. Pick a game, enter the players, and tap the
   - Double out (on by default).
   - Legs to win a set: 1 to 11 (default 3).
   - Sets to win the match: 1 to 7 (default 1).
-- **Settings memory** — the setup screen is pre-filled with the last match's mode, rules and names, even after the app is closed.
+- **Teams** — with 2 or more players, a *Teams* toggle splits them into teams (see [Team play](#team-play)).
+- **Settings memory** — the setup screen is pre-filled with the last match's mode, rules, names and teams, even after the app is closed.
 - **Language toggle** — FR / EN button on the setup screen.
+
+### Team play
+
+Available in X01, Cricket and Crazy Cricket.
+
+- **Teams** — 2 to 4 teams from up to 8 players; teams can be uneven (e.g. 2 against 1).
+- **Assigning players** — turning *Teams* on alternates players between team 1 and team 2. Tap a player's colored badge (T1 → T2 → T3 → T4) to move them. The setup shows each team's line-up, and *Throw!* stays disabled until at least 2 teams have players.
+- **Team names** — built from the members, e.g. "Ann & Cid".
+- **Shared score** — a team plays as one side: one remaining score in X01 (with shared legs and sets), one set of marks and points in Cricket.
+- **Turn order** — teams alternate, and members take turns within their team: Team 1 player A, Team 2 player A, Team 1 player B, Team 2 player B… Each player throws a full 3-dart turn; the rotation continues across legs. The game screen shows which player throws next.
+- **Stats** — the winner screen shows each team's result, then each player's own 3-dart average (X01) or points (Cricket) and darts thrown. A busted turn counts its darts but no points for the player who threw it.
 
 ## 3. X01 (301 / 501 / 701)
 
@@ -110,8 +124,9 @@ Two interchangeable input methods, switchable at any time during a game:
 ## 8. End of game
 
 A winner overlay shows:
-- the winner's name and a trophy,
-- stats for every player — 3-dart average and darts thrown in X01, points and darts thrown in Cricket,
+- the winner's name (or team) and a trophy,
+- stats for every player or team — 3-dart average and darts thrown in X01, points and darts thrown in Cricket,
+- in team play, each player's own stats as well,
 - three actions: **Undo** (reopen the game), **Rematch** (same settings, same players) and **New game** (back to setup).
 
 ## 9. Languages
@@ -165,6 +180,7 @@ src/
 │   ├── match-session.ts       recordDart, undo, replaySession
 │   ├── match-repository.ts    MatchRepository port: current match and history
 │   ├── match-persistence.ts   saveProgress, resumeMatch, leaveMatch
+│   ├── sides.ts               Team play: side names, who throws next, per-player stats
 │   └── cricket-config.ts      Cricket configs; crazy deal with an injected random source
 ├── infrastructure/          Adapters to the browser
 │   ├── indexeddb-repository.ts   MatchRepository on IndexedDB
@@ -185,6 +201,7 @@ Design notes:
 - **Domain events** — each dart returns the events it caused (`Bust`, `LegWon`, `TargetsRerolled`…); the UI reacts to the events of the last dart.
 - **Deterministic Crazy Cricket** — the reroll pool is dealt before the match starts, so replaying the log always yields the same targets.
 - **One contract per game mode** — adding a mode means implementing `GameMode` and adding one registry entry.
+- **Teams are sides** — the game rules score *sides*; a side is one player or a team. Who throws within a team is derived from the dart log, so undo, resume and history work unchanged ([ADR-005](docs/adr/005-teams-are-sides.md)).
 - **Tests** — unit tests for each game mode, a contract suite run against every mode, and use-case tests.
 
 ## 13. Build, test and deploy

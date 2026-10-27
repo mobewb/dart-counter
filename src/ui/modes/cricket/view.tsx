@@ -10,9 +10,9 @@ type CricketSetup = Extract<MatchSetup, { mode: 'cricket' | 'crazy' }>
 const MARK = ['', '／', '✕', '⊗']
 const targetLabel = (target: number) => (target === 25 ? 'B' : String(target))
 
-function useCricketView({ setup, state: match, events, dartCount }: ViewProps<CricketSetup, cricket.CricketMatch>) {
+function useCricketView({ setup, sides, state: match, events, dartCount }: ViewProps<CricketSetup, cricket.CricketMatch>) {
   const { t } = useI18n()
-  const { config, names } = setup
+  const { config } = setup
   const finished = match.status === 'finished'
 
   // Crazy cricket spins a roulette for the opening numbers and for every reroll.
@@ -47,7 +47,7 @@ function useCricketView({ setup, state: match, events, dartCount }: ViewProps<Cr
             <div className="cricket__corner">{t('points')}</div>
             {match.players.map((p, i) => (
               <div key={i} className={`cricket__player${i === match.currentPlayer && !finished ? ' is-active' : ''}${match.winner === i ? ' is-winner' : ''}`}>
-                <span className="cricket__name">{names[i]}</span>
+                <span className="cricket__name">{sides[i]}</span>
                 <span className="cricket__points">{p.points}</span>
               </div>
             ))}

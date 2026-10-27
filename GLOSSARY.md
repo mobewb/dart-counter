@@ -9,6 +9,9 @@ The ubiquitous language of Dart Counter. Code, docs and commits use these terms;
 | **Match** | The whole contest between players, from start to winner. | "match" / "match" |
 | **Game mode** | The rule set a match is played with: X01, Cricket or Crazy Cricket. | Game / Jeu |
 | **Player** | A participant in a match (1 to 8). | Player / Joueur |
+| **Team** | One or more players sharing one score in team play; members take turns. | Team / Équipe |
+| **Side** | Who a score belongs to: a single player, or a team. The domain code calls sides "players" (`currentPlayer`, `playerCount`). | — |
+| **Thrower** | The player throwing the current turn; in team play, the team member whose turn it is. | to throw / à lancer |
 | **Turn** | One player's visit at the board: up to 3 darts. | — |
 | **Round** | Every player has taken one turn. | — |
 | **Dart** | One throw: a segment and a multiplier. | Darts / Fléchettes |

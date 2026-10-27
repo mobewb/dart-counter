@@ -6,5 +6,6 @@ import type { X01Config, X01Match } from './types'
 export const mode: GameMode<X01Config, X01Match> = {
   newMatch,
   applyDart,
-  results: (state) => state.players.map((p) => ({ value: threeDartAverage(p), dartsThrown: p.dartsThrown })),
+  tally: (state) => state.players.map((p) => ({ points: p.pointsScored, dartsThrown: p.dartsThrown })),
+  headline: ({ points, dartsThrown }) => threeDartAverage({ pointsScored: points, dartsThrown }),
 }

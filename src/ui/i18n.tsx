@@ -48,6 +48,11 @@ const dict = {
     closedByAll: 'Dead',
     shootFor: 'Shoot for',
     crazyRoll: 'CRAZY ROLL',
+    teams: 'Teams',
+    team: 'Team',
+    teamsHint: 'Tap a badge to change team. Team members take turns.',
+    needTwoTeams: 'Pick at least 2 teams.',
+    winTeam: 'win the match!',
   },
   fr: {
     tagline: 'Comptez. Visez les doubles.',
@@ -95,6 +100,11 @@ const dict = {
     closedByAll: 'Mort',
     shootFor: 'Visez',
     crazyRoll: 'ROULETTE FOLLE',
+    teams: 'Équipes',
+    team: 'Équipe',
+    teamsHint: 'Touchez un badge pour changer d\'équipe. Les coéquipiers lancent à tour de rôle.',
+    needTwoTeams: 'Il faut au moins 2 équipes.',
+    winTeam: 'remportent le match !',
   },
 }
 

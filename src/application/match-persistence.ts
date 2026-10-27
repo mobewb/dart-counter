@@ -1,7 +1,8 @@
-import type { Dart, PlayerResult } from '../domain'
+import { results, type Dart, type PlayerResult } from '../domain'
 import type { CurrentMatch, MatchRepository } from './match-repository'
 import { rulesFor, type MatchSetup } from './match-setup'
 import { replaySession } from './match-session'
+import { teamPlay } from './sides'
 
 export function newCurrentMatch(setup: MatchSetup, now = Date.now(), id: string = crypto.randomUUID()): CurrentMatch {
   return { id, setup, darts: [], startedAt: now, updatedAt: now }
@@ -10,6 +11,7 @@ export function newCurrentMatch(setup: MatchSetup, now = Date.now(), id: string 
 export interface Outcome {
   winner: number | null
   results: PlayerResult[]
+  players: PlayerResult[]
 }
 
 /**
@@ -21,7 +23,8 @@ export async function saveProgress(repository: MatchRepository, match: CurrentMa
   if (outcome.winner === null) {
     await repository.removeFinished(match.id)
   } else {
-    await repository.saveFinished({ ...match, finishedAt: match.updatedAt, winner: outcome.winner, results: outcome.results })
+    const { winner, results, players } = outcome
+    await repository.saveFinished({ ...match, finishedAt: match.updatedAt, winner, results, players })
   }
 }
 
@@ -30,7 +33,8 @@ export function progress(match: CurrentMatch, darts: readonly Dart[], now = Date
   const updated = { ...match, darts: [...darts], updatedAt: now }
   const rules = rulesFor(match.setup.mode)
   const { state } = replaySession(rules, { config: match.setup.config, darts })
-  return { match: updated, outcome: { winner: state.winner, results: rules.results(state) } }
+  const outcome = { winner: state.winner, results: results(rules, state), players: teamPlay(match.setup, darts).players }
+  return { match: updated, outcome }
 }
 
 /** The saved match in progress, if it can still be replayed; an unreadable one is dropped. */

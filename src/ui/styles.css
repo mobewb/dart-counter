@@ -403,3 +403,19 @@ body { overscroll-behavior-y: none; }
 @media (max-width: 480px) {
   .topbar .undo { padding: 8px 18px; font-size: 1.25rem; line-height: 1; }
 }
+
+/* Team play */
+.name-row { display: flex; gap: 6px; min-width: 0; }
+.name-row input { flex: 1; }
+.team-badge { flex: none; display: inline-grid; place-items: center; min-width: 44px; padding: 0 8px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; color: #070b14; background: var(--team); }
+button.team-badge { min-height: 44px; }
+.team-0 { --team: var(--accent); }
+.team-1 { --team: var(--accent2); }
+.team-2 { --team: var(--gold); }
+.team-3 { --team: var(--hot); }
+.team-summary { display: grid; gap: 6px; }
+.team-summary p { display: flex; align-items: center; gap: 10px; min-width: 0; overflow-wrap: anywhere; }
+.team-summary span.team-badge { min-height: 26px; min-width: 36px; font-size: 0.75rem; }
+.overlay__stats--players { margin-top: 0; }
+.overlay__stats--players > div { padding: 6px 14px; background: rgb(255 255 255 / 0.03); }
+.overlay__stats--players b { font-size: 1rem; }

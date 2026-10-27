@@ -14,8 +14,12 @@ export interface CurrentMatch {
 /** A match in the history. The dart log is kept so stats can be recomputed later. */
 export interface FinishedMatch extends CurrentMatch {
   finishedAt: number
+  /** The winning side. */
   winner: number
+  /** Results per side (a player, or a team). */
   results: PlayerResult[]
+  /** Each player's own results, by player index; differs from `results` in team play. */
+  players: PlayerResult[]
 }
 
 /** Where matches are stored. The app keeps working, without saving, if storage fails. */

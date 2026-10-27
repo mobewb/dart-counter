@@ -49,6 +49,15 @@ describe('match persistence', () => {
     expect(entry!.results.map((r) => r.dartsThrown)).toEqual([1, 0])
   })
 
+  it('keeps each player\'s own results in a team match', async () => {
+    const repo = memoryRepository()
+    const teams = startMatch({ mode: 'x01', names: ['Ann', 'Bob', 'Cid'], teams: [0, 1, 0], rules })
+    await play(repo, newCurrentMatch(teams, 0, 't'), [s(20), s(10), s(6), ...[0, 0, 0].map(() => s(0)), d(2)])
+    const [entry] = await repo.listFinished()
+    expect(entry!.results.map((r) => r.dartsThrown)).toEqual([4, 3])
+    expect(entry!.players.map((r) => r.dartsThrown)).toEqual([3, 3, 1])
+  })
+
   it('takes a match out of the history when its winning dart is undone', async () => {
     const repo = memoryRepository()
     const won = await play(repo, newCurrentMatch(setup, 0, 'm'), [d(20)])

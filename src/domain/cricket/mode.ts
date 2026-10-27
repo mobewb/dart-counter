@@ -5,5 +5,6 @@ import { applyDart, newMatch, type CricketConfig, type CricketMatch } from './cr
 export const mode: GameMode<CricketConfig, CricketMatch> = {
   newMatch,
   applyDart,
-  results: (state) => state.players.map((p) => ({ value: p.points, dartsThrown: p.dartsThrown })),
+  tally: (state) => state.players.map((p) => ({ points: p.points, dartsThrown: p.dartsThrown })),
+  headline: (tally) => tally.points,
 }

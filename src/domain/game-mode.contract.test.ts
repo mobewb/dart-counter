@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import * as cricket from './cricket'
 import type { Dart } from './shared-kernel/dart'
 import { replayLog } from './shared-kernel/events'
-import type { GameMode, MatchCore } from './shared-kernel/game-mode'
+import { results, type GameMode, type MatchCore } from './shared-kernel/game-mode'
 import * as x01 from './x01'
 
 const s = (n: number): Dart => ({ segment: n, multiplier: 1 })
@@ -24,7 +24,7 @@ function contract<Config, State extends MatchCore>(name: string, mode: GameMode<
       expect(state.turnDarts).toEqual([])
       expect(state.status).toBe('playing')
       expect(state.winner).toBeNull()
-      expect(mode.results(state)).toEqual([
+      expect(results(mode, state)).toEqual([
         { value: 0, dartsThrown: 0 },
         { value: 0, dartsThrown: 0 },
       ])
@@ -61,8 +61,22 @@ function contract<Config, State extends MatchCore>(name: string, mode: GameMode<
     })
 
     it('counts every player dart in the results', () => {
-      const results = mode.results(play(win).state)
-      expect(results.map((r) => r.dartsThrown)).toEqual([win.length - 3, 3])
+      expect(results(mode, play(win).state).map((r) => r.dartsThrown)).toEqual([win.length - 3, 3])
+    })
+
+    it('adds each dart to the tally of the side that threw it, and only to it', () => {
+      let state = mode.newMatch(config)
+      for (const dart of win) {
+        const side = state.currentPlayer
+        const next = mode.applyDart(state, dart).state
+        const before = mode.tally(state)
+        const after = mode.tally(next)
+        after.forEach((tally, i) => {
+          expect(tally.dartsThrown - before[i]!.dartsThrown).toBe(i === side ? 1 : 0)
+          if (i !== side) expect(tally.points).toBe(before[i]!.points)
+        })
+        state = next
+      }
     })
 
     it('replays the same log to the same state', () => {

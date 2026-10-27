@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { startMatch, type GameModeId, type MatchSetup } from '../application/match-setup'
+import { MAX_TEAMS, startMatch, type GameModeId, type MatchSetup, type Sides } from '../application/match-setup'
 import { useI18n } from './i18n'
 import { gameModes, registry } from './registry'
 
@@ -9,6 +9,17 @@ interface Props {
 }
 
 const SCORES = [301, 501, 701]
+
+/** Default team for a new player: alternate between team 1 and team 2. */
+const defaultTeam = (player: number) => player % 2
+
+/** One team number per player, from the teams of a previous setup. */
+function assignmentOf(teams: Sides | undefined, count: number): number[] {
+  return Array.from({ length: count }, (_, player) => {
+    const team = teams?.findIndex((members) => members.includes(player)) ?? -1
+    return team >= 0 ? team : defaultTeam(player)
+  })
+}
 
 function Stepper({ value, min, max, onChange }: { value: number; min: number; max: number; onChange: (v: number) => void }) {
   return (
@@ -40,16 +51,29 @@ export function Setup({ initial, onStart }: Props) {
   const [legs, setLegs] = useState(x01?.legsToWinSet ?? 3)
   const [sets, setSets] = useState(x01?.setsToWinMatch ?? 1)
   const [names, setNames] = useState(initial?.names ?? ['', ''])
+  const [teamPlay, setTeamPlay] = useState(Boolean(initial?.teams))
+  const [teams, setTeams] = useState(() => assignmentOf(initial?.teams, names.length))
 
-  const resize = (count: number) =>
+  const resize = (count: number) => {
     setNames((prev) => Array.from({ length: count }, (_, i) => prev[i] ?? ''))
+    setTeams((prev) => Array.from({ length: count }, (_, i) => prev[i] ?? defaultTeam(i)))
+  }
+  const teamCount = Math.min(MAX_TEAMS, names.length)
+  const cycleTeam = (player: number) =>
+    setTeams((prev) => prev.map((team, i) => (i === player ? (team + 1) % teamCount : team)))
+
+  const teamMode = teamPlay && names.length >= 2
+  const usedTeams = [...new Set(teams)].sort((a, b) => a - b)
+  const canStart = !teamMode || usedTeams.length >= 2
+  const displayName = (i: number) => names[i]!.trim() || `${t('player')} ${i + 1}`
 
   const hint = registry[kind].hint
 
   const start = () => {
-    const finalNames = names.map((n, i) => n.trim() || `${t('player')} ${i + 1}`)
+    const finalNames = names.map((_, i) => displayName(i))
     const rules = { startScore, doubleIn, doubleOut, legsToWinSet: legs, setsToWinMatch: sets }
-    onStart(startMatch(kind === 'x01' ? { mode: kind, names: finalNames, rules } : { mode: kind, names: finalNames }))
+    const common = { names: finalNames, teams: teamMode ? teams : undefined }
+    onStart(startMatch(kind === 'x01' ? { mode: kind, rules, ...common } : { mode: kind, ...common }))
   }
 
 
@@ -90,15 +114,33 @@ export function Setup({ initial, onStart }: Props) {
         </div>
         <div className="names">
           {names.map((name, i) => (
-            <input
-              key={i}
-              value={name}
-              maxLength={16}
-              placeholder={`${t('player')} ${i + 1}`}
-              onChange={(e) => setNames((prev) => prev.map((n, j) => (j === i ? e.target.value : n)))}
-            />
+            <div key={i} className="name-row">
+              <input
+                value={name}
+                maxLength={16}
+                placeholder={`${t('player')} ${i + 1}`}
+                onChange={(e) => setNames((prev) => prev.map((n, j) => (j === i ? e.target.value : n)))}
+              />
+              {teamMode && (
+                <button className={`team-badge team-${teams[i]}`} onClick={() => cycleTeam(i)} aria-label={`${t('team')} ${teams[i]! + 1}`}>
+                  T{teams[i]! + 1}
+                </button>
+              )}
+            </div>
           ))}
         </div>
+        {names.length >= 2 && <Toggle label={t('teams')} checked={teamPlay} onChange={setTeamPlay} />}
+        {teamMode && (
+          <div className="team-summary">
+            {usedTeams.map((team) => (
+              <p key={team}>
+                <span className={`team-badge team-${team}`}>T{team + 1}</span>
+                {teams.flatMap((n, i) => (n === team ? [displayName(i)] : [])).join(' & ')}
+              </p>
+            ))}
+            <p className="hint">{canStart ? t('teamsHint') : t('needTwoTeams')}</p>
+          </div>
+        )}
       </section>
 
       {kind === 'x01' && (
@@ -117,7 +159,7 @@ export function Setup({ initial, onStart }: Props) {
         </section>
       )}
 
-      <button className="cta" onClick={start}>{t('start')}</button>
+      <button className="cta" onClick={start} disabled={!canStart}>{t('start')}</button>
     </main>
   )
 }

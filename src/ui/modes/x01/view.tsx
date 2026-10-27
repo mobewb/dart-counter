@@ -7,9 +7,9 @@ import type { ModeView, ViewProps } from '../types'
 
 type X01Setup = Extract<MatchSetup, { mode: 'x01' }>
 
-function useX01View({ setup, state: match, events }: ViewProps<X01Setup, x01.X01Match>) {
+function useX01View({ setup, sides, state: match, events }: ViewProps<X01Setup, x01.X01Match>) {
   const { t } = useI18n()
-  const { config, names } = setup
+  const { config } = setup
   const finished = match.status === 'finished'
   const current = match.players[match.currentPlayer]!
   const dartsLeft = 3 - match.turnDarts.length
@@ -40,7 +40,7 @@ function useX01View({ setup, state: match, events }: ViewProps<X01Setup, x01.X01
           <article key={i} className={`pcard${i === match.currentPlayer && !finished ? ' is-active' : ''}${match.winner === i ? ' is-winner' : ''}`}>
             <div className="pcard__name">
               {match.legStarter === i && <i className="dot" title="leg starter" />}
-              {names[i]}
+              {sides[i]}
             </div>
             <div className="pcard__score">{p.remaining}</div>
             <div className="pcard__meta">

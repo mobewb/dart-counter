@@ -16,6 +16,7 @@ const finished = (id: string, finishedAt: number): FinishedMatch => ({
   finishedAt,
   winner: 0,
   results: [{ value: 0, dartsThrown: 1 }],
+  players: [{ value: 0, dartsThrown: 1 }],
 })
 
 describe('IndexedDB match repository', () => {

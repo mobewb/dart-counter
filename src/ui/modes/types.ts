@@ -5,6 +5,8 @@ import type { Key } from '../i18n'
 
 export interface ViewProps<Setup extends MatchSetup, State extends MatchCore> {
   setup: Setup
+  /** Display name of each side: a player, or a team like "Ann & Cid". */
+  sides: string[]
   state: State
   /** Events of the last dart. */
   events: DomainEvent[]

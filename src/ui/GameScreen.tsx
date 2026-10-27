@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { MatchSetup } from '../application/match-setup'
-import type { Dart, MatchCore } from '../domain'
+import { sideNames, teamPlay } from '../application/sides'
+import { results, type Dart, type MatchCore } from '../domain'
 import { dartLabel } from './dartLabel'
 import { Dartboard } from './Dartboard'
 import { useI18n } from './i18n'
@@ -32,6 +33,7 @@ function useWakeLock(enabled: boolean) {
 export function GameScreen<Setup extends MatchSetup, State extends MatchCore>({ view, setup, initialDarts, onProgress, onRematch, onExit }: Props<Setup, State>) {
   const { t } = useI18n()
   const { names } = setup
+  const sides = useMemo(() => sideNames(setup), [setup])
   const { state: match, events, darts, dartCount, hit: record, undo } = useMatch(view.rules, setup.config, initialDarts)
   // Report changes only, not the log the screen opened with.
   const opened = useRef(darts)
@@ -40,7 +42,8 @@ export function GameScreen<Setup extends MatchSetup, State extends MatchCore>({ 
   }, [darts, onProgress])
   const [input, setInput] = useState<'board' | 'pad'>('board')
   useWakeLock(view.keepAwake ?? false)
-  const { info, board, turnExtras, afterTurn, targets, locked = false } = view.useView({ setup, state: match, events, dartCount })
+  const play = useMemo(() => teamPlay(setup, darts), [setup, darts])
+  const { info, board, turnExtras, afterTurn, targets, locked = false } = view.useView({ setup, sides, state: match, events, dartCount })
 
   const finished = match.status === 'finished'
   const hit = (dart: Dart) => !locked && record(dart)
@@ -58,7 +61,7 @@ export function GameScreen<Setup extends MatchSetup, State extends MatchCore>({ 
 
       <section className="turn">
         <div className="turn__head">
-          <span className="turn__who">{names[match.currentPlayer]} <small>{t('toThrow')}</small></span>
+          <span className="turn__who">{names[play.thrower]} <small>{t('toThrow')}</small></span>
           {turnExtras}
         </div>
         <div className="slots">
@@ -93,17 +96,28 @@ export function GameScreen<Setup extends MatchSetup, State extends MatchCore>({ 
         <div className="overlay">
           <div className="overlay__card">
             <div className="trophy" aria-hidden>🏆</div>
-            <h2>{names[match.winner]}</h2>
-            <p>{t('wins')}</p>
+            <h2>{sides[match.winner]}</h2>
+            <p>{t(setup.teams ? 'winTeam' : 'wins')}</p>
             <div className="overlay__stats">
-              {view.rules.results(match).map((r, i) => (
+              {results(view.rules, match).map((r, i) => (
                 <div key={i} className={i === match.winner ? 'is-winner' : ''}>
-                  <span>{names[i]}</span>
+                  <span>{sides[i]}</span>
                   <b>{view.result.format(r.value)}</b>
                   <small>{t(view.result.label)} · {r.dartsThrown} {t('darts').toLowerCase()}</small>
                 </div>
               ))}
             </div>
+            {setup.teams && (
+              <div className="overlay__stats overlay__stats--players">
+                {play.players.map((r, i) => (
+                  <div key={i}>
+                    <span>{names[i]}</span>
+                    <b>{view.result.format(r.value)}</b>
+                    <small>{t(view.result.label)} · {r.dartsThrown} {t('darts').toLowerCase()}</small>
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="overlay__actions">
               <button className="ghost" onClick={undo}>↶ {t('undo')}</button>
               <button className="cta" onClick={onRematch}>{t('rematch')}</button>
