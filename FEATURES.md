@@ -138,6 +138,7 @@ Everything is stored on the device, in the browser; nothing is sent anywhere.
 - Safe-area insets supported (notch, home indicator).
 - Responsive layout capped at a comfortable width on tablets and desktops.
 - Respects `prefers-reduced-motion`.
+- **App icon** — a ghost in front of a dartboard, used as the browser tab icon and as the home-screen icon (iOS and Android). The app can be added to the home screen and opens full-screen.
 
 ## 12. Technical overview
 

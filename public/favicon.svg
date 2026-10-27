@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#16224a"/>
+      <stop offset="1" stop-color="#070b14"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#22e0a1" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#22e0a1" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ghost" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#d9e1ff"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <circle cx="318" cy="196" r="210" fill="url(#glow)"/>
+
+  <!-- Dartboard: each ring is a circle whose dashes make the 20 segments. -->
+  <g transform="translate(318 196) rotate(-99)" fill="none">
+    <circle r="150" fill="#05070d"/>
+    <circle r="134" stroke="#ff4d6d" stroke-width="15"/>
+    <circle r="134" stroke="#22e0a1" stroke-width="15" stroke-dasharray="42.1 42.1"/>
+    <circle r="111" stroke="#f3e7c9" stroke-width="31"/>
+    <circle r="111" stroke="#111827" stroke-width="31" stroke-dasharray="34.87 34.87"/>
+    <circle r="88" stroke="#ff4d6d" stroke-width="15"/>
+    <circle r="88" stroke="#22e0a1" stroke-width="15" stroke-dasharray="27.65 27.65"/>
+    <circle r="57" stroke="#f3e7c9" stroke-width="47"/>
+    <circle r="57" stroke="#111827" stroke-width="47" stroke-dasharray="17.91 17.91"/>
+    <circle r="24" fill="#22e0a1"/>
+    <circle r="11" fill="#ff4d6d"/>
+  </g>
+
+  <!-- A dart stuck in the bull, flights up and to the right. -->
+  <g transform="translate(372.4 141.6) rotate(135) scale(0.7)">
+    <path d="M-200 -40 L-128 -5 L-128 5 L-200 40 L-178 0 Z" fill="#22e0a1" stroke="#070b14" stroke-width="8" stroke-linejoin="round"/>
+    <rect x="-132" y="-6" width="76" height="12" rx="3" fill="#cbd5e1"/>
+    <rect x="-60" y="-16" width="118" height="32" rx="10" fill="#ffc857" stroke="#070b14" stroke-width="6"/>
+    <path d="M-34 -14 v28 M-14 -14 v28 M6 -14 v28 M26 -14 v28" stroke="#b7862a" stroke-width="6"/>
+    <path d="M56 -8 L110 0 L56 8 Z" fill="#e5e7eb"/>
+  </g>
+
+  <!-- Ghost, in front, bottom left. -->
+  <g transform="translate(184 316) scale(0.86) translate(-256 -284)">
+    <path d="M146 262 A110 110 0 0 1 366 262 L366 384
+             q-18.33 32 -36.67 0 q-18.33 -32 -36.67 0 q-18.33 32 -36.67 0
+             q-18.33 -32 -36.67 0 q-18.33 32 -36.67 0 q-18.33 -32 -36.67 0 Z"
+          fill="url(#ghost)" stroke="#070b14" stroke-width="12" stroke-linejoin="round"/>
+    <ellipse cx="226" cy="262" rx="17" ry="24" fill="#0e1630"/>
+    <ellipse cx="302" cy="262" rx="17" ry="24" fill="#0e1630"/>
+    <circle cx="233" cy="252" r="6" fill="#ffffff"/>
+    <circle cx="309" cy="252" r="6" fill="#ffffff"/>
+    <ellipse cx="196" cy="304" rx="15" ry="9" fill="#ff4d6d" opacity="0.4"/>
+    <ellipse cx="330" cy="304" rx="15" ry="9" fill="#ff4d6d" opacity="0.4"/>
+    <path d="M246 310 Q264 328 282 310" fill="none" stroke="#0e1630" stroke-width="8" stroke-linecap="round"/>
+  </g>
+</svg>
