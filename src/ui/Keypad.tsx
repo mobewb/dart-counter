@@ -5,11 +5,12 @@ import { useI18n } from './i18n'
 interface Props {
   onHit: (dart: Dart) => void
   disabled?: boolean
+  targets?: number[]
 }
 
 const NUMBERS = Array.from({ length: 20 }, (_, i) => i + 1)
 
-export function Keypad({ onHit, disabled }: Props) {
+export function Keypad({ onHit, disabled, targets }: Props) {
   const { t } = useI18n()
   const [mult, setMult] = useState<Multiplier>(1)
   const throwAt = (segment: number, multiplier: Multiplier = mult) => {
@@ -26,7 +27,7 @@ export function Keypad({ onHit, disabled }: Props) {
       </div>
       <div className="pad__grid">
         {NUMBERS.map((n) => (
-          <button key={n} disabled={disabled} onClick={() => throwAt(n)}>{n}</button>
+          <button key={n} disabled={disabled} className={targets && !targets.includes(n) ? 'is-faded' : ''} onClick={() => throwAt(n)}>{n}</button>
         ))}
         <button className="pad__bull" disabled={disabled} onClick={() => throwAt(25, mult === 3 ? 1 : mult)}>{t('bull')}</button>
         <button className="pad__miss" disabled={disabled} onClick={() => throwAt(0, 1)}>{t('miss')}</button>

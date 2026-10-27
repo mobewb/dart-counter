@@ -20,9 +20,11 @@ function sector(r1: number, r2: number, a0: number, a1: number): string {
 interface Props {
   onHit: (dart: Dart) => void
   disabled?: boolean
+  /** When set, numbers outside this list are faded (cricket). */
+  targets?: number[]
 }
 
-export function Dartboard({ onHit, disabled }: Props) {
+export function Dartboard({ onHit, disabled, targets }: Props) {
   const hit = (segment: number, multiplier: Multiplier) => () => !disabled && onHit({ segment, multiplier })
   return (
     <svg className={`board${disabled ? ' board--off' : ''}`} viewBox="-135 -135 270 270" role="group" aria-label="Dartboard">
@@ -32,19 +34,20 @@ export function Dartboard({ onHit, disabled }: Props) {
         const a0 = i * SPAN - SPAN / 2
         const a1 = a0 + SPAN
         const dark = i % 2 === 0
+        const fade = targets && !targets.includes(n) ? ' seg--faded' : ''
         const [lx, ly] = point(119, i * SPAN)
         return (
           <g key={n}>
-            <path d={sector(R.tripleOut, R.singleOut, a0, a1)} className={dark ? 'seg seg--dark' : 'seg seg--light'} onClick={hit(n, 1)} />
-            <path d={sector(R.outerBull, R.singleIn, a0, a1)} className={dark ? 'seg seg--dark' : 'seg seg--light'} onClick={hit(n, 1)} />
-            <path d={sector(R.singleIn, R.tripleOut, a0, a1)} className={dark ? 'seg seg--red' : 'seg seg--green'} onClick={hit(n, 3)} />
-            <path d={sector(R.singleOut, R.doubleOut, a0, a1)} className={dark ? 'seg seg--red' : 'seg seg--green'} onClick={hit(n, 2)} />
+            <path d={sector(R.tripleOut, R.singleOut, a0, a1)} className={(dark ? 'seg seg--dark' : 'seg seg--light') + fade} onClick={hit(n, 1)} />
+            <path d={sector(R.outerBull, R.singleIn, a0, a1)} className={(dark ? 'seg seg--dark' : 'seg seg--light') + fade} onClick={hit(n, 1)} />
+            <path d={sector(R.singleIn, R.tripleOut, a0, a1)} className={(dark ? 'seg seg--red' : 'seg seg--green') + fade} onClick={hit(n, 3)} />
+            <path d={sector(R.singleOut, R.doubleOut, a0, a1)} className={(dark ? 'seg seg--red' : 'seg seg--green') + fade} onClick={hit(n, 2)} />
             <text x={lx} y={ly} className="board__num" textAnchor="middle" dominantBaseline="central">{n}</text>
           </g>
         )
       })}
-      <circle r={R.outerBull} className="seg seg--green" onClick={hit(25, 1)} />
-      <circle r={R.bull} className="seg seg--red" onClick={hit(25, 2)} />
+      <circle r={R.outerBull} className={'seg seg--green' + (targets && !targets.includes(25) ? ' seg--faded' : '')} onClick={hit(25, 1)} />
+      <circle r={R.bull} className={'seg seg--red' + (targets && !targets.includes(25) ? ' seg--faded' : '')} onClick={hit(25, 2)} />
     </svg>
   )
 }

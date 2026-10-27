@@ -4,10 +4,10 @@ import { dartLabel } from './dartLabel'
 import { Dartboard } from './Dartboard'
 import { useI18n } from './i18n'
 import { Keypad } from './Keypad'
-import type { MatchSetup } from './Setup'
+import type { X01Setup } from './Setup'
 
 interface Props {
-  setup: MatchSetup
+  setup: X01Setup
   onRematch: () => void
   onExit: () => void
 }

@@ -180,3 +180,51 @@ h1, h2, p { margin: 0; }
   .pcard { flex-basis: 170px; }
 }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* ---------- setup hints, cricket ---------- */
+.hint { color: var(--muted); font-size: 0.85rem; line-height: 1.4; }
+.seg--faded { opacity: 0.28; }
+.pad__grid button.is-faded { opacity: 0.35; }
+
+.cricket { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; --cols: 2; }
+.cricket__head, .cricket__row { display: grid; grid-template-columns: 56px repeat(var(--cols), minmax(64px, 1fr)); align-items: stretch; }
+.cricket { overflow-x: auto; }
+.cricket__head { border-bottom: 1px solid var(--line); }
+.cricket__corner { display: grid; place-items: center; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.cricket__player { padding: 10px 6px; text-align: center; display: grid; gap: 2px; opacity: 0.7; transition: all 0.25s; min-width: 0; }
+.cricket__player.is-active { opacity: 1; background: linear-gradient(180deg, rgb(34 224 161 / 0.2), transparent); box-shadow: inset 0 -2px 0 var(--accent); }
+.cricket__player.is-winner { box-shadow: inset 0 -2px 0 var(--gold); }
+.cricket__name { font-size: 0.8rem; font-weight: 700; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cricket__player.is-active .cricket__name { color: var(--text); }
+.cricket__points { font-size: 1.9rem; font-weight: 900; letter-spacing: -0.03em; }
+.cricket__player.is-active .cricket__points { text-shadow: 0 0 24px rgb(34 224 161 / 0.55); }
+
+.cricket__row { border-top: 1px solid rgb(255 255 255 / 0.05); transition: opacity 0.3s; }
+.cricket__row.is-dead { opacity: 0.35; }
+.cricket__target { display: grid; place-items: center; padding: 10px 0; font-weight: 900; font-size: 1.25rem; background: rgb(0 0 0 / 0.25); color: var(--gold); }
+.cricket__cell { display: grid; place-items: center; font-size: 1.6rem; font-weight: 800; color: var(--muted); min-height: 46px; }
+.cricket__cell.is-active { background: rgb(34 224 161 / 0.06); }
+.cricket__cell.marks-1, .cricket__cell.marks-2 { color: var(--accent2); }
+.cricket__cell.marks-3 { color: var(--accent); text-shadow: 0 0 14px rgb(34 224 161 / 0.7); }
+
+/* ---------- targets strip + roulette ---------- */
+.targets { --reel-h: 68px; display: grid; gap: 8px; }
+.targets h2 { font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 600; text-align: center; }
+.targets__row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.target {
+  width: 52px; height: var(--reel-h); overflow: hidden; position: relative; border-radius: 14px;
+  background: linear-gradient(180deg, #0b1228, #1a2547 50%, #0b1228);
+  border: 1px solid rgb(255 200 87 / 0.45);
+  box-shadow: inset 0 0 14px rgb(0 0 0 / 0.7), 0 6px 20px -8px rgb(255 200 87 / 0.5);
+  display: grid; place-items: center;
+  font-size: 1.7rem; font-weight: 900; color: var(--gold);
+}
+.target::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgb(0 0 0 / 0.55), transparent 28%, transparent 72%, rgb(0 0 0 / 0.55)); }
+.target--bull { border-color: rgb(226 58 82 / 0.7); color: #ff8da1; }
+.target__reel { position: absolute; top: 0; left: 0; right: 0; will-change: transform; }
+.target__reel span { display: grid; place-items: center; height: var(--reel-h); }
+.target.is-landed { animation: land 0.4s ease-out; }
+.target.is-dead { opacity: 0.35; text-decoration: line-through; }
+@keyframes land { 40% { transform: scale(1.12); box-shadow: 0 0 26px rgb(255 200 87 / 0.8); } }
+.cricket { transition: opacity 0.4s, transform 0.4s; }
+.cricket--hidden { opacity: 0; transform: translateY(10px); pointer-events: none; visibility: hidden; transition: none; }
