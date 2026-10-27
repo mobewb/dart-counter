@@ -2,8 +2,6 @@ import { describe, expect, it } from 'vitest'
 import {
   applyDart,
   CRICKET_TARGETS,
-  crazyDeal,
-  crazyTargets,
   newMatch,
   replay,
   type CricketConfig,
@@ -19,6 +17,7 @@ const miss: Dart = { segment: 0, multiplier: 1 }
 const config = (over: Partial<CricketConfig> = {}): CricketConfig => ({
   playerCount: 2,
   targets: CRICKET_TARGETS,
+  targetPolicy: { kind: 'fixed' },
   ...over,
 })
 
@@ -141,22 +140,6 @@ describe('targets', () => {
     expect(CRICKET_TARGETS).toEqual([20, 19, 18, 17, 16, 15, 25])
   })
 
-  it('crazy cricket picks six distinct numbers sorted high to low plus the bull', () => {
-    const picked = crazyTargets(() => 0.42)
-    expect(picked).toHaveLength(7)
-    expect(picked.at(-1)).toBe(25)
-    const numbers = picked.slice(0, -1)
-    expect(new Set(numbers).size).toBe(6)
-    expect([...numbers].sort((a, b) => b - a)).toEqual(numbers)
-    expect(numbers.every((n) => n >= 1 && n <= 20)).toBe(true)
-  })
-
-  it('crazy cricket varies with the random source', () => {
-    const a = crazyTargets(() => 0)
-    const b = crazyTargets(() => 0.99)
-    expect(a).not.toEqual(b)
-  })
-
   it('works with custom targets', () => {
     const m = replay(config({ targets: [7, 12, 25] }), [t(7), s(20)])
     expect(m.players[0]!.marks[7]).toBe(3)
@@ -175,7 +158,7 @@ describe('undo via replay', () => {
 
 describe('crazy rerolls', () => {
   const pool = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
-  const crazy = (over: Partial<CricketConfig> = {}) => config({ rerollPool: pool, ...over })
+  const crazy = (over: Partial<CricketConfig> = {}) => config({ targetPolicy: { kind: 'reroll', pool }, ...over })
   /** Events of the last dart in the log. */
   const eventsOf = (cfg: CricketConfig, darts: Dart[]) => replayLog(newMatch(cfg), applyDart, darts).events
   const rerolled = (cfg: CricketConfig, darts: Dart[]) =>
@@ -237,7 +220,7 @@ describe('crazy rerolls', () => {
   })
 
   it('stops rerolling when the pool runs out', () => {
-    const small = crazy({ rerollPool: [1, 2] })
+    const small = crazy({ targetPolicy: { kind: 'reroll', pool: [1, 2] } })
     const m = replay(small, [miss, miss, miss, miss, miss, miss])
     expect(m.targets).toEqual([1, 2, 18, 17, 16, 15, 25])
   })
@@ -247,12 +230,5 @@ describe('crazy rerolls', () => {
     const before = replay(crazy(), log.slice(0, -1))
     expect(replay(crazy(), log.slice(0, -1))).toEqual(before)
     expect(before.targets).not.toEqual(CRICKET_TARGETS)
-  })
-
-  it('crazyDeal pairs six targets with a pool of the unused numbers', () => {
-    const { targets, rerollPool } = crazyDeal(() => 0.3)
-    const numbers = targets.slice(0, -1)
-    expect(rerollPool).toHaveLength(14)
-    expect(new Set([...numbers, ...rerollPool]).size).toBe(20)
   })
 })

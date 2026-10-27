@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { cricket } from './engine'
+import { cricketConfig } from './application/cricket-config'
 import { CricketGame } from './ui/CricketGame'
 import { Game } from './ui/Game'
 import { I18nProvider } from './ui/i18n'
@@ -17,7 +17,7 @@ export function App() {
 
   const rematch = () => {
     // Crazy cricket deals a fresh set of numbers.
-    if (setup?.kind === 'crazy') start({ ...setup, config: { ...setup.config, ...cricket.crazyDeal() } })
+    if (setup?.kind === 'crazy') start({ ...setup, config: cricketConfig('crazy', setup.config.playerCount) })
     setRound((r) => r + 1)
   }
   const exit = () => setSetup(null)

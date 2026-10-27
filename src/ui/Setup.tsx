@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { cricket, x01 } from '../engine'
+import { cricketConfig } from '../application/cricket-config'
+import type { cricket, x01 } from '../engine'
 import { useI18n } from './i18n'
 
 export interface X01Setup {
@@ -66,8 +67,7 @@ export function Setup({ initial, onStart }: Props) {
         names: finalNames,
       })
     } else {
-      const deal = kind === 'crazy' ? cricket.crazyDeal() : { targets: cricket.CRICKET_TARGETS, rerollPool: undefined }
-      onStart({ kind, config: { playerCount: names.length, ...deal }, names: finalNames })
+      onStart({ kind, config: cricketConfig(kind, names.length), names: finalNames })
     }
   }
 

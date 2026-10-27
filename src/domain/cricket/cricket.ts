@@ -3,20 +3,24 @@ import { replayLog, type DomainEvent, type Move } from '../shared-kernel/events'
 
 const DARTS_PER_TURN = 3
 const MARKS_TO_CLOSE = 3
-const BULL = 25
+export const BULL = 25
 
 /** Standard cricket: 20 down to 15, then the bull. */
 export const CRICKET_TARGETS = [20, 19, 18, 17, 16, 15, BULL]
+
+/**
+ * How a match picks its targets. *fixed*: the starting targets for the whole
+ * match. *reroll* (crazy cricket): after a full round, targets nobody hit are
+ * replaced from `pool`, in order. The pool is dealt up front so replaying a log
+ * is deterministic.
+ */
+export type TargetPolicy = { kind: 'fixed' } | { kind: 'reroll'; pool: number[] }
 
 export interface CricketConfig {
   playerCount: number
   /** Segments that count at the start, with 25 for the bull. */
   targets: number[]
-  /**
-   * Crazy cricket only: numbers (in order) that replace targets nobody has
-   * marked after a full round. Fixed up front so replaying a log is deterministic.
-   */
-  rerollPool?: number[]
+  targetPolicy: TargetPolicy
 }
 
 export interface CricketPlayer {
@@ -38,21 +42,6 @@ export interface CricketMatch {
   roundHits: number[]
   status: 'playing' | 'finished'
   winner: number | null
-}
-
-/** Six random numbers (high to low) plus the bull, and the shuffled numbers left over. */
-export function crazyDeal(random: () => number = Math.random): { targets: number[]; rerollPool: number[] } {
-  const numbers = Array.from({ length: 20 }, (_, i) => i + 1)
-  for (let i = numbers.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1))
-    ;[numbers[i], numbers[j]] = [numbers[j]!, numbers[i]!]
-  }
-  const targets = [...numbers.slice(0, 6).sort((a, b) => b - a), BULL]
-  return { targets, rerollPool: numbers.slice(6) }
-}
-
-export function crazyTargets(random: () => number = Math.random): number[] {
-  return crazyDeal(random).targets
 }
 
 export function marksOn(player: CricketPlayer, target: number): number {
@@ -82,7 +71,8 @@ export function newMatch(config: CricketConfig): CricketMatch {
  * from the pool. Marks on a replaced number are discarded; points are kept.
  */
 function reroll(state: CricketMatch, players: CricketPlayer[]): Move<CricketMatch> {
-  const pool = state.config.rerollPool ?? []
+  const policy = state.config.targetPolicy
+  const pool = policy.kind === 'reroll' ? policy.pool : []
   const targets = [...state.targets]
   const replaced: number[] = []
   const dropped: number[] = []
