@@ -228,3 +228,50 @@ h1, h2, p { margin: 0; }
 @keyframes land { 40% { transform: scale(1.12); box-shadow: 0 0 26px rgb(255 200 87 / 0.8); } }
 .cricket { transition: opacity 0.4s, transform 0.4s; }
 .cricket--hidden { opacity: 0; transform: translateY(10px); pointer-events: none; visibility: hidden; transition: none; }
+
+/* ---------- crazy roulette ---------- */
+.target-wrap { position: relative; }
+.targets--spin {
+  position: relative; padding: 14px 8px 18px; border-radius: 24px; isolation: isolate;
+  background: radial-gradient(closest-side, rgb(255 77 109 / 0.22), transparent 75%);
+  animation: strip-shake 0.18s linear infinite, strip-hue 1.4s linear infinite;
+}
+.targets--spin::before {
+  content: ''; position: absolute; inset: -2px; z-index: -1; border-radius: 26px; filter: blur(14px); opacity: 0.8;
+  background: conic-gradient(from 0deg, #ff4d6d, #ffc857, #22e0a1, #3b82f6, #c264ff, #ff4d6d);
+  animation: spin-ring 1.6s linear infinite;
+}
+@keyframes spin-ring { to { transform: rotate(360deg); } }
+@keyframes strip-hue { to { filter: hue-rotate(360deg); } }
+@keyframes strip-shake { 25% { transform: translate(2px, -1px) rotate(0.4deg); } 50% { transform: translate(-2px, 1px) rotate(-0.4deg); } 75% { transform: translate(1px, 2px) rotate(0.3deg); } }
+
+.crazy-title {
+  display: inline-block; font-size: 1rem; font-weight: 900; letter-spacing: 0.22em; color: #fff;
+  text-shadow: 0 0 12px var(--hot), 0 0 28px var(--gold);
+  animation: title-pulse 0.5s ease-in-out infinite alternate, glitch 0.9s steps(2) infinite;
+}
+@keyframes title-pulse { from { transform: scale(0.95); } to { transform: scale(1.12); } }
+@keyframes glitch { 0%, 90% { text-shadow: 0 0 12px var(--hot), 0 0 28px var(--gold); } 92% { text-shadow: -3px 0 var(--accent2), 3px 0 var(--hot); } 96% { text-shadow: 3px 0 var(--accent), -3px 0 var(--gold); } }
+
+.targets--spin .target { animation: neon 0.9s linear infinite, wobble 0.35s ease-in-out infinite alternate; animation-delay: calc(var(--i, 0) * -0.12s); width: 58px; height: calc(var(--reel-h) + 6px); }
+.targets--spin .target-wrap:nth-child(odd) .target { --tilt: -3deg; }
+.targets--spin .target-wrap:nth-child(even) .target { --tilt: 3deg; }
+@keyframes wobble { from { transform: rotate(var(--tilt, 2deg)) translateY(-2px); } to { transform: rotate(calc(var(--tilt, 2deg) * -1)) translateY(2px); } }
+@keyframes neon {
+  0% { border-color: #ff4d6d; box-shadow: 0 0 18px #ff4d6d, inset 0 0 14px rgb(0 0 0 / 0.7); }
+  33% { border-color: #ffc857; box-shadow: 0 0 18px #ffc857, inset 0 0 14px rgb(0 0 0 / 0.7); }
+  66% { border-color: #22e0a1; box-shadow: 0 0 18px #22e0a1, inset 0 0 14px rgb(0 0 0 / 0.7); }
+  100% { border-color: #ff4d6d; box-shadow: 0 0 18px #ff4d6d, inset 0 0 14px rgb(0 0 0 / 0.7); }
+}
+.target__reel { filter: blur(2.5px) saturate(1.6); }
+.target__reel.is-still { filter: none; transition: filter 0.2s; }
+.targets--spin .target.is-slam { animation: slam 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) forwards; border-color: #fff; box-shadow: 0 0 34px #ffc857, 0 0 60px rgb(255 77 109 / 0.6); color: #fff; }
+@keyframes slam { 0% { transform: scale(1.7) rotate(-8deg); } 60% { transform: scale(0.92) rotate(2deg); } 100% { transform: scale(1.1) rotate(0); } }
+
+.sparks { position: absolute; left: 50%; top: 50%; pointer-events: none; z-index: 3; }
+.sparks i {
+  position: absolute; width: 7px; height: 7px; margin: -3.5px; border-radius: 50%;
+  background: hsl(calc(var(--h) * 1deg) 100% 62%); box-shadow: 0 0 10px hsl(calc(var(--h) * 1deg) 100% 62%);
+  animation: spark 0.75s ease-out forwards;
+}
+@keyframes spark { from { transform: rotate(var(--a)) translateY(0) scale(1.3); opacity: 1; } to { transform: rotate(var(--a)) translateY(calc(var(--d) * -1)) scale(0); opacity: 0; } }

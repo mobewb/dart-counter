@@ -13,6 +13,7 @@ interface Props {
 const SPIN_MS = 1500
 const STAGGER_MS = 380
 const FILLER = 22
+const SPARKS = 14
 
 const label = (target: number) => (target === 25 ? 'B' : String(target))
 
@@ -27,23 +28,29 @@ function reelColumn(target: number): string[] {
 export function TargetsStrip({ targets, dead, spin, onSpinEnd }: Props) {
   const { t } = useI18n()
   const [go, setGo] = useState(false)
+  const [landed, setLanded] = useState<number[]>([])
   const columns = useMemo(() => targets.map(reelColumn), [targets])
   const total = SPIN_MS + Math.max(0, (spin?.length ?? 1) - 1) * STAGGER_MS
 
   useEffect(() => {
     if (!spin) return
     setGo(false)
+    setLanded([])
     const start = requestAnimationFrame(() => requestAnimationFrame(() => setGo(true)))
-    const done = setTimeout(onSpinEnd, total + 250)
+    const lands = spin.map((reel, order) =>
+      setTimeout(() => setLanded((prev) => [...prev, reel]), SPIN_MS + order * STAGGER_MS),
+    )
+    const done = setTimeout(onSpinEnd, total + 700)
     return () => {
       cancelAnimationFrame(start)
       clearTimeout(done)
+      lands.forEach(clearTimeout)
     }
   }, [spin, total, onSpinEnd, targets])
 
   return (
-    <section className="targets" aria-label={t('shootFor')}>
-      <h2>{t('shootFor')}</h2>
+    <section className={`targets${spin ? ' targets--spin' : ''}`} aria-label={t('shootFor')}>
+      <h2>{spin ? <span className="crazy-title">🎰 {t('crazyRoll')} 🎰</span> : t('shootFor')}</h2>
       <div className="targets__row">
         {targets.map((target, i) => {
           const order = spin ? spin.indexOf(i) : -1
@@ -55,12 +62,14 @@ export function TargetsStrip({ targets, dead, spin, onSpinEnd }: Props) {
             dead.has(target) && 'is-dead',
             target === 25 && 'target--bull',
             !spin && 'is-landed',
+            spinning && landed.includes(i) && 'is-slam',
           ].filter(Boolean).join(' ')
           return (
-            <div key={i} className={cls}>
+            <div key={i} className="target-wrap" style={{ ['--i' as string]: i }}>
+            <div className={cls}>
               {spinning ? (
                 <div
-                  className="target__reel"
+                  className={`target__reel${landed.includes(i) ? ' is-still' : ''}`}
                   style={{
                     transform: go ? `translateY(calc(var(--reel-h) * -${column.length - 1}))` : 'translateY(0)',
                     transition: go ? `transform ${duration}ms cubic-bezier(0.12, 0.7, 0.18, 1)` : 'none',
@@ -71,6 +80,14 @@ export function TargetsStrip({ targets, dead, spin, onSpinEnd }: Props) {
               ) : (
                 <span>{label(target)}</span>
               )}
+            </div>
+            {spinning && landed.includes(i) && (
+              <div className="sparks" aria-hidden>
+                {Array.from({ length: SPARKS }, (_, k) => (
+                  <i key={k} style={{ ['--a' as string]: `${(360 / SPARKS) * k}deg`, ['--d' as string]: `${46 + (k % 3) * 18}px`, ['--h' as string]: (k * 47) % 360 }} />
+                ))}
+              </div>
+            )}
             </div>
           )
         })}

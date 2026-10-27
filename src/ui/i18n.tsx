@@ -46,6 +46,7 @@ const dict = {
     targets: 'Targets',
     closedByAll: 'Dead',
     shootFor: 'Shoot for',
+    crazyRoll: 'CRAZY ROLL',
   },
   fr: {
     tagline: 'Comptez. Visez les doubles.',
@@ -92,6 +93,7 @@ const dict = {
     targets: 'Cibles',
     closedByAll: 'Mort',
     shootFor: 'Visez',
+    crazyRoll: 'ROULETTE FOLLE',
   },
 }
 
