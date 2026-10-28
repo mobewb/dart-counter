@@ -1,0 +1,33 @@
+# Hooks run by prek (https://github.com/j178/prek) on commit and in CI.
+# Set up once with: mise install && prek install
+default_install_hook_types: [pre-commit, commit-msg]
+
+repos:
+  - repo: builtin
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+
+  - repo: local
+    hooks:
+      - id: typecheck
+        name: typecheck
+        entry: npm run typecheck
+        language: system
+        files: \.(ts|tsx)$|^tsconfig\.json$|^package(-lock)?\.json$
+        pass_filenames: false
+      - id: test
+        name: test
+        entry: npm test
+        language: system
+        files: \.(ts|tsx)$|^package(-lock)?\.json$
+        pass_filenames: false
+      - id: conventional-commit
+        name: conventional commit message
+        entry: scripts/check-commit-msg.sh
+        language: script
+        stages: [commit-msg]
