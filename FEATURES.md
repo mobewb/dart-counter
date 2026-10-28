@@ -46,6 +46,7 @@ Every mode can be played solo (each player for themselves) or in **teams** — s
 - **Teams** — with 2 or more players, a *Teams* toggle splits them into teams (see [Team play](#team-play)).
 - **Settings memory** — the setup screen is pre-filled with the last match's mode, rules, names and teams, even after the app is closed.
 - **Language toggle** — FR / EN button on the setup screen.
+- **Sound** — *Caller voice* and *Vibration* toggles, remembered on the device.
 
 ### Team play
 
@@ -129,6 +130,8 @@ Two interchangeable input methods, switchable at any time during a game:
 
 - **Undo** — removes the last dart, repeatedly and across turns, legs and sets (the whole game is rebuilt from the dart log). It can also be used from the winner screen to correct the last throw.
 - **Quit** — returns to the setup screen after a confirmation prompt.
+- **Caller voice** (off by default) — a spoken darts caller in English or French: the visit score ("One hundred and eighty!"), "No score", "Bust", "Game shot!", "Game shot, and the match!", and what the next thrower requires when they are on a finish ("Ann, you require 81"). In Cricket and Around the Clock, only the winner is announced. Undo and resuming a match stay silent.
+- **Vibration** (on by default, on phones that support it) — a light tick on each dart, a double buzz on a bust and a longer pattern on a win.
 - **Screen wake lock** — in X01, the screen is kept on during the game (where the browser supports it).
 
 ## 9. End of game
@@ -158,7 +161,7 @@ Everything is stored on the device, in the browser; nothing is sent anywhere.
   - *Players:* each player's wins / matches and career stats across all saved matches — X01 average, highest visit, 180s, checkout rate, best checkout, best leg, and cricket MPR. Players are matched by name, ignoring case.
   - *Matches:* every finished match, most recent first, with its date, game mode, sides and results, and the winner highlighted. A match can be deleted.
 - **Leaving a match** — Quit or New game clears the saved match in progress. A quit match is not added to the history.
-- **Preferences** — the language and the last setup are remembered.
+- **Preferences** — the language, the last setup and the sound settings are remembered.
 - **Storage** — IndexedDB for matches, `localStorage` for preferences. The app asks the browser to keep this data persistent. Clearing the site data deletes it, and it is not synced between devices.
 - **Fail-safe** — if storage is unavailable (blocked, private mode, full), the app keeps working without saving.
 
@@ -201,6 +204,7 @@ src/
 │   ├── sides.ts               Team play: side names, who throws next, per-player stats
 │   ├── match-stats.ts         Match stats per player (first 9, 180s, checkout %, MPR…)
 │   ├── history.ts             Player records across the match history
+│   ├── caller.ts              What a darts caller announces after a dart
 │   └── cricket-config.ts      Cricket configs; crazy deal with an injected random source
 ├── infrastructure/          Adapters to the browser
 │   ├── indexeddb-repository.ts   MatchRepository on IndexedDB

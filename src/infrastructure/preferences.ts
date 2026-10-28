@@ -5,6 +5,7 @@ type KeyValueStore = Pick<Storage, 'getItem' | 'setItem'>
 
 const LANG = 'dart-counter:lang'
 const LAST_SETUP = 'dart-counter:last-setup'
+const SETTINGS = 'dart-counter:settings'
 const MODES = ['x01', 'cricket', 'crazy', 'clock']
 
 /** localStorage, or undefined where it is blocked (some private modes). */
@@ -54,4 +55,31 @@ export function loadLastSetup(store = defaultStore()): MatchSetup | undefined {
 
 export function saveLastSetup(setup: MatchSetup, store = defaultStore()): void {
   write(store, LAST_SETUP, JSON.stringify(setup))
+}
+
+/** Sound and touch feedback during a match. */
+export interface Settings {
+  /** Spoken calls: visit scores, busts, what a player requires. */
+  caller: boolean
+  /** A short vibration on each dart, a pattern on a bust or a win. */
+  haptics: boolean
+}
+
+/** A talking phone in a pub is opt-in; a light tick is not. */
+export const DEFAULT_SETTINGS: Settings = { caller: false, haptics: true }
+
+export function loadSettings(store = defaultStore()): Settings {
+  try {
+    const saved = JSON.parse(read(store, SETTINGS) ?? '{}')
+    return {
+      caller: typeof saved.caller === 'boolean' ? saved.caller : DEFAULT_SETTINGS.caller,
+      haptics: typeof saved.haptics === 'boolean' ? saved.haptics : DEFAULT_SETTINGS.haptics,
+    }
+  } catch {
+    return DEFAULT_SETTINGS
+  }
+}
+
+export function saveSettings(settings: Settings, store = defaultStore()): void {
+  write(store, SETTINGS, JSON.stringify(settings))
 }

@@ -132,3 +132,40 @@ The order is reliability first, then the stats players care about, then reach (n
 - *The progress bar looked wrong in a screenshot.* Measuring showed the width is correct at rest; it was mid-transition because the test tapped faster than the 0.3 s animation. **No change needed.**
 - *No variant options yet* (skip ahead, doubles only, reverse). The config is ready for them. **Backlog.**
 - *Other party games* (Killer, Shanghai) are still missing. Killer needs per-player "assigned numbers" and lives: a bigger domain change. **Backlog**, now low-risk thanks to the contract.
+
+## Iteration 5 — Caller voice and haptics
+
+**Why:** players look at the board, not the phone. On TV and in leagues a caller announces every visit; the app can do the same, and a vibration confirms a tap registered without looking.
+
+**What was built**
+- `calls(setup, darts)` in the application layer: a pure function that decides what a caller says after the last dart.
+  - **X01:** the visit score (or *No score*), *Bust*, *Game shot!*, *Game shot, and the match!*, then "*Ann, you require 81*" when the next thrower is on a finish. In team play that's the right team member.
+  - **Other modes:** only the winner.
+- `useCaller` speaks the calls with the browser's speech synthesis, in the app's language (en-GB / fr-FR), and vibrates: a tick per dart, a double buzz on a bust, a long pattern on a win.
+- A *Sound* card on the setup screen, with *Caller voice* and *Vibration* toggles saved in `localStorage`.
+
+**Decisions**
+- *What to say* (application, pure, unit-tested) *is separate from how* (UI: words, voice, vibration). Wording lives in the translations; a future "chime only" mode would only touch the UI.
+- *Caller off by default:* a phone that suddenly talks in a pub is a bad surprise. *Vibration on by default:* it's discreet.
+- *Undo and resume are silent:* only a newly thrown dart triggers feedback, so correcting a mistake doesn't re-announce scores.
+- *"You require" only when a checkout exists* (it uses the checkout engine), as real callers do. "You require 171" is never said.
+- *No recorded audio:* the device's voice works offline and in both languages, at zero size.
+
+**Verified:** 8 caller tests (visit, no score, bust, game shot, match shot, require, the team member who's next, other modes) and a settings test (169 tests). Browser check with speech and vibration replaced by recorders: defaults, the setting remembered, 180, no score + require, bust, a silent undo, and French.
+
+**Challenge — what could be better**
+- *Device voices vary a lot.* Some Android voices read "180" flatly; there is no caller "personality". Recorded clips would sound better but would add megabytes and need FR and EN recordings. **Accepted.**
+- *iOS Safari has no vibration API*, so haptics silently do nothing on iPhones. Nothing can be done in a web app. **Documented.**
+- *No volume or voice picker.* The system volume and the device's default voice are used. **Backlog** if users ask.
+- *Cricket could call more* (e.g. "Triple 20, three marks"). Cricket callers rarely do this; the winner call is enough. **Skipped.**
+
+## Where the app stands, and what's next
+
+After five iterations the app covers what a pub, club or garage session needs: it works offline, gives pro-level stats and a history, has four game modes with team play, and a caller.
+
+**Next candidates, by value:**
+1. **Backup and restore** (export/import the history as a file). History lives in one browser; losing it hurts more as it grows.
+2. **Killer** party game (assigned numbers, lives). The most requested party mode; the contract makes it low-risk.
+3. **Around the Clock variants** (skip ahead with doubles/triples, doubles only); config-only.
+4. **Trends** in player records (average per match over time, as a small chart).
+5. **Visit total entry** for X01 (type "60" instead of three darts). It needs a rule for the checkout dart: a total entry can't know whether the last dart was a double, so the app would have to ask.

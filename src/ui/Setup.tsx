@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { MAX_TEAMS, startMatch, type GameModeId, type MatchSetup, type Sides } from '../application/match-setup'
+import type { Settings } from '../infrastructure/preferences'
 import { useI18n } from './i18n'
 import { gameModes, registry } from './registry'
 
@@ -7,6 +8,8 @@ interface Props {
   initial?: MatchSetup
   onStart: (setup: MatchSetup) => void
   onHistory: () => void
+  settings: Settings
+  onSettings: (settings: Settings) => void
 }
 
 const SCORES = [301, 501, 701]
@@ -42,7 +45,7 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
   )
 }
 
-export function Setup({ initial, onStart, onHistory }: Props) {
+export function Setup({ initial, onStart, onHistory, settings, onSettings }: Props) {
   const { t, lang, setLang } = useI18n()
   const x01 = initial?.mode === 'x01' ? initial.config : undefined
   const [kind, setKind] = useState<GameModeId>(initial?.mode ?? 'x01')
@@ -160,6 +163,12 @@ export function Setup({ initial, onStart, onHistory }: Props) {
           </div>
         </section>
       )}
+
+      <section className="card">
+        <h2>{t('sound')}</h2>
+        <Toggle label={t('callerVoice')} checked={settings.caller} onChange={(caller) => onSettings({ ...settings, caller })} />
+        <Toggle label={t('vibration')} checked={settings.haptics} onChange={(haptics) => onSettings({ ...settings, haptics })} />
+      </section>
 
       <button className="cta" onClick={start} disabled={!canStart}>{t('start')}</button>
     </main>
