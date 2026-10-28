@@ -21,6 +21,7 @@ function PlayerCard({ record }: { record: PlayerRecord }) {
     x01.highestCheckout > 0 && `${t('highCheckout')} ${x01.highestCheckout}`,
     x01.bestLeg !== null && `${t('bestLeg')} ${x01.bestLeg}`,
     cricket.matches > 0 && `MPR ${cricket.marksPerRound.toFixed(2)}`,
+    record.clock.matches > 0 && `${t('clock')} ${Math.round(record.clock.hitRate * 100)}%`,
   ].filter((chip): chip is string => Boolean(chip))
   return (
     <article className="hcard">

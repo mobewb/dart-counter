@@ -1,4 +1,4 @@
-import type { cricket, Dart, x01 } from '../domain'
+import type { clock, cricket, Dart, x01 } from '../domain'
 import type { MatchSetup } from './match-setup'
 import { steps, type Step } from './sides'
 
@@ -36,7 +36,16 @@ export interface CricketStats {
   marksPerRound: number
 }
 
-export type PlayerStats = X01Stats | CricketStats
+export interface ClockStats {
+  kind: 'clock'
+  dartsThrown: number
+  /** Targets hit in order. */
+  hits: number
+  /** Share of darts that hit the target, 0 to 1. */
+  hitRate: number
+}
+
+export type PlayerStats = X01Stats | CricketStats | ClockStats
 
 const perThree = (total: number, darts: number) => (darts === 0 ? 0 : (total / darts) * 3)
 
@@ -117,8 +126,18 @@ function cricketStats(setup: MatchSetup, log: Step[]): CricketStats[] {
   return stats.map((s) => ({ kind: 'cricket', ...s, marksPerRound: perThree(s.marks, s.dartsThrown) }))
 }
 
+function clockStats(setup: MatchSetup, log: Step[]): ClockStats[] {
+  const stats = setup.names.map(() => ({ dartsThrown: 0, hits: 0 }))
+  for (const { side, player, before, after } of log) {
+    stats[player]!.dartsThrown++
+    stats[player]!.hits += (after as clock.ClockMatch).players[side]!.progress - (before as clock.ClockMatch).players[side]!.progress
+  }
+  return stats.map((s) => ({ kind: 'clock', ...s, hitRate: s.dartsThrown === 0 ? 0 : s.hits / s.dartsThrown }))
+}
+
 /** Each player's stats for the match so far, by player index. */
 export function matchStats(setup: MatchSetup, darts: readonly Dart[]): PlayerStats[] {
   const log = steps(setup, darts).steps
-  return setup.mode === 'x01' ? x01Stats(setup, log) : cricketStats(setup, log)
+  if (setup.mode === 'x01') return x01Stats(setup, log)
+  return setup.mode === 'clock' ? clockStats(setup, log) : cricketStats(setup, log)
 }

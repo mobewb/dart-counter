@@ -71,3 +71,13 @@ describe('cricket stats', () => {
     expect(bob).toEqual({ kind: 'cricket', dartsThrown: 3, points: 0, marks: 1, marksPerRound: 1 })
   })
 })
+
+describe('Around the Clock stats', () => {
+  it('counts targets hit in order and the hit rate', () => {
+    const setup = startMatch({ mode: 'clock', names: ['Ann', 'Bob'] })
+    // Ann hits 1 and 2 but misses with her third dart (20 is not her target).
+    const [ann, bob] = matchStats(setup, [s(1), d(2), s(20), s(1), miss, miss])
+    expect(ann).toEqual({ kind: 'clock', dartsThrown: 3, hits: 2, hitRate: 2 / 3 })
+    expect(bob).toEqual({ kind: 'clock', dartsThrown: 3, hits: 1, hitRate: 1 / 3 })
+  })
+})

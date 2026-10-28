@@ -1,5 +1,6 @@
 import type { GameModeId, MatchSetup } from '../application/match-setup'
 import type { MatchCore } from '../domain'
+import { clockView } from './modes/clock/view'
 import { crazyCricketView, cricketView } from './modes/cricket/view'
 import type { ModeView } from './modes/types'
 import { x01View } from './modes/x01/view'
@@ -9,6 +10,7 @@ export const registry = {
   x01: x01View,
   cricket: cricketView,
   crazy: crazyCricketView,
+  clock: clockView,
 } satisfies { [Id in GameModeId]: ModeView<Extract<MatchSetup, { mode: Id }>, MatchCore> }
 
 export const gameModes = Object.keys(registry) as GameModeId[]

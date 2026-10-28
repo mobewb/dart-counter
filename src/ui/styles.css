@@ -436,7 +436,11 @@ button.team-badge { min-height: 44px; }
 .hcard__sides li { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); }
 .hcard__sides li.is-winner { color: var(--gold); font-weight: 700; }
 .hcard__sides b { color: var(--text); }
-.history { align-content: start; }
+.history, .setup { align-content: start; }
 .statline span { align-self: start; }
 .history__empty { text-align: center; padding: 32px 8px; }
 .history .topbar > span { width: 44px; }
+
+/* Around the Clock */
+.clock-progress { height: 6px; border-radius: 99px; background: rgb(255 255 255 / 0.1); overflow: hidden; margin: 4px 0; }
+.clock-progress i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.3s; }

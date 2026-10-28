@@ -5,7 +5,7 @@ type KeyValueStore = Pick<Storage, 'getItem' | 'setItem'>
 
 const LANG = 'dart-counter:lang'
 const LAST_SETUP = 'dart-counter:last-setup'
-const MODES = ['x01', 'cricket', 'crazy']
+const MODES = ['x01', 'cricket', 'crazy', 'clock']
 
 /** localStorage, or undefined where it is blocked (some private modes). */
 function defaultStore(): KeyValueStore | undefined {

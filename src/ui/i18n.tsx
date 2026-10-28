@@ -65,6 +65,11 @@ const dict = {
     deleteMatch: 'Delete match',
     confirmDelete: 'Delete this match from the history?',
     highCheckout: 'Best checkout',
+    clock: 'Clock',
+    clockHint: 'Around the Clock: hit 1 to 20 in order, then the bull. Any single, double or triple counts. First to finish wins.',
+    aimAt: 'Aim at',
+    targetsHit: 'Targets',
+    hitRate: 'Hit rate',
   },
   fr: {
     tagline: 'Comptez. Visez les doubles.',
@@ -129,6 +134,11 @@ const dict = {
     deleteMatch: 'Supprimer la partie',
     confirmDelete: 'Supprimer cette partie de l\'historique ?',
     highCheckout: 'Meilleure finition',
+    clock: 'Horloge',
+    clockHint: 'Tour de l\'horloge : touchez 1 à 20 dans l\'ordre, puis le bull. Simple, double ou triple, tout compte. Le premier qui finit gagne.',
+    aimAt: 'Visez',
+    targetsHit: 'Cibles',
+    hitRate: 'Réussite',
   },
 }
 

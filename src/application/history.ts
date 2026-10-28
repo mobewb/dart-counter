@@ -29,6 +29,13 @@ export interface PlayerRecord {
     marks: number
     marksPerRound: number
   }
+  clock: {
+    matches: number
+    dartsThrown: number
+    hits: number
+    /** Share of darts that hit the target, 0 to 1. */
+    hitRate: number
+  }
 }
 
 const key = (name: string) => name.trim().toLocaleLowerCase()
@@ -45,6 +52,7 @@ function emptyRecord(name: string): PlayerRecord {
     lastPlayed: 0,
     x01: { matches: 0, dartsThrown: 0, points: 0, average: 0, highestVisit: 0, oneEighties: 0, checkouts: 0, checkoutDarts: 0, highestCheckout: 0, bestLeg: null },
     cricket: { matches: 0, dartsThrown: 0, marks: 0, marksPerRound: 0 },
+    clock: { matches: 0, dartsThrown: 0, hits: 0, hitRate: 0 },
   }
 }
 
@@ -78,6 +86,10 @@ export function playerRecords(history: readonly FinishedMatch[]): PlayerRecord[]
         x.checkoutDarts += mine.checkoutDarts ?? 0
         x.highestCheckout = Math.max(x.highestCheckout, mine.highestCheckout)
         if (mine.bestLeg !== null) x.bestLeg = Math.min(x.bestLeg ?? Infinity, mine.bestLeg)
+      } else if (mine.kind === 'clock') {
+        record.clock.matches++
+        record.clock.dartsThrown += mine.dartsThrown
+        record.clock.hits += mine.hits
       } else {
         record.cricket.matches++
         record.cricket.dartsThrown += mine.dartsThrown
@@ -90,6 +102,7 @@ export function playerRecords(history: readonly FinishedMatch[]): PlayerRecord[]
       ...r,
       x01: { ...r.x01, average: perThree(r.x01.points, r.x01.dartsThrown) },
       cricket: { ...r.cricket, marksPerRound: perThree(r.cricket.marks, r.cricket.dartsThrown) },
+      clock: { ...r.clock, hitRate: r.clock.dartsThrown === 0 ? 0 : r.clock.hits / r.clock.dartsThrown },
     }))
     .sort((a, b) => b.matches - a.matches || b.lastPlayed - a.lastPlayed)
 }

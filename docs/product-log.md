@@ -102,7 +102,33 @@ The order is reliability first, then the stats players care about, then reach (n
 
 **Challenge — what could be better**
 - *Bug caught in the browser:* the screen is a full-height grid, so with few cards the tabs and chips stretched to fill the page. Fixed by packing rows at the top. Unit tests can't see this; the screenshot did.
+- *Process slip:* the placeholder-name fix was first committed with a failing test, because my commit command was chained after a `grep` of the test output (which succeeds whatever the result). The commit was amended once fixed (the test only had the wrong order). Commits are now gated on the test command's exit code.
 - *Two of my test expectations were wrong again* (checkout darts on misses at a finishable double). The definitions are subtle; the comments in the tests now spell out the reasoning.
 - *Default names polluted the records:* "Player 1" in different matches was treated as one person. **Fixed right after:** placeholder names ("Player N", "Joueur N") are left out of the Players tab; their matches still appear in the Matches tab.
 - *No trends or charts.* Average per match over time would be the natural next view. **Later:** needs a chart, and enough data to be meaningful.
 - *No export or backup.* History lives in one browser. An export/import JSON file would protect it. **Backlog.**
+
+## Iteration 4 — New game mode: Around the Clock
+
+**Why this mode:** it is the most widely played practice game, and it doubles as a simple race for mixed-level groups. It is also the best test of the architecture: a mode with different rules, a different scoreboard and different stats.
+
+**What was built**
+- `src/domain/clock/`: the rules. A side advances one target per hit of its current target (any multiplier), and the first to hit the bull wins at once. It implements the `GameMode` contract and passes the shared contract suite.
+- The target order is part of the config (`sequence`). The app uses 1–20 then the bull; tests use short sequences, and variants (reverse order, doubles only) become a config change.
+- UI: next-target cards with progress bars, an *Aim at* chip, and every non-target number faded on the board and the pad.
+- Stats: targets hit and hit rate, on the winner screen and in the player records.
+
+**What the architecture gave for free:** team play, undo, resume after a refresh, history, offline use and the per-player stats plumbing. The new code is the rules (~70 lines), one view, one stats function and translations. The registry's type check refused to compile until the mode had a UI entry: the "adding a mode = contract + registry entry" promise from ADR-003 held.
+
+**Decisions**
+- *Any multiplier counts as a single hit* (the classic rules). The "doubles and triples skip ahead" variant is popular but changes the game. **Kept for later** as an option.
+- *Instant win*, no "finish the round" rule, so the starter has an edge. That's standard for casual play.
+- *Short label "Clock" / "Horloge"* so four game modes fit on one row at phone width; the hint gives the full name.
+
+**Verified:** 6 rule tests, plus the contract suite for the new mode and a stats test (160 tests). Browser check of a full match (21 targets), the faded pad, the *Aim at* chip and the winner screen.
+
+**Challenge — what could be better**
+- *Bug found:* the setup screen stretched its cards and the *Throw!* button to fill the screen whenever the X01 cards were hidden (Cricket modes included, so it predates this iteration). Fixed with the same rule as the history screen. **Lesson:** the full-height grid in `.screen` is a trap; any new screen must set `align-content`.
+- *The progress bar looked wrong in a screenshot.* Measuring showed the width is correct at rest; it was mid-transition because the test tapped faster than the 0.3 s animation. **No change needed.**
+- *No variant options yet* (skip ahead, doubles only, reverse). The config is ready for them. **Backlog.**
+- *Other party games* (Killer, Shanghai) are still missing. Killer needs per-player "assigned numbers" and lives: a bigger domain change. **Backlog**, now low-risk thanks to the contract.
