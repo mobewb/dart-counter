@@ -152,8 +152,9 @@ h1, h2, p { margin: 0; }
 .pad__grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
 .pad__grid button { height: 54px; border-radius: 14px; font-weight: 800; font-size: 1.15rem; background: rgb(255 255 255 / 0.07); border: 1px solid var(--line); transition: transform 0.08s, background 0.15s; }
 .pad__grid button:not(:disabled):active { transform: scale(0.94); background: var(--accent2); }
+.pad__outer-bull { background: linear-gradient(135deg, rgb(34 224 161 / 0.35), rgb(34 224 161 / 0.15)) !important; }
 .pad__bull { grid-column: span 2; background: linear-gradient(135deg, rgb(226 58 82 / 0.5), rgb(226 58 82 / 0.25)) !important; }
-.pad__miss { grid-column: span 3; color: var(--muted); }
+.pad__miss { grid-column: span 2; color: var(--muted); }
 
 /* ---------- winner overlay ---------- */
 .overlay { position: fixed; inset: 0; display: grid; place-items: center; padding: 20px; background: rgb(4 6 12 / 0.8); backdrop-filter: blur(10px); animation: fade 0.3s; z-index: 10; }
