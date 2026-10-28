@@ -19,13 +19,19 @@ function phrase(call: Call, t: (key: Key) => string): string {
   }
 }
 
+/** Preferred voices, when installed (macOS); otherwise the browser picks one for the language. */
+const voiceNames: Record<Lang, string> = { en: 'Daniel', fr: 'Thomas' }
+
 function speak(texts: string[], lang: Lang) {
   const synth = globalThis.speechSynthesis
   if (!synth || texts.length === 0) return
+  const tag = lang === 'fr' ? 'fr-FR' : 'en-GB'
+  const voice = synth.getVoices().find((v) => v.name.startsWith(voiceNames[lang]) && v.lang.startsWith(lang))
   synth.cancel()
   for (const text of texts) {
     const utterance = new SpeechSynthesisUtterance(text)
-    utterance.lang = lang === 'fr' ? 'fr-FR' : 'en-GB'
+    utterance.lang = tag
+    if (voice) utterance.voice = voice
     synth.speak(utterance)
   }
 }
