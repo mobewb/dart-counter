@@ -1,6 +1,8 @@
 # Hooks run by prek (https://github.com/j178/prek) on commit and in CI.
 # Set up once with: mise install && prek install
 default_install_hook_types: [pre-commit, commit-msg]
+# Without it, hooks with no stages run again at the commit-msg stage.
+default_stages: [pre-commit]
 
 repos:
   - repo: builtin
