@@ -143,7 +143,10 @@ A winner overlay shows:
 Everything is stored on the device, in the browser; nothing is sent anywhere.
 
 - **Resume after a refresh** — the match in progress is saved after every dart and undo. Reloading the page, closing the tab or restarting the phone brings back the exact same match, including the current turn and Crazy Cricket's numbers.
-- **Match history** — every finished match is kept: players, game mode and rules, winner, per-player results (average or points, darts thrown) and the full dart log. Undoing the winning dart takes the match out of the history again. *(No screen shows the history yet; it is the base for a future history and stats feature.)*
+- **Match history** — every finished match is kept: players, game mode and rules, winner, per-player results and the full dart log. Undoing the winning dart takes the match out of the history again.
+- **History screen** — opened from the *History* button on the setup screen, with two tabs:
+  - *Players:* each player's wins / matches and career stats across all saved matches — X01 average, highest visit, 180s, checkout rate, best checkout, best leg, and cricket MPR. Players are matched by name, ignoring case.
+  - *Matches:* every finished match, most recent first, with its date, game mode, sides and results, and the winner highlighted. A match can be deleted.
 - **Leaving a match** — Quit or New game clears the saved match in progress. A quit match is not added to the history.
 - **Preferences** — the language and the last setup are remembered.
 - **Storage** — IndexedDB for matches, `localStorage` for preferences. The app asks the browser to keep this data persistent. Clearing the site data deletes it, and it is not synced between devices.
@@ -186,6 +189,7 @@ src/
 │   ├── match-persistence.ts   saveProgress, resumeMatch, leaveMatch
 │   ├── sides.ts               Team play: side names, who throws next, per-player stats
 │   ├── match-stats.ts         Match stats per player (first 9, 180s, checkout %, MPR…)
+│   ├── history.ts             Player records across the match history
 │   └── cricket-config.ts      Cricket configs; crazy deal with an injected random source
 ├── infrastructure/          Adapters to the browser
 │   ├── indexeddb-repository.ts   MatchRepository on IndexedDB

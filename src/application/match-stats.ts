@@ -5,6 +5,8 @@ import { steps, type Step } from './sides'
 export interface X01Stats {
   kind: 'x01'
   dartsThrown: number
+  /** Points scored; busted visits score 0. */
+  points: number
   /** Points per 3 darts; busted visits count their darts but no points. */
   average: number
   /** Average of each leg's first 3 visits (9 darts). */
@@ -89,6 +91,7 @@ function x01Stats(setup: Extract<MatchSetup, { mode: 'x01' }>, log: Step[]): X01
   return stats.map((s) => ({
     kind: 'x01',
     dartsThrown: s.dartsThrown,
+    points: s.points,
     average: perThree(s.points, s.dartsThrown),
     firstNine: perThree(s.firstNinePoints, s.firstNineDarts),
     highestVisit: s.highestVisit,

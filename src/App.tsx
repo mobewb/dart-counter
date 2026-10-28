@@ -6,6 +6,7 @@ import type { Dart } from './domain'
 import { requestPersistentStorage } from './infrastructure/persistent-storage'
 import { loadLastSetup, saveLastSetup } from './infrastructure/preferences'
 import { GameScreen } from './ui/GameScreen'
+import { History } from './ui/History'
 import { I18nProvider } from './ui/i18n'
 import { viewFor } from './ui/registry'
 import { Setup } from './ui/Setup'
@@ -16,6 +17,7 @@ const warn = (error: unknown) => console.warn('Could not save the match', error)
 export function App({ repository }: { repository: MatchRepository }) {
   const [current, setCurrent] = useState<CurrentMatch | null>(null)
   const [resuming, setResuming] = useState(true)
+  const [showHistory, setShowHistory] = useState(false)
   const [last, setLast] = useState<MatchSetup | undefined>(() => loadLastSetup())
 
   // Pick up the match in progress after a refresh.
@@ -55,8 +57,10 @@ export function App({ repository }: { repository: MatchRepository }) {
 
   return (
     <I18nProvider>
-      {resuming ? null : !current ? (
-        <Setup initial={last} onStart={start} />
+      {resuming ? null : showHistory && !current ? (
+        <History repository={repository} onBack={() => setShowHistory(false)} />
+      ) : !current ? (
+        <Setup initial={last} onStart={start} onHistory={() => setShowHistory(true)} />
       ) : (
         <GameScreen
           key={current.id}

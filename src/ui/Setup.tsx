@@ -6,6 +6,7 @@ import { gameModes, registry } from './registry'
 interface Props {
   initial?: MatchSetup
   onStart: (setup: MatchSetup) => void
+  onHistory: () => void
 }
 
 const SCORES = [301, 501, 701]
@@ -41,7 +42,7 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
   )
 }
 
-export function Setup({ initial, onStart }: Props) {
+export function Setup({ initial, onStart, onHistory }: Props) {
   const { t, lang, setLang } = useI18n()
   const x01 = initial?.mode === 'x01' ? initial.config : undefined
   const [kind, setKind] = useState<GameModeId>(initial?.mode ?? 'x01')
@@ -80,6 +81,7 @@ export function Setup({ initial, onStart }: Props) {
   return (
     <main className="screen setup">
       <header className="hero">
+        <button className="history-link" onClick={onHistory}>{t('history')}</button>
         <button className="lang" onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')}>{lang === 'fr' ? 'EN' : 'FR'}</button>
         <div className="hero__logo" aria-hidden>🎯</div>
         <h1>Dart<span>Counter</span></h1>

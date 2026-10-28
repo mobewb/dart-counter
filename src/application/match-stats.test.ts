@@ -18,7 +18,7 @@ describe('X01 stats', () => {
     const log = [...repeat(t(20), 3), ...repeat(s(20), 3), ...repeat(t(20), 3), ...repeat(s(20), 3), t(20), t(19), d(12)]
     const [ann, bob] = matchStats(x01(['Ann', 'Bob']), log)
     expect(ann).toEqual({
-      kind: 'x01', dartsThrown: 9, average: 167, firstNine: 167, highestVisit: 180,
+      kind: 'x01', dartsThrown: 9, points: 501, average: 167, firstNine: 167, highestVisit: 180,
       tons: 0, tonForties: 1, oneEighties: 2, checkoutDarts: 1, checkouts: 1, highestCheckout: 141, bestLeg: 9,
     })
     expect(bob).toMatchObject({ dartsThrown: 6, average: 60, highestVisit: 60, checkoutDarts: 0, checkouts: 0, bestLeg: null })

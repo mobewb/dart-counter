@@ -81,3 +81,28 @@ The order is reliability first, then the stats players care about, then reach (n
 - *Checkout rate ignores double-in.* Darts at a double for getting in are not tracked ("double-in %"). Rare format. **Skipped.**
 - *Stats are per match only.* Their real value is over time (is my average improving?). **That's iteration 3.**
 - *No live highlight.* A 180 passes silently. **Iteration 5 (caller) covers it.**
+
+## Iteration 3 — History and player stats
+
+**Why:** every finished match was already saved, but nobody could see it. A player's numbers over time ("is my average going up?") are what keeps people coming back to a darts app.
+
+**What was built**
+- `playerRecords(history)` groups the history by player name. For each player it counts matches and wins, and aggregates:
+  - **X01:** average (total points / total darts, not an average of averages), highest visit, 180s, checkout rate, best checkout, best leg.
+  - **Cricket:** MPR.
+- A **History** screen, opened from a button on the setup screen, with *Players* and *Matches* tabs. Each match can be deleted, after a confirmation.
+- `points` was added to the X01 match stats so the history aggregates exact totals.
+
+**Decisions**
+- *Players are identified by name* (trimmed, case-insensitive), showing the latest spelling. There are no accounts or player profiles: setting up a match stays typing names, which suits a shared phone at the board.
+- *Everything is recomputed from the dart logs* when the screen opens. It's simple and always consistent with the stats definitions. Hundreds of matches replay in milliseconds.
+- *Team wins count for every member.* In team play, each member's own stats count toward their record.
+
+**Verified:** 5 unit tests (aggregation across matches, name matching, team wins, cricket kept apart from X01). Browser check: the empty state, two matches in two modes with a "Bob"/"bob" merge, delete with persistence across a reload.
+
+**Challenge — what could be better**
+- *Bug caught in the browser:* the screen is a full-height grid, so with few cards the tabs and chips stretched to fill the page. Fixed by packing rows at the top. Unit tests can't see this; the screenshot did.
+- *Two of my test expectations were wrong again* (checkout darts on misses at a finishable double). The definitions are subtle; the comments in the tests now spell out the reasoning.
+- *Default names pollute the records.* "Player 1" in different matches is treated as one person. A fix would be to hide default names from the Players tab. **Next time:** small and worth it.
+- *No trends or charts.* Average per match over time would be the natural next view. **Later:** needs a chart, and enough data to be meaningful.
+- *No export or backup.* History lives in one browser. An export/import JSON file would protect it. **Backlog.**
