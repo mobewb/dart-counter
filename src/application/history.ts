@@ -32,6 +32,9 @@ export interface PlayerRecord {
 }
 
 const key = (name: string) => name.trim().toLocaleLowerCase()
+
+/** Names filled in for players left unnamed ("Player 2", "Joueur 3"): not a real person to track. */
+const isPlaceholder = (name: string) => /^(player|joueur) \d+$/i.test(name.trim())
 const perThree = (total: number, darts: number) => (darts === 0 ? 0 : (total / darts) * 3)
 
 function emptyRecord(name: string): PlayerRecord {
@@ -45,7 +48,10 @@ function emptyRecord(name: string): PlayerRecord {
   }
 }
 
-/** Every player's record, most matches first. Stats are recomputed from each match's dart log. */
+/**
+ * Every named player's record, most matches first. Stats are recomputed from
+ * each match's dart log; placeholder names are left out.
+ */
 export function playerRecords(history: readonly FinishedMatch[]): PlayerRecord[] {
   const records = new Map<string, PlayerRecord>()
   // Oldest first, so the most recent spelling of a name wins.
@@ -53,6 +59,7 @@ export function playerRecords(history: readonly FinishedMatch[]): PlayerRecord[]
     const stats = matchStats(match.setup, match.darts)
     const winners = sidesOf(match.setup)[match.winner] ?? []
     match.setup.names.forEach((name, player) => {
+      if (isPlaceholder(name)) return
       const record = records.get(key(name)) ?? emptyRecord(name)
       records.set(key(name), record)
       record.name = name.trim()

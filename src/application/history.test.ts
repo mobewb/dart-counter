@@ -55,6 +55,12 @@ describe('player records', () => {
     )
   })
 
+  it('leaves out placeholder names given to unnamed players', () => {
+    const match = finished({ mode: 'x01', names: ['Ann', 'Player 2'], rules }, [d(20)], 1)
+    const other = finished({ mode: 'x01', names: ['Joueur 1', 'Bob'], rules }, [d(20)], 2)
+    expect(playerRecords([match, other]).map((r) => r.name).sort()).toEqual(['Ann', 'Bob'])
+  })
+
   it('keeps cricket stats apart from X01', () => {
     const cricket = finished({ mode: 'cricket', names: ['Ann'] }, [t(20), t(19), t(18), t(17), t(16), t(15), d(25), s(25)], 1)
     const [ann] = playerRecords([cricket])

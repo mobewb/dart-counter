@@ -103,6 +103,6 @@ The order is reliability first, then the stats players care about, then reach (n
 **Challenge — what could be better**
 - *Bug caught in the browser:* the screen is a full-height grid, so with few cards the tabs and chips stretched to fill the page. Fixed by packing rows at the top. Unit tests can't see this; the screenshot did.
 - *Two of my test expectations were wrong again* (checkout darts on misses at a finishable double). The definitions are subtle; the comments in the tests now spell out the reasoning.
-- *Default names pollute the records.* "Player 1" in different matches is treated as one person. A fix would be to hide default names from the Players tab. **Next time:** small and worth it.
+- *Default names polluted the records:* "Player 1" in different matches was treated as one person. **Fixed right after:** placeholder names ("Player N", "Joueur N") are left out of the Players tab; their matches still appear in the Matches tab.
 - *No trends or charts.* Average per match over time would be the natural next view. **Later:** needs a chart, and enough data to be meaningful.
 - *No export or backup.* History lives in one browser. An export/import JSON file would protect it. **Backlog.**
