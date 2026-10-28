@@ -51,3 +51,25 @@ export function calls(setup: MatchSetup, darts: readonly Dart[]): Call[] {
   }
   return result
 }
+
+/** How a caller delivers a call: roaring for a maximum or a win, flat for a poor visit. */
+export type Mood = 'roar' | 'excited' | 'neutral' | 'flat'
+
+/** A ton (100) or more lifts the caller; under 30 lets them down. */
+export function mood(call: Call): Mood {
+  switch (call.type) {
+    case 'visit':
+      if (call.score === 180) return 'roar'
+      if (call.score >= 100) return 'excited'
+      return call.score < 30 ? 'flat' : 'neutral'
+    case 'gameShot':
+    case 'matchShot':
+    case 'winner':
+      return 'roar'
+    case 'noScore':
+    case 'bust':
+      return 'flat'
+    case 'require':
+      return 'neutral'
+  }
+}

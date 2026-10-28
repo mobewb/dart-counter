@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Dart } from '../domain'
-import { calls } from './caller'
+import { calls, mood } from './caller'
 import { startMatch } from './match-setup'
 
 const s = (n: number): Dart => ({ segment: n, multiplier: 1 })
@@ -54,5 +54,19 @@ describe('caller', () => {
     const cricket = startMatch({ mode: 'cricket', names: ['Ann'] })
     expect(calls(cricket, repeat(t(20), 3))).toEqual([])
     expect(calls(cricket, [t(20), t(19), t(18), t(17), t(16), t(15), d(25), s(25)])).toEqual([{ type: 'winner', winner: 'Ann' }])
+  })
+
+  it('roars for a maximum or a win, gets excited from a ton, and sounds flat for a poor visit', () => {
+    expect(mood({ type: 'visit', score: 180 })).toBe('roar')
+    expect(mood({ type: 'gameShot' })).toBe('roar')
+    expect(mood({ type: 'winner', winner: 'Ann' })).toBe('roar')
+    expect(mood({ type: 'visit', score: 140 })).toBe('excited')
+    expect(mood({ type: 'visit', score: 100 })).toBe('excited')
+    expect(mood({ type: 'visit', score: 99 })).toBe('neutral')
+    expect(mood({ type: 'visit', score: 30 })).toBe('neutral')
+    expect(mood({ type: 'visit', score: 26 })).toBe('flat')
+    expect(mood({ type: 'noScore' })).toBe('flat')
+    expect(mood({ type: 'bust' })).toBe('flat')
+    expect(mood({ type: 'require', player: 'Bob', remaining: 40 })).toBe('neutral')
   })
 })
