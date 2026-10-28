@@ -42,14 +42,12 @@ jobs:
           npx vite build --base=/${{ github.event.repository.name }}/
       - name: Build develop
         working-directory: develop
-        # Its own storage names: develop keeps its own history and preferences.
-        env:
-          VITE_STORAGE_NAME: dart-counter-develop
+        # Its own storage names, for the build only: develop keeps its own history and preferences.
         run: |
           npm ci
           npm run typecheck
           npm test
-          npx vite build --base=/${{ github.event.repository.name }}/develop/
+          VITE_STORAGE_NAME=dart-counter-develop npx vite build --base=/${{ github.event.repository.name }}/develop/
       - run: cp -r develop/dist main/dist/develop
       - uses: actions/upload-pages-artifact@v3
         with:
