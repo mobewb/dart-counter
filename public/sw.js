@@ -2,8 +2,16 @@
 // get the latest version; everything else (hashed build files, icons) is
 // served from the cache first. URLs are relative to this file, so the app
 // works under any base path (e.g. GitHub Pages).
-const CACHE = 'dart-counter-v1'
+//
+// The develop build is served from a sub-path of main (…/develop/) with its
+// own worker, so each worker keeps a cache named after its scope and only
+// caches its own page.
+const CACHE_VERSION = 'dart-counter-v2'
+const CACHE = `${CACHE_VERSION} ${self.registration.scope}`
+/** The cache of the workers from before scoped caches. */
+const LEGACY_CACHE = 'dart-counter-v1'
 const SHELL = './'
+const SHELL_PATH = new URL(SHELL, location.href).pathname
 
 /**
  * Caches the page and every file it links to, and drops cached files the
@@ -34,7 +42,10 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      for (const key of await caches.keys()) if (key !== CACHE) await caches.delete(key)
+      for (const key of await caches.keys()) {
+        const ownOld = key.endsWith(` ${self.registration.scope}`) && key !== CACHE
+        if (ownOld || key === LEGACY_CACHE) await caches.delete(key)
+      }
       await self.clients.claim()
     })(),
   )
@@ -45,6 +56,8 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET' || new URL(request.url).origin !== location.origin) return
 
   if (request.mode === 'navigate') {
+    // A page outside this app, like the develop build under main: left to the network.
+    if (new URL(request.url).pathname !== SHELL_PATH) return
     event.respondWith(
       fetch(request)
         .then((response) => {

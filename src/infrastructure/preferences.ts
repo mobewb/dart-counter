@@ -1,11 +1,12 @@
 import type { MatchSetup } from '../application/match-setup'
+import { STORAGE_NAME } from './storage-name'
 
 /** Small per-device preferences, kept in localStorage. */
 type KeyValueStore = Pick<Storage, 'getItem' | 'setItem'>
 
-const LANG = 'dart-counter:lang'
-const LAST_SETUP = 'dart-counter:last-setup'
-const SETTINGS = 'dart-counter:settings'
+const LANG = `${STORAGE_NAME}:lang`
+const LAST_SETUP = `${STORAGE_NAME}:last-setup`
+const SETTINGS = `${STORAGE_NAME}:settings`
 const MODES = ['x01', 'cricket', 'crazy', 'clock']
 
 /** localStorage, or undefined where it is blocked (some private modes). */

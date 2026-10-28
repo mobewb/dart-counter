@@ -1,6 +1,7 @@
 import type { CurrentMatch, FinishedMatch, MatchRepository } from '../application/match-repository'
+import { STORAGE_NAME } from './storage-name'
 
-const DB_NAME = 'dart-counter'
+const DB_NAME = STORAGE_NAME
 const VERSION = 1
 /** Holds a single record: the match in progress. */
 const CURRENT = 'current'
