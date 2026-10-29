@@ -1,5 +1,0 @@
-export * from './shared-kernel'
-export * as x01 from './x01'
-export * as cricket from './cricket'
-export * as clock from './clock'
-export * as killer from './killer'
