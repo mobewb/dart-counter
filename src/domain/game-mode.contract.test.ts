@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import * as clock from './clock'
 import * as cricket from './cricket'
+import * as killer from './killer'
 import type { Dart } from './shared-kernel/dart'
 import { replayLog } from './shared-kernel/events'
 import { results, type GameMode, type MatchCore } from './shared-kernel/game-mode'
@@ -13,14 +14,16 @@ const miss: Dart = { segment: 0, multiplier: 1 }
 
 /**
  * Rules every game mode must follow. `win` is a two-player log in which
- * player 0 wins with its last dart, and player 1 throws 3 darts.
+ * player 0 wins with its last dart, and player 1 throws 3 darts. `opening`
+ * settles the match before play (Killer's draw for numbers); its darts are
+ * not counted.
  */
-function contract<Config, State extends MatchCore>(name: string, mode: GameMode<Config, State>, config: Config, win: Dart[]) {
-  const play = (darts: Dart[]) => replayLog(mode.newMatch(config), mode.applyDart, darts)
+function contract<Config, State extends MatchCore>(name: string, mode: GameMode<Config, State>, config: Config, win: Dart[], opening: Dart[] = []) {
+  const play = (darts: Dart[]) => replayLog(mode.newMatch(config), mode.applyDart, [...opening, ...darts])
 
   describe(`${name} follows the GameMode contract`, () => {
     it('starts with player 0 to throw and no winner', () => {
-      const state = mode.newMatch(config)
+      const { state } = play([])
       expect(state.currentPlayer).toBe(0)
       expect(state.turnDarts).toEqual([])
       expect(state.status).toBe('playing')
@@ -42,7 +45,7 @@ function contract<Config, State extends MatchCore>(name: string, mode: GameMode<
     })
 
     it('rejects an invalid dart', () => {
-      expect(() => mode.applyDart(mode.newMatch(config), { segment: 25, multiplier: 3 })).toThrow()
+      expect(() => mode.applyDart(play([]).state, { segment: 25, multiplier: 3 })).toThrow()
     })
 
     it('sets a winner only once the match is finished', () => {
@@ -66,7 +69,7 @@ function contract<Config, State extends MatchCore>(name: string, mode: GameMode<
     })
 
     it('adds each dart to the tally of the side that threw it, and only to it', () => {
-      let state = mode.newMatch(config)
+      let { state } = play([])
       for (const dart of win) {
         const side = state.currentPlayer
         const next = mode.applyDart(state, dart).state
@@ -114,4 +117,12 @@ contract(
   clock.mode,
   { playerCount: 2, sequence: [1, 2, 3, 25] },
   [s(1), d(2), t(3), miss, miss, miss, s(25)],
+)
+
+contract(
+  'Killer',
+  killer.mode,
+  { playerCount: 2, lives: 1 },
+  [d(20), miss, miss, miss, miss, miss, d(19)],
+  [s(20), s(19)],
 )

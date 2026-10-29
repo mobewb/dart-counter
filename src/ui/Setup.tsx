@@ -25,15 +25,26 @@ function assignmentOf(teams: Sides | undefined, count: number): number[] {
   })
 }
 
-function Stepper({ value, min, max, onChange }: { value: number; min: number; max: number; onChange: (v: number) => void }) {
+interface StepperProps {
+  value: number
+  min: number
+  max: number
+  step?: number
+  format?: (v: number) => string
+  onChange: (v: number) => void
+}
+
+function Stepper({ value, min, max, step = 1, format = String, onChange }: StepperProps) {
   return (
     <div className="stepper">
-      <button onClick={() => onChange(Math.max(min, value - 1))} disabled={value <= min} aria-label="−">−</button>
-      <output>{value}</output>
-      <button onClick={() => onChange(Math.min(max, value + 1))} disabled={value >= max} aria-label="+">+</button>
+      <button onClick={() => onChange(Math.max(min, value - step))} disabled={value <= min} aria-label="−">−</button>
+      <output>{format(value)}</output>
+      <button onClick={() => onChange(Math.min(max, value + step))} disabled={value >= max} aria-label="+">+</button>
     </div>
   )
 }
+
+const DEFAULT_MAX_ROUNDS = 20
 
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -48,12 +59,16 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
 export function Setup({ initial, onStart, onHistory, settings, onSettings }: Props) {
   const { t, lang, setLang } = useI18n()
   const x01 = initial?.mode === 'x01' ? initial.config : undefined
+  const killer = initial?.mode === 'killer' ? initial.config : undefined
   const [kind, setKind] = useState<GameModeId>(initial?.mode ?? 'x01')
   const [startScore, setStartScore] = useState(x01?.startScore ?? 501)
   const [doubleIn, setDoubleIn] = useState(x01?.doubleIn ?? false)
   const [doubleOut, setDoubleOut] = useState(x01?.doubleOut ?? true)
   const [legs, setLegs] = useState(x01?.legsToWinSet ?? 3)
   const [sets, setSets] = useState(x01?.setsToWinMatch ?? 1)
+  const [lives, setLives] = useState(killer?.lives ?? 3)
+  // 0 is no limit.
+  const [maxRounds, setMaxRounds] = useState(x01?.maxRounds ?? DEFAULT_MAX_ROUNDS)
   const [names, setNames] = useState(initial?.names ?? ['', ''])
   const [teamPlay, setTeamPlay] = useState(Boolean(initial?.teams))
   const [teams, setTeams] = useState(() => assignmentOf(initial?.teams, names.length))
@@ -68,7 +83,8 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
 
   const teamMode = teamPlay && names.length >= 2
   const usedTeams = [...new Set(teams)].sort((a, b) => a - b)
-  const canStart = !teamMode || usedTeams.length >= 2
+  const enoughSides = (teamMode ? usedTeams.length : names.length) >= (registry[kind].minSides ?? 1)
+  const canStart = (!teamMode || usedTeams.length >= 2) && enoughSides
   const displayName = (i: number) => names[i]!.trim() || `${t('player')} ${i + 1}`
 
   const hint = registry[kind].hint
@@ -77,7 +93,11 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
     const finalNames = names.map((_, i) => displayName(i))
     const rules = { startScore, doubleIn, doubleOut, legsToWinSet: legs, setsToWinMatch: sets }
     const common = { names: finalNames, teams: teamMode ? teams : undefined }
-    onStart(startMatch(kind === 'x01' ? { mode: kind, rules, ...common } : { mode: kind, ...common }))
+    onStart(startMatch(
+      kind === 'x01' ? { mode: kind, rules, maxRounds, ...common }
+        : kind === 'killer' ? { mode: kind, rules: { lives }, ...common }
+          : { mode: kind, ...common },
+    ))
   }
 
 
@@ -134,6 +154,7 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
             </div>
           ))}
         </div>
+        {!enoughSides && !teamMode && <p className="hint">{t('needTwoPlayers')}</p>}
         {names.length >= 2 && <Toggle label={t('teams')} checked={teamPlay} onChange={setTeamPlay} />}
         {teamMode && (
           <div className="team-summary">
@@ -161,6 +182,26 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
             <span>{t('setsToWin')}</span>
             <Stepper value={sets} min={1} max={7} onChange={setSets} />
           </div>
+        </section>
+      )}
+
+      {kind === 'killer' && (
+        <section className="card">
+          <h2>{t('rules')}</h2>
+          <div className="card__row">
+            <span>{t('lives')}</span>
+            <Stepper value={lives} min={1} max={5} onChange={setLives} />
+          </div>
+        </section>
+      )}
+
+      {kind === 'x01' && (
+        <section className="card">
+          <div className="card__row">
+            <h2>{t('maxRounds')}</h2>
+            <Stepper value={maxRounds} min={0} max={50} step={5} format={(v) => (v === 0 ? t('off') : String(v))} onChange={setMaxRounds} />
+          </div>
+          {maxRounds > 0 && <p className="hint">{t('maxRoundsHint')}</p>}
         </section>
       )}
 

@@ -63,6 +63,14 @@ describe('X01 stats', () => {
   })
 })
 
+describe('X01 stats at the round limit', () => {
+  it('does not count a leg won at the round limit as a checkout', () => {
+    const setup = startMatch({ mode: 'x01', names: ['Ann', 'Bob'], rules: { ...rules, legsToWinSet: 2 }, maxRounds: 1 })
+    const [ann] = matchStats(setup, [t(20), t(20), t(20), s(1), s(1), s(1)])
+    expect(ann).toMatchObject({ checkouts: 0, bestLeg: null, highestCheckout: 0, points: 180 })
+  })
+})
+
 describe('cricket stats', () => {
   it('counts marks, scoring marks included, and marks per round', () => {
     const setup = startMatch({ mode: 'cricket', names: ['Ann', 'Bob'] })
@@ -79,5 +87,22 @@ describe('Around the Clock stats', () => {
     const [ann, bob] = matchStats(setup, [s(1), d(2), s(20), s(1), miss, miss])
     expect(ann).toEqual({ kind: 'clock', dartsThrown: 3, hits: 2, hitRate: 2 / 3 })
     expect(bob).toEqual({ kind: 'clock', dartsThrown: 3, hits: 1, hitRate: 1 / 3 })
+  })
+
+  it('counts a skip-ahead double or triple as one hit', () => {
+    const setup = startMatch({ mode: 'clock', names: ['Ann', 'Bob'] })
+    // Ann's triple 1 moves her to 4, her double 4 to 6.
+    const [ann] = matchStats(setup, [t(1), d(4), miss])
+    expect(ann).toEqual({ kind: 'clock', dartsThrown: 3, hits: 2, hitRate: 2 / 3 })
+  })
+})
+
+describe('Killer stats', () => {
+  it('counts play darts, lives taken and opponents knocked out', () => {
+    const setup = startMatch({ mode: 'killer', names: ['Ann', 'Bob'], rules: { lives: 2 } })
+    // Draw (a miss, then 20 and 19, not counted), Ann arms then takes both of Bob's lives.
+    const [ann, bob] = matchStats(setup, [miss, s(20), s(19), d(20), miss, miss, miss, miss, miss, d(19), d(19)])
+    expect(ann).toEqual({ kind: 'killer', dartsThrown: 5, livesTaken: 2, eliminations: 1 })
+    expect(bob).toEqual({ kind: 'killer', dartsThrown: 3, livesTaken: 0, eliminations: 0 })
   })
 })

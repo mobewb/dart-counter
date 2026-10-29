@@ -1,4 +1,4 @@
-import type { clock, cricket, Dart, x01 } from '../domain'
+import type { clock, cricket, Dart, killer, x01 } from '../domain'
 import type { MatchSetup } from './match-setup'
 import { steps, type Step } from './sides'
 
@@ -39,13 +39,22 @@ export interface CricketStats {
 export interface ClockStats {
   kind: 'clock'
   dartsThrown: number
-  /** Targets hit in order. */
+  /** Darts that hit the current target. */
   hits: number
   /** Share of darts that hit the target, 0 to 1. */
   hitRate: number
 }
 
-export type PlayerStats = X01Stats | CricketStats | ClockStats
+export interface KillerStats {
+  kind: 'killer'
+  dartsThrown: number
+  /** Lives taken from opponents. */
+  livesTaken: number
+  /** Opponents knocked out. */
+  eliminations: number
+}
+
+export type PlayerStats = X01Stats | CricketStats | ClockStats | KillerStats
 
 const perThree = (total: number, darts: number) => (darts === 0 ? 0 : (total / darts) * 3)
 
@@ -72,6 +81,8 @@ function x01Stats(setup: Extract<MatchSetup, { mode: 'x01' }>, log: Step[]): X01
     if (setup.config.doubleOut && was.in && finishable(was.remaining)) me.checkoutDarts++
 
     const legWon = events.some((e) => e.type === 'LegWon')
+    // A leg won at the round limit ends the visit, but nobody checked out.
+    const checkedOut = legWon && !events.some((e) => e.type === 'RoundLimitReached')
     const visitOver = legWon || events.some((e) => e.type === 'TurnEnded' || e.type === 'MatchWon')
     if (!visitOver) continue
 
@@ -88,10 +99,12 @@ function x01Stats(setup: Extract<MatchSetup, { mode: 'x01' }>, log: Step[]): X01
     }
     visitsInLeg[player]!++
 
-    if (legWon) {
+    if (checkedOut) {
       me.checkouts++
       me.highestCheckout = Math.max(me.highestCheckout, (before as x01.X01Match).turnStart.remaining)
       me.bestLeg = Math.min(me.bestLeg ?? Infinity, legDarts[side]!)
+    }
+    if (legWon) {
       visitsInLeg.fill(0)
       legDarts.fill(0)
     }
@@ -130,14 +143,30 @@ function clockStats(setup: MatchSetup, log: Step[]): ClockStats[] {
   const stats = setup.names.map(() => ({ dartsThrown: 0, hits: 0 }))
   for (const { side, player, before, after } of log) {
     stats[player]!.dartsThrown++
-    stats[player]!.hits += (after as clock.ClockMatch).players[side]!.progress - (before as clock.ClockMatch).players[side]!.progress
+    // A skip-ahead double or triple moves several targets on but is one hit.
+    if ((after as clock.ClockMatch).players[side]!.progress > (before as clock.ClockMatch).players[side]!.progress) stats[player]!.hits++
   }
   return stats.map((s) => ({ kind: 'clock', ...s, hitRate: s.dartsThrown === 0 ? 0 : s.hits / s.dartsThrown }))
+}
+
+function killerStats(setup: MatchSetup, log: Step[]): KillerStats[] {
+  const stats = setup.names.map(() => ({ dartsThrown: 0, livesTaken: 0, eliminations: 0 }))
+  for (const { side, player, before, after, events } of log) {
+    const was = (before as killer.KillerMatch).players[side]!
+    const now = (after as killer.KillerMatch).players[side]!
+    const me = stats[player]!
+    // Draw darts change nothing here: they are not counted.
+    me.dartsThrown += now.dartsThrown - was.dartsThrown
+    me.livesTaken += now.livesTaken - was.livesTaken
+    me.eliminations += events.filter((e) => e.type === 'PlayerEliminated' && e.player !== side).length
+  }
+  return stats.map((s) => ({ kind: 'killer', ...s }))
 }
 
 /** Each player's stats for the match so far, by player index. */
 export function matchStats(setup: MatchSetup, darts: readonly Dart[]): PlayerStats[] {
   const log = steps(setup, darts).steps
   if (setup.mode === 'x01') return x01Stats(setup, log)
+  if (setup.mode === 'killer') return killerStats(setup, log)
   return setup.mode === 'clock' ? clockStats(setup, log) : cricketStats(setup, log)
 }

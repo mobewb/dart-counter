@@ -1,6 +1,8 @@
 import type { Dart } from '../shared-kernel/dart'
+import type { RoundLimitConfig } from '../shared-kernel/round-limit'
 
-export interface X01Config {
+/** `maxRounds` applies to each leg. */
+export interface X01Config extends RoundLimitConfig {
   startScore: number
   doubleIn: boolean
   doubleOut: boolean

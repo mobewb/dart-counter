@@ -19,6 +19,24 @@ describe('startMatch', () => {
     expect(setup.config).toMatchObject({ playerCount: 2, targetPolicy: { kind: 'fixed' } })
   })
 
+  it('passes the round limit to the config, and keeps it on a crazy rematch', () => {
+    expect(startMatch({ mode: 'cricket', names, maxRounds: 20 }).config.maxRounds).toBe(20)
+    expect(startMatch({ mode: 'x01', names, rules, maxRounds: 0 }).config.maxRounds).toBe(0)
+    expect(rematch(startMatch({ mode: 'crazy', names, maxRounds: 15 })).config.maxRounds).toBe(15)
+  })
+
+  it('builds Around the Clock with skip ahead on', () => {
+    expect(startMatch({ mode: 'clock', names }).config).toMatchObject({ playerCount: 2, skipAhead: true })
+  })
+
+  it('builds Killer with the chosen lives, one side per name', () => {
+    expect(startMatch({ mode: 'killer', names, rules: { lives: 3 } })).toEqual({
+      mode: 'killer',
+      config: { lives: 3, playerCount: 2 },
+      names,
+    })
+  })
+
   it('deals crazy cricket from the injected random source', () => {
     const a = startMatch({ mode: 'crazy', names }, () => 0.1)
     const b = startMatch({ mode: 'crazy', names }, () => 0.1)

@@ -56,6 +56,31 @@ describe('caller', () => {
     expect(calls(cricket, [t(20), t(19), t(18), t(17), t(16), t(15), d(25), s(25)])).toEqual([{ type: 'winner', winner: 'Ann' }])
   })
 
+  it('calls each Killer draw, arming and knockout as it happens', () => {
+    const killer = startMatch({ mode: 'killer', names: ['Ann', 'Bob'], rules: { lives: 1 } })
+    expect(calls(killer, [miss])).toEqual([])
+    expect(calls(killer, [s(20)])).toEqual([{ type: 'drawn', player: 'Ann', number: 20 }])
+    expect(calls(killer, [s(20), s(19), d(20)])).toEqual([{ type: 'killer', player: 'Ann' }])
+    expect(calls(killer, [s(20), s(19), d(20), d(19)])).toEqual([
+      { type: 'out', player: 'Bob' },
+      { type: 'winner', winner: 'Ann' },
+    ])
+  })
+
+  it('calls the round limit leader, the winner, and sudden death', () => {
+    const clock = (maxRounds: number) => startMatch({ mode: 'clock', names: ['Ann', 'Bob'], maxRounds })
+    expect(calls(clock(1), [s(1), miss, miss, miss, miss, miss])).toEqual([
+      { type: 'roundLimit', player: 'Ann' },
+      { type: 'winner', winner: 'Ann' },
+    ])
+    expect(calls(clock(1), repeat(miss, 6))).toEqual([{ type: 'suddenDeath' }])
+  })
+
+  it('calls an X01 leg won at the round limit, not a game shot', () => {
+    const setup = startMatch({ mode: 'x01', names: ['Ann', 'Bob'], rules: { ...rules, legsToWinSet: 2 }, maxRounds: 1 })
+    expect(calls(setup, [t(20), t(20), t(20), s(1), s(1), s(1)])).toEqual([{ type: 'roundLimit', player: 'Ann' }])
+  })
+
   it('roars for a maximum or a win, gets excited from a ton, and sounds flat for a poor visit', () => {
     expect(mood({ type: 'visit', score: 180 })).toBe('roar')
     expect(mood({ type: 'gameShot' })).toBe('roar')
@@ -68,5 +93,7 @@ describe('caller', () => {
     expect(mood({ type: 'noScore' })).toBe('flat')
     expect(mood({ type: 'bust' })).toBe('flat')
     expect(mood({ type: 'require', player: 'Bob', remaining: 40 })).toBe('neutral')
+    expect(mood({ type: 'killer', player: 'Ann' })).toBe('excited')
+    expect(mood({ type: 'out', player: 'Bob' })).toBe('excited')
   })
 })

@@ -67,4 +67,11 @@ describe('player records', () => {
     expect(ann!.cricket).toEqual({ matches: 1, dartsThrown: 8, marks: 21, marksPerRound: (21 / 8) * 3 })
     expect(ann!.x01.matches).toBe(0)
   })
+
+  it('adds up Killer stats apart from the other modes', () => {
+    const killer = finished({ mode: 'killer', names: ['Ann', 'Bob'], rules: { lives: 1 } }, [s(20), s(19), d(20), d(19)], 1)
+    const [ann] = playerRecords([killer])
+    expect(ann!.killer).toEqual({ matches: 1, dartsThrown: 2, livesTaken: 1, eliminations: 1 })
+    expect(ann!.cricket.matches).toBe(0)
+  })
 })

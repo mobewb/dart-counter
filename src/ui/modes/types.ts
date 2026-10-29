@@ -26,6 +26,8 @@ export interface View {
   afterTurn?: ReactNode
   /** Segments that count; others are faded on the board and pad. */
   targets?: number[]
+  /** Numbers whose double takes a life, marked with a skull on the board and pad (Killer). */
+  marked?: number[]
   /** Blocks input and undo, e.g. while the crazy cricket roulette spins. */
   locked?: boolean
 }
@@ -35,6 +37,8 @@ export interface ModeView<Setup extends MatchSetup, State extends MatchCore> {
   rules: GameMode<Setup['config'], State>
   label: Key
   hint?: Key
+  /** Fewest sides the mode can be played with (1 by default). */
+  minSides?: number
   /** Keep the screen on during the match. */
   keepAwake?: boolean
   /** The headline stat of each player on the winner screen. */

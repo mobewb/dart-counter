@@ -16,6 +16,11 @@ function phrase(call: Call, t: (key: Key) => string): string {
     case 'matchShot': return fill('sayMatchShot', { name: call.winner })
     case 'winner': return fill('sayWinner', { name: call.winner })
     case 'require': return fill('sayRequire', { name: call.player, n: call.remaining })
+    case 'drawn': return fill('sayDrawn', { name: call.player, n: call.number })
+    case 'killer': return fill('sayKiller', { name: call.player })
+    case 'out': return fill('sayOut', { name: call.player })
+    case 'roundLimit': return fill('sayRoundLimit', { name: call.player })
+    case 'suddenDeath': return t('saySuddenDeath')
   }
 }
 
@@ -48,7 +53,7 @@ function speak(lines: { text: string; mood: Mood }[], lang: Lang) {
 function vibrate(said: Call[]) {
   const pattern = said.some((c) => c.type === 'matchShot' || c.type === 'winner')
     ? [120, 60, 120, 60, 240]
-    : said.some((c) => c.type === 'bust')
+    : said.some((c) => c.type === 'bust' || c.type === 'out')
       ? [70, 50, 70]
       : 12
   navigator.vibrate?.(pattern)

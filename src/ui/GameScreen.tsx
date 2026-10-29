@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { MatchSetup } from '../application/match-setup'
 import { matchStats } from '../application/match-stats'
 import { sideNames, teamPlay } from '../application/sides'
-import { results, type Dart, type MatchCore } from '../domain'
+import { results, roundOf, type Dart, type MatchCore, type RoundCount } from '../domain'
 import { dartLabel } from './dartLabel'
 import { Dartboard } from './Dartboard'
 import { useI18n } from './i18n'
@@ -48,9 +48,12 @@ export function GameScreen<Setup extends MatchSetup, State extends MatchCore>({ 
   useWakeLock(view.keepAwake ?? false)
   const play = useMemo(() => teamPlay(setup, darts), [setup, darts])
   useCaller(setup, darts, settings)
-  const { info, board, turnExtras, afterTurn, targets, locked = false } = view.useView({ setup, sides, state: match, events, dartCount })
+  const { info, board, turnExtras, afterTurn, targets, marked, locked = false } = view.useView({ setup, sides, state: match, events, dartCount })
 
   const finished = match.status === 'finished'
+  const maxRounds = setup.config.maxRounds ?? 0
+  // Every mode is wrapped with a round limit; `rounds` is there whenever a limit is set.
+  const rounds = (match as MatchCore & { rounds?: RoundCount }).rounds
   const stats = useMemo(() => (finished ? matchStats(setup, darts) : []), [finished, setup, darts])
   const chips = (player: number) => (
     <div className="statline">
@@ -74,6 +77,11 @@ export function GameScreen<Setup extends MatchSetup, State extends MatchCore>({ 
         <div className="turn__head">
           <span className="turn__who">{names[play.thrower]} <small>{t('toThrow')}</small></span>
           {turnExtras}
+          {maxRounds > 0 && rounds && !finished && (
+            <span className={`chip${rounds.contenders ? ' chip--sudden' : ''}`}>
+              {rounds.contenders ? t('suddenDeath') : `${t('round')} ${Math.min(roundOf(rounds, match.currentPlayer), maxRounds)} / ${maxRounds}`}
+            </span>
+          )}
         </div>
         <div className="slots">
           {[0, 1, 2].map((i) => {
@@ -95,11 +103,11 @@ export function GameScreen<Setup extends MatchSetup, State extends MatchCore>({ 
         </div>
         {input === 'board' ? (
           <>
-            <Dartboard onHit={hit} disabled={finished || locked} targets={targets} />
+            <Dartboard onHit={hit} disabled={finished || locked} targets={targets} marked={marked} />
             <button className="miss" disabled={finished || locked} onClick={() => hit({ segment: 0, multiplier: 1 })}>{t('miss')}</button>
           </>
         ) : (
-          <Keypad onHit={hit} disabled={finished || locked} targets={targets} />
+          <Keypad onHit={hit} disabled={finished || locked} targets={targets} marked={marked} />
         )}
       </section>
 

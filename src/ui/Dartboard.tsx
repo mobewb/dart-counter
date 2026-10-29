@@ -22,9 +22,11 @@ interface Props {
   disabled?: boolean
   /** When set, numbers outside this list are faded (cricket). */
   targets?: number[]
+  /** Numbers marked with a skull on their double ring (Killer). */
+  marked?: number[]
 }
 
-export function Dartboard({ onHit, disabled, targets }: Props) {
+export function Dartboard({ onHit, disabled, targets, marked }: Props) {
   const hit = (segment: number, multiplier: Multiplier) => () => !disabled && onHit({ segment, multiplier })
   return (
     <svg className={`board${disabled ? ' board--off' : ''}`} viewBox="-135 -135 270 270" role="group" aria-label="Dartboard">
@@ -36,6 +38,7 @@ export function Dartboard({ onHit, disabled, targets }: Props) {
         const dark = i % 2 === 0
         const fade = targets && !targets.includes(n) ? ' seg--faded' : ''
         const [lx, ly] = point(119, i * SPAN)
+        const [sx, sy] = point((R.singleOut + R.doubleOut) / 2, i * SPAN)
         return (
           <g key={n}>
             <path d={sector(R.tripleOut, R.singleOut, a0, a1)} className={(dark ? 'seg seg--dark' : 'seg seg--light') + fade} onClick={hit(n, 1)} />
@@ -43,6 +46,7 @@ export function Dartboard({ onHit, disabled, targets }: Props) {
             <path d={sector(R.singleIn, R.tripleOut, a0, a1)} className={(dark ? 'seg seg--red' : 'seg seg--green') + fade} onClick={hit(n, 3)} />
             <path d={sector(R.singleOut, R.doubleOut, a0, a1)} className={(dark ? 'seg seg--red' : 'seg seg--green') + fade} onClick={hit(n, 2)} />
             <text x={lx} y={ly} className="board__num" textAnchor="middle" dominantBaseline="central">{n}</text>
+            {marked?.includes(n) && <text x={sx} y={sy} className="board__skull" textAnchor="middle" dominantBaseline="central">💀</text>}
           </g>
         )
       })}

@@ -12,6 +12,13 @@ export type Call =
   | { type: 'winner'; winner: string }
   /** X01: the next thrower is on a finish. */
   | { type: 'require'; player: string; remaining: number }
+  /** Killer: a side drew its number, became a killer, or is out. */
+  | { type: 'drawn'; player: string; number: number }
+  | { type: 'killer'; player: string }
+  | { type: 'out'; player: string }
+  /** The round limit is reached; `player` leads and takes the match (an X01 leg). */
+  | { type: 'roundLimit'; player: string }
+  | { type: 'suddenDeath' }
 
 /** The darts of the visit that the last step belongs to. */
 function lastVisit(log: Step[]): Step[] {
@@ -20,14 +27,39 @@ function lastVisit(log: Step[]): Step[] {
   return log.slice(start)
 }
 
-/** What to announce after the last dart of the log; nothing in the middle of a visit. */
+/** Killer calls every draw, arming and knockout as it happens, then the winner. */
+function killerCalls(setup: MatchSetup, last: Step): Call[] {
+  const names = sideNames(setup)
+  return last.events.flatMap((e): Call[] => {
+    switch (e.type) {
+      case 'NumberDrawn': return [{ type: 'drawn', player: names[e.player]!, number: e.number }]
+      case 'KillerArmed': return [{ type: 'killer', player: names[e.player]! }]
+      case 'PlayerEliminated': return [{ type: 'out', player: names[e.player]! }]
+      case 'MatchWon': return [{ type: 'winner', winner: names[e.player]! }]
+      default: return []
+    }
+  })
+}
+
+/** What to announce after the last dart of the log; nothing in the middle of an X01 visit. */
 export function calls(setup: MatchSetup, darts: readonly Dart[]): Call[] {
   const { steps: log, nextThrower } = steps(setup, darts)
   const last = log.at(-1)
   if (!last) return []
+  const limit = last.events.find((e) => e.type === 'RoundLimitReached')
+  if (limit) {
+    const leader: Call = { type: 'roundLimit', player: sideNames(setup)[limit.player]! }
+    return last.after.status === 'finished' ? [leader, { type: 'winner', winner: sideNames(setup)[limit.player]! }] : [leader]
+  }
+  const said = modeCalls(setup, log, last, nextThrower)
+  return last.events.some((e) => e.type === 'SuddenDeath') ? [...said, { type: 'suddenDeath' }] : said
+}
+
+function modeCalls(setup: MatchSetup, log: Step[], last: Step, nextThrower: number): Call[] {
   const has = (type: string) => last.events.some((e) => e.type === type)
   const winner = last.after.winner === null ? '' : sideNames(setup)[last.after.winner]!
 
+  if (setup.mode === 'killer') return killerCalls(setup, last)
   if (setup.mode !== 'x01') return has('MatchWon') ? [{ type: 'winner', winner }] : []
 
   const visitOver = has('TurnEnded') || has('LegWon') || has('MatchWon')
@@ -69,7 +101,13 @@ export function mood(call: Call): Mood {
     case 'noScore':
     case 'bust':
       return 'flat'
+    case 'killer':
+    case 'out':
+    case 'roundLimit':
+    case 'suddenDeath':
+      return 'excited'
     case 'require':
+    case 'drawn':
       return 'neutral'
   }
 }
