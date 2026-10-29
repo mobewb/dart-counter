@@ -1,18 +1,14 @@
-import { useMemo, useState } from 'react'
-import { newSession, recordDart, replaySession, undo } from '../application/match-session'
-import type { Dart, GameMode, MatchCore } from '../domain'
+import { useState } from 'react'
+import { openMatch, throwDart, undoDart } from '../application/match'
+import type { GameModeId, Setup } from '../application/modes'
+import type { Dart } from '../domain'
 
-/** Adapts the match session use cases to React; `initialDarts` resumes a saved match. */
-export function useMatch<Config, State extends MatchCore>(mode: GameMode<Config, State>, config: Config, initialDarts: readonly Dart[] = []) {
-  const [session, setSession] = useState(() => newSession(config, initialDarts))
-  const { state, events } = useMemo(() => replaySession(mode, session), [mode, session])
+/** Holds a match in React state; `initialDarts` resumes a saved match. */
+export function useMatch<K extends GameModeId>(setup: Setup<K>, initialDarts: readonly Dart[] = []) {
+  const [match, setMatch] = useState(() => openMatch(setup, initialDarts))
   return {
-    state,
-    /** Events of the last dart. */
-    events,
-    darts: session.darts,
-    dartCount: session.darts.length,
-    hit: (dart: Dart) => setSession((s) => recordDart(mode, s, dart)),
-    undo: () => setSession(undo),
+    match,
+    hit: (dart: Dart) => setMatch((m) => throwDart(m, dart)),
+    undo: () => setMatch(undoDart),
   }
 }

@@ -121,6 +121,7 @@ h1, h2, p { margin: 0; }
 .chip { padding: 6px 12px; border-radius: 99px; font-size: 0.8rem; background: rgb(255 255 255 / 0.08); color: var(--muted); }
 .chip--checkout { background: rgb(255 200 87 / 0.14); color: var(--gold); border: 1px solid rgb(255 200 87 / 0.35); animation: pulse 2s ease-in-out infinite; }
 .chip b { color: #fff; margin-left: 4px; letter-spacing: 0.02em; }
+.chip--sudden { background: rgb(255 77 109 / 0.16); color: var(--hot); border: 1px solid rgb(255 77 109 / 0.4); font-weight: 700; }
 @keyframes pulse { 50% { box-shadow: 0 0 22px -4px rgb(255 200 87 / 0.5); } }
 
 .slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -445,3 +446,13 @@ button.team-badge { min-height: 44px; }
 /* Around the Clock */
 .clock-progress { height: 6px; border-radius: 99px; background: rgb(255 255 255 / 0.1); overflow: hidden; margin: 4px 0; }
 .clock-progress i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.3s; }
+
+/* Killer */
+.pcard.is-out { opacity: 0.35; filter: grayscale(1); }
+.killer-lives { display: flex; justify-content: center; gap: 5px; margin: 4px 0; }
+.killer-lives i { width: 10px; height: 10px; border-radius: 50%; background: rgb(255 255 255 / 0.12); transition: background 0.3s, box-shadow 0.3s; }
+.killer-lives i.is-on { background: var(--hot); box-shadow: 0 0 8px var(--hot); }
+.pcard__meta .killer-badge { color: var(--gold); letter-spacing: 0.08em; }
+.board__skull { font-size: 11px; pointer-events: none; filter: drop-shadow(0 0 3px rgb(0 0 0 / 0.9)); }
+.pad__grid button { position: relative; }
+.pad__skull { position: absolute; top: 3px; right: 4px; font-size: 0.7rem; line-height: 1; pointer-events: none; }

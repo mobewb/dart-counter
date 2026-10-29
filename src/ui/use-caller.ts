@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react'
-import { calls, mood, type Call, type Mood } from '../application/caller'
-import type { MatchSetup } from '../application/match-setup'
-import type { Dart } from '../domain'
+import { mood, type Call, type Mood } from '../application/caller'
+import type { Match } from '../application/match'
 import type { Settings } from '../infrastructure/preferences'
 import { useI18n, type Key, type Lang } from './i18n'
 
@@ -16,6 +15,11 @@ function phrase(call: Call, t: (key: Key) => string): string {
     case 'matchShot': return fill('sayMatchShot', { name: call.winner })
     case 'winner': return fill('sayWinner', { name: call.winner })
     case 'require': return fill('sayRequire', { name: call.player, n: call.remaining })
+    case 'drawn': return fill('sayDrawn', { name: call.player, n: call.number })
+    case 'killer': return fill('sayKiller', { name: call.player })
+    case 'out': return fill('sayOut', { name: call.player })
+    case 'roundLimit': return fill('sayRoundLimit', { name: call.player })
+    case 'suddenDeath': return t('saySuddenDeath')
   }
 }
 
@@ -48,23 +52,23 @@ function speak(lines: { text: string; mood: Mood }[], lang: Lang) {
 function vibrate(said: Call[]) {
   const pattern = said.some((c) => c.type === 'matchShot' || c.type === 'winner')
     ? [120, 60, 120, 60, 240]
-    : said.some((c) => c.type === 'bust')
+    : said.some((c) => c.type === 'bust' || c.type === 'out')
       ? [70, 50, 70]
       : 12
   navigator.vibrate?.(pattern)
 }
 
 /** Speaks and vibrates after each new dart; undo and resume stay silent. */
-export function useCaller(setup: MatchSetup, darts: readonly Dart[], settings: Settings) {
+export function useCaller(match: Match, settings: Settings) {
   const { t, lang } = useI18n()
-  const seen = useRef(darts.length)
+  const seen = useRef(match.darts.length)
   useEffect(() => {
-    const thrown = darts.length > seen.current
-    seen.current = darts.length
+    const thrown = match.darts.length > seen.current
+    seen.current = match.darts.length
     if (!thrown || (!settings.caller && !settings.haptics)) return
-    const said = calls(setup, darts)
+    const said = match.calls
     if (settings.haptics) vibrate(said)
     if (settings.caller) speak(said.map((call) => ({ text: phrase(call, t), mood: mood(call) })), lang)
     // Only a change of the dart log triggers a call, not a change of language or settings.
-  }, [darts])
+  }, [match.darts])
 }

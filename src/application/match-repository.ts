@@ -1,5 +1,5 @@
 import type { Dart, PlayerResult } from '../domain'
-import type { MatchSetup } from './match-setup'
+import type { MatchSetup } from './modes'
 
 /** The match being played, saved after every dart so it survives a refresh. */
 export interface CurrentMatch {

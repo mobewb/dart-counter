@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { Dart } from '../domain'
 import { startMatch } from './match-setup'
-import { matchStats } from './match-stats'
+import { openMatch } from './match'
+import type { MatchSetup } from './modes'
 
 const s = (n: number): Dart => ({ segment: n, multiplier: 1 })
 const d = (n: number): Dart => ({ segment: n, multiplier: 2 })
@@ -9,16 +10,19 @@ const t = (n: number): Dart => ({ segment: n, multiplier: 3 })
 const miss: Dart = { segment: 0, multiplier: 1 }
 const repeat = (dart: Dart, n: number) => Array.from({ length: n }, () => dart)
 
+/** Each player's stats for the match. */
+const matchStats = (setup: MatchSetup, darts: Dart[]) => openMatch(setup, darts).stats
+
 const rules = { startScore: 501, doubleIn: false, doubleOut: true, legsToWinSet: 1, setsToWinMatch: 1 }
 const x01 = (names: string[], over: Partial<typeof rules> = {}, teams?: number[]) =>
-  startMatch({ mode: 'x01', names, rules: { ...rules, ...over }, teams })
+  startMatch({ mode: 'x01', names, options: { ...rules, ...over }, teams })
 
 describe('X01 stats', () => {
   it('scores a 9-darter-ish leg: 180, 180, 141 checkout', () => {
     const log = [...repeat(t(20), 3), ...repeat(s(20), 3), ...repeat(t(20), 3), ...repeat(s(20), 3), t(20), t(19), d(12)]
     const [ann, bob] = matchStats(x01(['Ann', 'Bob']), log)
     expect(ann).toEqual({
-      kind: 'x01', dartsThrown: 9, points: 501, average: 167, firstNine: 167, highestVisit: 180,
+      dartsThrown: 9, points: 501, average: 167, firstNine: 167, highestVisit: 180,
       tons: 0, tonForties: 1, oneEighties: 2, checkoutDarts: 1, checkouts: 1, highestCheckout: 141, bestLeg: 9,
     })
     expect(bob).toMatchObject({ dartsThrown: 6, average: 60, highestVisit: 60, checkoutDarts: 0, checkouts: 0, bestLeg: null })
@@ -59,25 +63,50 @@ describe('X01 stats', () => {
 
   it('credits each team member with their own visits', () => {
     const stats = matchStats(x01(['Ann', 'Bob', 'Cid', 'Dee'], {}, [0, 1, 0, 1]), [...repeat(t(20), 3), ...repeat(miss, 3), ...repeat(s(1), 3)])
-    expect(stats.map((p) => p.kind === 'x01' && p.highestVisit)).toEqual([180, 0, 3, 0])
+    expect(stats.map((p) => 'highestVisit' in p && p.highestVisit)).toEqual([180, 0, 3, 0])
+  })
+})
+
+describe('X01 stats at the round limit', () => {
+  it('does not count a leg won at the round limit as a checkout', () => {
+    const setup = startMatch({ mode: 'x01', names: ['Ann', 'Bob'], options: { ...rules, legsToWinSet: 2 }, maxRounds: 1 })
+    const [ann] = matchStats(setup, [t(20), t(20), t(20), s(1), s(1), s(1)])
+    expect(ann).toMatchObject({ checkouts: 0, bestLeg: null, highestCheckout: 0, points: 180 })
   })
 })
 
 describe('cricket stats', () => {
   it('counts marks, scoring marks included, and marks per round', () => {
-    const setup = startMatch({ mode: 'cricket', names: ['Ann', 'Bob'] })
+    const setup = startMatch({ mode: 'cricket', options: {}, names: ['Ann', 'Bob'] })
     const [ann, bob] = matchStats(setup, [t(20), t(20), s(19), miss, s(5), s(20)])
-    expect(ann).toEqual({ kind: 'cricket', dartsThrown: 3, points: 60, marks: 7, marksPerRound: 7 })
-    expect(bob).toEqual({ kind: 'cricket', dartsThrown: 3, points: 0, marks: 1, marksPerRound: 1 })
+    expect(ann).toEqual({ dartsThrown: 3, points: 60, marks: 7, marksPerRound: 7 })
+    expect(bob).toEqual({ dartsThrown: 3, points: 0, marks: 1, marksPerRound: 1 })
   })
 })
 
 describe('Around the Clock stats', () => {
   it('counts targets hit in order and the hit rate', () => {
-    const setup = startMatch({ mode: 'clock', names: ['Ann', 'Bob'] })
+    const setup = startMatch({ mode: 'clock', options: {}, names: ['Ann', 'Bob'] })
     // Ann hits 1 and 2 but misses with her third dart (20 is not her target).
     const [ann, bob] = matchStats(setup, [s(1), d(2), s(20), s(1), miss, miss])
-    expect(ann).toEqual({ kind: 'clock', dartsThrown: 3, hits: 2, hitRate: 2 / 3 })
-    expect(bob).toEqual({ kind: 'clock', dartsThrown: 3, hits: 1, hitRate: 1 / 3 })
+    expect(ann).toEqual({ dartsThrown: 3, hits: 2, hitRate: 2 / 3 })
+    expect(bob).toEqual({ dartsThrown: 3, hits: 1, hitRate: 1 / 3 })
+  })
+
+  it('counts a skip-ahead double or triple as one hit', () => {
+    const setup = startMatch({ mode: 'clock', options: {}, names: ['Ann', 'Bob'] })
+    // Ann's triple 1 moves her to 4, her double 4 to 6.
+    const [ann] = matchStats(setup, [t(1), d(4), miss])
+    expect(ann).toEqual({ dartsThrown: 3, hits: 2, hitRate: 2 / 3 })
+  })
+})
+
+describe('Killer stats', () => {
+  it('counts play darts, lives taken and opponents knocked out', () => {
+    const setup = startMatch({ mode: 'killer', names: ['Ann', 'Bob'], options: { lives: 2 } })
+    // Draw (a miss, then 20 and 19, not counted), Ann arms then takes both of Bob's lives.
+    const [ann, bob] = matchStats(setup, [miss, s(20), s(19), d(20), miss, miss, miss, miss, miss, d(19), d(19)])
+    expect(ann).toEqual({ dartsThrown: 5, livesTaken: 2, eliminations: 1 })
+    expect(bob).toEqual({ dartsThrown: 3, livesTaken: 0, eliminations: 0 })
   })
 })

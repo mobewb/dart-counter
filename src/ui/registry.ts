@@ -1,24 +1,24 @@
-import type { GameModeId, MatchSetup } from '../application/match-setup'
-import type { MatchCore } from '../domain'
-import { clockView } from './modes/clock/view'
-import { crazyCricketView, cricketView } from './modes/cricket/view'
+import type { Families, FamilyId, GameModeId } from '../application/modes'
+import type { Key } from './i18n'
+import { clockRecordChips, clockView } from './modes/clock/view'
+import { crazyCricketView, cricketRecordChips, cricketView } from './modes/cricket/view'
+import { killerRecordChips, killerView } from './modes/killer/view'
 import type { ModeView } from './modes/types'
-import { x01View } from './modes/x01/view'
+import { x01RecordChips, x01View } from './modes/x01/view'
 
-/** One entry per game mode, in the order the setup screen lists them. */
-export const registry = {
+/** One view per game mode. */
+export const registry: { [K in GameModeId]: ModeView<K> } = {
   x01: x01View,
   cricket: cricketView,
   crazy: crazyCricketView,
   clock: clockView,
-} satisfies { [Id in GameModeId]: ModeView<Extract<MatchSetup, { mode: Id }>, MatchCore> }
+  killer: killerView,
+}
 
-export const gameModes = Object.keys(registry) as GameModeId[]
-
-/**
- * The view for a setup's game mode. TypeScript cannot correlate `setup.mode`
- * with the registry entry, so this is the one place that widens the type.
- */
-export function viewFor(setup: MatchSetup): ModeView<MatchSetup, MatchCore> {
-  return registry[setup.mode] as unknown as ModeView<MatchSetup, MatchCore>
+/** A player's history record of one rule family as short chips, in the order the history lists them. */
+export const recordChips: { [F in FamilyId]: (record: Families[F]['record'], t: (key: Key) => string) => string[] } = {
+  x01: x01RecordChips,
+  cricket: cricketRecordChips,
+  clock: clockRecordChips,
+  killer: killerRecordChips,
 }

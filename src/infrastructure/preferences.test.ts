@@ -32,9 +32,12 @@ describe('preferences', () => {
 
   it('remembers the last setup', () => {
     const store = memoryStore()
-    const setup = startMatch({ mode: 'cricket', names: ['Ann', 'Bob'] })
+    const setup = startMatch({ mode: 'cricket', options: {}, names: ['Ann', 'Bob'] })
     saveLastSetup(setup, store)
     expect(loadLastSetup(store)).toEqual(setup)
+    const killer = startMatch({ mode: 'killer', options: { lives: 3 }, names: ['Ann', 'Bob'] })
+    saveLastSetup(killer, store)
+    expect(loadLastSetup(store)).toEqual(killer)
   })
 
   it('ignores a corrupted last setup', () => {
@@ -42,6 +45,8 @@ describe('preferences', () => {
     store.setItem('dart-counter:last-setup', '{not json')
     expect(loadLastSetup(store)).toBeUndefined()
     store.setItem('dart-counter:last-setup', JSON.stringify({ mode: 'darts-golf', names: [] }))
+    expect(loadLastSetup(store)).toBeUndefined()
+    store.setItem('dart-counter:last-setup', JSON.stringify({ mode: 'toString', names: [], config: {} }))
     expect(loadLastSetup(store)).toBeUndefined()
   })
 

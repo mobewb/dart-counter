@@ -6,11 +6,13 @@ interface Props {
   onHit: (dart: Dart) => void
   disabled?: boolean
   targets?: number[]
+  /** Numbers marked with a skull (Killer). */
+  marked?: number[]
 }
 
 const NUMBERS = Array.from({ length: 20 }, (_, i) => i + 1)
 
-export function Keypad({ onHit, disabled, targets }: Props) {
+export function Keypad({ onHit, disabled, targets, marked }: Props) {
   const { t } = useI18n()
   const [mult, setMult] = useState<Multiplier>(1)
   const throwAt = (segment: number, multiplier: Multiplier = mult) => {
@@ -27,7 +29,10 @@ export function Keypad({ onHit, disabled, targets }: Props) {
       </div>
       <div className="pad__grid">
         {NUMBERS.map((n) => (
-          <button key={n} disabled={disabled} className={targets && !targets.includes(n) ? 'is-faded' : ''} onClick={() => throwAt(n)}>{n}</button>
+          <button key={n} disabled={disabled} className={targets && !targets.includes(n) ? 'is-faded' : ''} onClick={() => throwAt(n)}>
+            {n}
+            {marked?.includes(n) && <span className="pad__skull" aria-label="💀">💀</span>}
+          </button>
         ))}
         {/* Outer and inner bull have their own buttons: the multiplier resets after each dart. */}
         <button className="pad__outer-bull" disabled={disabled} onClick={() => throwAt(25, 1)}>25</button>
