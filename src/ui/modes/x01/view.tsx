@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
 import type { MatchSetup } from '../../../application/match-setup'
+import type { PlayerStats } from '../../../application/match-stats'
 import { x01 } from '../../../domain'
 import { dartLabel } from '../../dartLabel'
-import { useI18n } from '../../i18n'
+import { useI18n, type Key } from '../../i18n'
 import type { ModeView, ViewProps } from '../types'
 
 type X01Setup = Extract<MatchSetup, { mode: 'x01' }>
@@ -74,10 +75,25 @@ function useX01View({ setup, sides, state: match, events }: ViewProps<X01Setup, 
   }
 }
 
+function x01Details(stats: PlayerStats, t: (key: Key) => string): string[] {
+  if (stats.kind !== 'x01') return []
+  const { firstNine, highestVisit, tons, tonForties, oneEighties, checkoutDarts, checkouts, bestLeg } = stats
+  return [
+    `${t('firstNine')} ${firstNine.toFixed(1)}`,
+    `${t('highest')} ${highestVisit}`,
+    oneEighties > 0 && `180 ×${oneEighties}`,
+    tonForties > 0 && `140+ ×${tonForties}`,
+    tons > 0 && `100+ ×${tons}`,
+    checkoutDarts ? `${t('checkout')} ${Math.round((checkouts / checkoutDarts) * 100)}% (${checkouts}/${checkoutDarts})` : false,
+    bestLeg !== null && `${t('bestLeg')} ${bestLeg} ${t('darts').toLowerCase()}`,
+  ].filter((chip): chip is string => Boolean(chip))
+}
+
 export const x01View: ModeView<X01Setup, x01.X01Match> = {
   rules: x01.mode,
   label: 'x01',
   keepAwake: true,
   result: { label: 'avg', format: (value) => value.toFixed(1) },
   useView: useX01View,
+  details: x01Details,
 }

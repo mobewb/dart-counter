@@ -29,7 +29,9 @@ export function Keypad({ onHit, disabled, targets }: Props) {
         {NUMBERS.map((n) => (
           <button key={n} disabled={disabled} className={targets && !targets.includes(n) ? 'is-faded' : ''} onClick={() => throwAt(n)}>{n}</button>
         ))}
-        <button className="pad__bull" disabled={disabled} onClick={() => throwAt(25, mult === 3 ? 1 : mult)}>{t('bull')}</button>
+        {/* Outer and inner bull have their own buttons: the multiplier resets after each dart. */}
+        <button className="pad__outer-bull" disabled={disabled} onClick={() => throwAt(25, 1)}>25</button>
+        <button className="pad__bull" disabled={disabled} onClick={() => throwAt(25, 2)}>{t('bull')}</button>
         <button className="pad__miss" disabled={disabled} onClick={() => throwAt(0, 1)}>{t('miss')}</button>
       </div>
     </div>

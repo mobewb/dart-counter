@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { startMatch } from '../application/match-setup'
-import { loadLanguage, loadLastSetup, saveLanguage, saveLastSetup } from './preferences'
+import { DEFAULT_SETTINGS, loadLanguage, loadLastSetup, loadSettings, saveLanguage, saveLastSetup, saveSettings } from './preferences'
 
 function memoryStore() {
   const data = new Map<string, string>()
@@ -45,9 +45,19 @@ describe('preferences', () => {
     expect(loadLastSetup(store)).toBeUndefined()
   })
 
+  it('remembers sound and vibration settings, with defaults', () => {
+    const store = memoryStore()
+    expect(loadSettings(store)).toEqual({ caller: false, haptics: true })
+    saveSettings({ caller: true, haptics: false }, store)
+    expect(loadSettings(store)).toEqual({ caller: true, haptics: false })
+    store.setItem('dart-counter:settings', '{"caller":"yes"}')
+    expect(loadSettings(store)).toEqual(DEFAULT_SETTINGS)
+  })
+
   it('keeps working when storage is blocked', () => {
     expect(() => saveLanguage('fr', failingStore)).not.toThrow()
     expect(loadLanguage(['en', 'fr'], failingStore)).toBeUndefined()
     expect(loadLastSetup(failingStore)).toBeUndefined()
+    expect(loadSettings(failingStore)).toEqual(DEFAULT_SETTINGS)
   })
 })

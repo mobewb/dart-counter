@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import * as clock from './clock'
 import * as cricket from './cricket'
 import type { Dart } from './shared-kernel/dart'
 import { replayLog } from './shared-kernel/events'
@@ -106,4 +107,11 @@ contract(
   cricket.mode,
   { playerCount: 2, targets: [20, 19, 25], targetPolicy: { kind: 'reroll', pool: [1, 2, 3, 4, 5] } },
   cricketWin,
+)
+
+contract(
+  'Around the Clock',
+  clock.mode,
+  { playerCount: 2, sequence: [1, 2, 3, 25] },
+  [s(1), d(2), t(3), miss, miss, miss, s(25)],
 )

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { MatchSetup } from '../application/match-setup'
+import { matchStats } from '../application/match-stats'
 import { sideNames, teamPlay } from '../application/sides'
 import { results, type Dart, type MatchCore } from '../domain'
 import { dartLabel } from './dartLabel'
@@ -7,6 +8,8 @@ import { Dartboard } from './Dartboard'
 import { useI18n } from './i18n'
 import { Keypad } from './Keypad'
 import type { ModeView } from './modes/types'
+import type { Settings } from '../infrastructure/preferences'
+import { useCaller } from './use-caller'
 import { useMatch } from './use-match'
 
 interface Props<Setup extends MatchSetup, State extends MatchCore> {
@@ -16,6 +19,7 @@ interface Props<Setup extends MatchSetup, State extends MatchCore> {
   initialDarts?: readonly Dart[]
   /** Called with the new dart log after every dart or undo. */
   onProgress: (darts: readonly Dart[]) => void
+  settings: Settings
   onRematch: () => void
   onExit: () => void
 }
@@ -30,7 +34,7 @@ function useWakeLock(enabled: boolean) {
 }
 
 /** The game screen of every mode; the mode's view fills in its own parts. */
-export function GameScreen<Setup extends MatchSetup, State extends MatchCore>({ view, setup, initialDarts, onProgress, onRematch, onExit }: Props<Setup, State>) {
+export function GameScreen<Setup extends MatchSetup, State extends MatchCore>({ view, setup, initialDarts, onProgress, settings, onRematch, onExit }: Props<Setup, State>) {
   const { t } = useI18n()
   const { names } = setup
   const sides = useMemo(() => sideNames(setup), [setup])
@@ -43,9 +47,16 @@ export function GameScreen<Setup extends MatchSetup, State extends MatchCore>({ 
   const [input, setInput] = useState<'board' | 'pad'>('board')
   useWakeLock(view.keepAwake ?? false)
   const play = useMemo(() => teamPlay(setup, darts), [setup, darts])
+  useCaller(setup, darts, settings)
   const { info, board, turnExtras, afterTurn, targets, locked = false } = view.useView({ setup, sides, state: match, events, dartCount })
 
   const finished = match.status === 'finished'
+  const stats = useMemo(() => (finished ? matchStats(setup, darts) : []), [finished, setup, darts])
+  const chips = (player: number) => (
+    <div className="statline">
+      {view.details(stats[player]!, t).map((chip) => <span key={chip}>{chip}</span>)}
+    </div>
+  )
   const hit = (dart: Dart) => !locked && record(dart)
   const quit = () => window.confirm(t('confirmQuit')) && onExit()
 
@@ -104,6 +115,7 @@ export function GameScreen<Setup extends MatchSetup, State extends MatchCore>({ 
                   <span>{sides[i]}</span>
                   <b>{view.result.format(r.value)}</b>
                   <small>{t(view.result.label)} · {r.dartsThrown} {t('darts').toLowerCase()}</small>
+                  {!setup.teams && chips(i)}
                 </div>
               ))}
             </div>
@@ -114,6 +126,7 @@ export function GameScreen<Setup extends MatchSetup, State extends MatchCore>({ 
                     <span>{names[i]}</span>
                     <b>{view.result.format(r.value)}</b>
                     <small>{t(view.result.label)} · {r.dartsThrown} {t('darts').toLowerCase()}</small>
+                    {chips(i)}
                   </div>
                 ))}
               </div>
