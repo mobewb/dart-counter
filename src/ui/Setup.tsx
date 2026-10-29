@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { MAX_TEAMS, startMatch, type GameModeId, type MatchSetup, type Sides } from '../application/match-setup'
+import { MAX_TEAMS, startMatch } from '../application/match-setup'
+import { gameModes, modules, type GameModeId, type MatchSetup, type Sides } from '../application/modes'
 import type { Settings } from '../infrastructure/preferences'
 import { useI18n } from './i18n'
-import { gameModes, registry } from './registry'
+import { registry } from './registry'
 
 interface Props {
   initial?: MatchSetup
@@ -83,7 +84,7 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
 
   const teamMode = teamPlay && names.length >= 2
   const usedTeams = [...new Set(teams)].sort((a, b) => a - b)
-  const enoughSides = (teamMode ? usedTeams.length : names.length) >= (registry[kind].minSides ?? 1)
+  const enoughSides = (teamMode ? usedTeams.length : names.length) >= modules[kind].minSides
   const canStart = (!teamMode || usedTeams.length >= 2) && enoughSides
   const displayName = (i: number) => names[i]!.trim() || `${t('player')} ${i + 1}`
 
@@ -94,9 +95,9 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
     const rules = { startScore, doubleIn, doubleOut, legsToWinSet: legs, setsToWinMatch: sets }
     const common = { names: finalNames, teams: teamMode ? teams : undefined }
     onStart(startMatch(
-      kind === 'x01' ? { mode: kind, rules, maxRounds, ...common }
-        : kind === 'killer' ? { mode: kind, rules: { lives }, ...common }
-          : { mode: kind, ...common },
+      kind === 'x01' ? { mode: kind, options: rules, maxRounds, ...common }
+        : kind === 'killer' ? { mode: kind, options: { lives }, ...common }
+          : { mode: kind, options: {}, ...common },
     ))
   }
 

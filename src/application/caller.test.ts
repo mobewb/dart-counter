@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import type { Dart } from '../domain'
-import { calls, mood } from './caller'
+import { mood } from './caller'
+import { openMatch } from './match'
 import { startMatch } from './match-setup'
+import type { MatchSetup } from './modes'
 
 const s = (n: number): Dart => ({ segment: n, multiplier: 1 })
 const d = (n: number): Dart => ({ segment: n, multiplier: 2 })
@@ -10,7 +12,10 @@ const miss: Dart = { segment: 0, multiplier: 1 }
 const repeat = (dart: Dart, n: number) => Array.from({ length: n }, () => dart)
 
 const rules = { startScore: 501, doubleIn: false, doubleOut: true, legsToWinSet: 1, setsToWinMatch: 1 }
-const x01 = (over: Partial<typeof rules> = {}) => startMatch({ mode: 'x01', names: ['Ann', 'Bob'], rules: { ...rules, ...over } })
+/** What the caller announces after the last dart of the log. */
+const calls = (setup: MatchSetup, darts: Dart[]) => openMatch(setup, darts).calls
+
+const x01 = (over: Partial<typeof rules> = {}) => startMatch({ mode: 'x01', names: ['Ann', 'Bob'], options: { ...rules, ...over } })
 
 describe('caller', () => {
   it('says nothing before a visit is over', () => {
@@ -45,19 +50,19 @@ describe('caller', () => {
   })
 
   it('names the team member who is next', () => {
-    const teams = startMatch({ mode: 'x01', names: ['Ann', 'Bob', 'Cid', 'Dee'], teams: [0, 1, 0, 1], rules: { ...rules, startScore: 100 } })
+    const teams = startMatch({ mode: 'x01', names: ['Ann', 'Bob', 'Cid', 'Dee'], teams: [0, 1, 0, 1], options: { ...rules, startScore: 100 } })
     // Ann leaves 40; Bob misses; Cid is next on 40.
     expect(calls(teams, [s(20), s(20), s(20), ...repeat(miss, 3)])).toEqual([{ type: 'noScore' }, { type: 'require', player: 'Cid', remaining: 40 }])
   })
 
   it('only announces the winner in other game modes', () => {
-    const cricket = startMatch({ mode: 'cricket', names: ['Ann'] })
+    const cricket = startMatch({ mode: 'cricket', options: {}, names: ['Ann'] })
     expect(calls(cricket, repeat(t(20), 3))).toEqual([])
     expect(calls(cricket, [t(20), t(19), t(18), t(17), t(16), t(15), d(25), s(25)])).toEqual([{ type: 'winner', winner: 'Ann' }])
   })
 
   it('calls each Killer draw, arming and knockout as it happens', () => {
-    const killer = startMatch({ mode: 'killer', names: ['Ann', 'Bob'], rules: { lives: 1 } })
+    const killer = startMatch({ mode: 'killer', names: ['Ann', 'Bob'], options: { lives: 1 } })
     expect(calls(killer, [miss])).toEqual([])
     expect(calls(killer, [s(20)])).toEqual([{ type: 'drawn', player: 'Ann', number: 20 }])
     expect(calls(killer, [s(20), s(19), d(20)])).toEqual([{ type: 'killer', player: 'Ann' }])
@@ -68,7 +73,7 @@ describe('caller', () => {
   })
 
   it('calls the round limit leader, the winner, and sudden death', () => {
-    const clock = (maxRounds: number) => startMatch({ mode: 'clock', names: ['Ann', 'Bob'], maxRounds })
+    const clock = (maxRounds: number) => startMatch({ mode: 'clock', options: {}, names: ['Ann', 'Bob'], maxRounds })
     expect(calls(clock(1), [s(1), miss, miss, miss, miss, miss])).toEqual([
       { type: 'roundLimit', player: 'Ann' },
       { type: 'winner', winner: 'Ann' },
@@ -77,7 +82,7 @@ describe('caller', () => {
   })
 
   it('calls an X01 leg won at the round limit, not a game shot', () => {
-    const setup = startMatch({ mode: 'x01', names: ['Ann', 'Bob'], rules: { ...rules, legsToWinSet: 2 }, maxRounds: 1 })
+    const setup = startMatch({ mode: 'x01', names: ['Ann', 'Bob'], options: { ...rules, legsToWinSet: 2 }, maxRounds: 1 })
     expect(calls(setup, [t(20), t(20), t(20), s(1), s(1), s(1)])).toEqual([{ type: 'roundLimit', player: 'Ann' }])
   })
 

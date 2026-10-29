@@ -1,14 +1,13 @@
 import type { ReactNode } from 'react'
-import type { MatchSetup } from '../../application/match-setup'
-import type { PlayerStats } from '../../application/match-stats'
-import type { DomainEvent, GameMode, MatchCore } from '../../domain'
+import type { GameModeId, Setup, StateOf, StatsOf } from '../../application/modes'
+import type { DomainEvent } from '../../domain'
 import type { Key } from '../i18n'
 
-export interface ViewProps<Setup extends MatchSetup, State extends MatchCore> {
-  setup: Setup
+export interface ViewProps<K extends GameModeId> {
+  setup: Setup<K>
   /** Display name of each side: a player, or a team like "Ann & Cid". */
   sides: string[]
-  state: State
+  state: StateOf<K>
   /** Events of the last dart. */
   events: DomainEvent[]
   dartCount: number
@@ -32,18 +31,15 @@ export interface View {
   locked?: boolean
 }
 
-/** Everything the UI needs to play one game mode. */
-export interface ModeView<Setup extends MatchSetup, State extends MatchCore> {
-  rules: GameMode<Setup['config'], State>
+/** Everything the UI needs to show one game mode; its rules are in the application's mode module. */
+export interface ModeView<K extends GameModeId> {
   label: Key
   hint?: Key
-  /** Fewest sides the mode can be played with (1 by default). */
-  minSides?: number
   /** Keep the screen on during the match. */
   keepAwake?: boolean
   /** The headline stat of each player on the winner screen. */
   result: { label: Key; format: (value: number) => string }
-  useView(props: ViewProps<Setup, State>): View
+  useView(props: ViewProps<K>): View
   /** A player's match stats as short chips for the winner screen. */
-  details(stats: PlayerStats, t: (key: Key) => string): string[]
+  details(stats: StatsOf<K>, t: (key: Key) => string): string[]
 }

@@ -216,27 +216,25 @@ src/
 │   ├── killer/                Killer match: draw for numbers, killers, lives
 │   └── game-mode.contract.test.ts   Rules every game mode must follow
 ├── application/             Use cases in plain TypeScript
-│   ├── match-setup.ts         startMatch, rematch (deals crazy cricket again)
-│   ├── match-session.ts       recordDart, undo, replaySession
+│   ├── modes/                 One module per game mode: deal, stats, calls, history records (ADR-006)
+│   ├── match.ts               openMatch, throwDart, undoDart: the match as of its dart log, replayed once
+│   ├── match-setup.ts         startMatch, rematch, team sides
 │   ├── match-repository.ts    MatchRepository port: current match and history
 │   ├── match-persistence.ts   saveProgress, resumeMatch, leaveMatch
-│   ├── sides.ts               Team play: side names, who throws next, per-player stats
-│   ├── match-stats.ts         Match stats per player (first 9, 180s, checkout %, MPR…)
 │   ├── history.ts             Player records across the match history
-│   ├── caller.ts              What a darts caller announces after a dart
-│   └── cricket-config.ts      Cricket configs; crazy deal with an injected random source
+│   └── caller.ts              What a darts caller can announce, and its mood
 ├── infrastructure/          Adapters to the browser
 │   ├── indexeddb-repository.ts   MatchRepository on IndexedDB
 │   ├── preferences.ts            Language and last setup in localStorage
 │   └── persistent-storage.ts     Asks the browser not to evict our data
 └── ui/                      React
-    ├── registry.ts            One entry per game mode
+    ├── registry.ts            One view per game mode, history chips per rule family
     ├── GameScreen.tsx         Generic game screen: turn, input, undo, winner overlay
     ├── modes/x01/             X01 player cards, checkout chip, bust banner
     ├── modes/cricket/         Marks grid, targets strip and roulette
     ├── modes/clock/           Next-target cards and progress bars
     ├── modes/killer/          Number cards with lives and killer badge
-    ├── use-match.ts           Adapts the match session to React
+    ├── use-match.ts           Holds the match in React state
     ├── Setup.tsx              Game mode selection and options
     ├── Dartboard.tsx, Keypad.tsx, dartLabel.ts, i18n.tsx, styles.css
 ```
@@ -245,7 +243,7 @@ Design notes:
 - **Event-sourced state** — a match is its config plus a log of darts; the state is derived by replaying the log. Undo is simply replaying one dart fewer.
 - **Domain events** — each dart returns the events it caused (`Bust`, `LegWon`, `TargetsRerolled`…); the UI reacts to the events of the last dart.
 - **Deterministic Crazy Cricket** — the reroll pool is dealt before the match starts, so replaying the log always yields the same targets.
-- **One contract per game mode** — adding a mode means implementing `GameMode` and adding one registry entry.
+- **One contract per game mode** — adding a mode means implementing `GameMode`, one application mode module and one view ([ADR-006](docs/adr/006-mode-modules-and-one-replayed-match.md)).
 - **Teams are sides** — the game rules score *sides*; a side is one player or a team. Who throws within a team is derived from the dart log, so undo, resume and history work unchanged ([ADR-005](docs/adr/005-teams-are-sides.md)).
 - **Tests** — unit tests for each game mode, a contract suite run against every mode, and use-case tests.
 

@@ -1,17 +1,14 @@
 import { useCallback, useMemo, useState } from 'react'
-import type { MatchSetup } from '../../../application/match-setup'
-import type { PlayerStats } from '../../../application/match-stats'
+import type { CricketRecord, CricketStats } from '../../../application/modes'
 import { cricket } from '../../../domain'
 import { useI18n, type Key } from '../../i18n'
 import type { ModeView, ViewProps } from '../types'
 import { TargetsStrip } from './TargetsStrip'
 
-type CricketSetup = Extract<MatchSetup, { mode: 'cricket' | 'crazy' }>
-
 const MARK = ['', '／', '✕', '⊗']
 const targetLabel = (target: number) => (target === 25 ? 'B' : String(target))
 
-function useCricketView({ setup, sides, state: match, events, dartCount }: ViewProps<CricketSetup, cricket.CricketMatch>) {
+function useCricketView({ setup, sides, state: match, events, dartCount }: ViewProps<'cricket' | 'crazy'>) {
   const { t } = useI18n()
   const { config } = setup
   const finished = match.status === 'finished'
@@ -77,13 +74,15 @@ function useCricketView({ setup, sides, state: match, events, dartCount }: ViewP
   }
 }
 
-function cricketDetails(stats: PlayerStats, t: (key: Key) => string): string[] {
-  if (stats.kind !== 'cricket') return []
+function cricketDetails(stats: CricketStats, t: (key: Key) => string): string[] {
   return [`MPR ${stats.marksPerRound.toFixed(2)}`, `${t('marks')} ${stats.marks}`]
 }
 
-export const cricketView: ModeView<CricketSetup, cricket.CricketMatch> = {
-  rules: cricket.mode,
+export function cricketRecordChips(record: CricketRecord): string[] {
+  return [`MPR ${record.marksPerRound.toFixed(2)}`]
+}
+
+export const cricketView: ModeView<'cricket'> = {
   label: 'cricket',
   hint: 'cricketHint',
   result: { label: 'points', format: String },
@@ -91,4 +90,4 @@ export const cricketView: ModeView<CricketSetup, cricket.CricketMatch> = {
   details: cricketDetails,
 }
 
-export const crazyCricketView: ModeView<CricketSetup, cricket.CricketMatch> = { ...cricketView, label: 'crazy', hint: 'crazyHint' }
+export const crazyCricketView: ModeView<'crazy'> = { ...cricketView, useView: useCricketView, label: 'crazy', hint: 'crazyHint' }

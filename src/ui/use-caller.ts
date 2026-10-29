@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react'
-import { calls, mood, type Call, type Mood } from '../application/caller'
-import type { MatchSetup } from '../application/match-setup'
-import type { Dart } from '../domain'
+import { mood, type Call, type Mood } from '../application/caller'
+import type { Match } from '../application/match'
 import type { Settings } from '../infrastructure/preferences'
 import { useI18n, type Key, type Lang } from './i18n'
 
@@ -60,16 +59,16 @@ function vibrate(said: Call[]) {
 }
 
 /** Speaks and vibrates after each new dart; undo and resume stay silent. */
-export function useCaller(setup: MatchSetup, darts: readonly Dart[], settings: Settings) {
+export function useCaller(match: Match, settings: Settings) {
   const { t, lang } = useI18n()
-  const seen = useRef(darts.length)
+  const seen = useRef(match.darts.length)
   useEffect(() => {
-    const thrown = darts.length > seen.current
-    seen.current = darts.length
+    const thrown = match.darts.length > seen.current
+    seen.current = match.darts.length
     if (!thrown || (!settings.caller && !settings.haptics)) return
-    const said = calls(setup, darts)
+    const said = match.calls
     if (settings.haptics) vibrate(said)
     if (settings.caller) speak(said.map((call) => ({ text: phrase(call, t), mood: mood(call) })), lang)
     // Only a change of the dart log triggers a call, not a change of language or settings.
-  }, [darts])
+  }, [match.darts])
 }

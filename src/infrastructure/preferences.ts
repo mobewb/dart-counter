@@ -1,4 +1,4 @@
-import type { MatchSetup } from '../application/match-setup'
+import { parseSetup, type MatchSetup } from '../application/modes'
 import { STORAGE_NAME } from './storage-name'
 
 /** Small per-device preferences, kept in localStorage. */
@@ -7,7 +7,6 @@ type KeyValueStore = Pick<Storage, 'getItem' | 'setItem'>
 const LANG = `${STORAGE_NAME}:lang`
 const LAST_SETUP = `${STORAGE_NAME}:last-setup`
 const SETTINGS = `${STORAGE_NAME}:settings`
-const MODES = ['x01', 'cricket', 'crazy', 'clock']
 
 /** localStorage, or undefined where it is blocked (some private modes). */
 function defaultStore(): KeyValueStore | undefined {
@@ -46,9 +45,7 @@ export function saveLanguage(lang: string, store = defaultStore()): void {
 /** The setup of the last match started, used to pre-fill the setup screen. */
 export function loadLastSetup(store = defaultStore()): MatchSetup | undefined {
   try {
-    const setup = JSON.parse(read(store, LAST_SETUP) ?? 'null')
-    const valid = setup && MODES.includes(setup.mode) && Array.isArray(setup.names) && typeof setup.config === 'object'
-    return valid ? (setup as MatchSetup) : undefined
+    return parseSetup(JSON.parse(read(store, LAST_SETUP) ?? 'null'))
   } catch {
     return undefined
   }

@@ -1,12 +1,9 @@
-import type { MatchSetup } from '../../../application/match-setup'
-import type { PlayerStats } from '../../../application/match-stats'
+import type { KillerRecord, KillerStats } from '../../../application/modes'
 import { killer } from '../../../domain'
 import { useI18n, type Key } from '../../i18n'
 import type { ModeView, ViewProps } from '../types'
 
-type KillerSetup = Extract<MatchSetup, { mode: 'killer' }>
-
-function useKillerView({ sides, state: match }: ViewProps<KillerSetup, killer.KillerMatch>) {
+function useKillerView({ sides, state: match }: ViewProps<'killer'>) {
   const { t } = useI18n()
   const finished = match.status === 'finished'
   const drawing = match.phase === 'draw'
@@ -53,16 +50,17 @@ function useKillerView({ sides, state: match }: ViewProps<KillerSetup, killer.Ki
   }
 }
 
-function killerDetails(stats: PlayerStats, t: (key: Key) => string): string[] {
-  if (stats.kind !== 'killer') return []
+function killerDetails(stats: KillerStats, t: (key: Key) => string): string[] {
   return [`${t('knockouts')} ${stats.eliminations}`]
 }
 
-export const killerView: ModeView<KillerSetup, killer.KillerMatch> = {
-  rules: killer.mode,
+export function killerRecordChips(record: KillerRecord, t: (key: Key) => string): string[] {
+  return [`${t('killer')} ${t('knockouts')} ${record.eliminations}`]
+}
+
+export const killerView: ModeView<'killer'> = {
   label: 'killer',
   hint: 'killerHint',
-  minSides: 2,
   result: { label: 'livesTaken', format: String },
   useView: useKillerView,
   details: killerDetails,

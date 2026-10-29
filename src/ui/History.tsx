@@ -1,29 +1,26 @@
 import { useEffect, useMemo, useState } from 'react'
 import { deleteFromHistory, loadHistory, playerRecords, type PlayerRecord } from '../application/history'
 import type { FinishedMatch, MatchRepository } from '../application/match-repository'
-import { sideNames } from '../application/sides'
-import { useI18n } from './i18n'
-import { registry } from './registry'
+import { sideNames } from '../application/match-setup'
+import type { FamilyId } from '../application/modes'
+import { useI18n, type Key } from './i18n'
+import { recordChips, registry } from './registry'
 
 interface Props {
   repository: MatchRepository
   onBack: () => void
 }
 
+/** The chips of one rule family's record, if the player has played it. */
+function familyChips<F extends FamilyId>(family: F, record: PlayerRecord, t: (key: Key) => string): string[] {
+  const played = record.modes[family]
+  return played ? recordChips[family](played, t) : []
+}
+
 function PlayerCard({ record }: { record: PlayerRecord }) {
   const { t } = useI18n()
-  const { x01, cricket } = record
-  const chips = [
-    x01.matches > 0 && `X01 ${t('avg')} ${x01.average.toFixed(1)}`,
-    x01.highestVisit > 0 && `${t('highest')} ${x01.highestVisit}`,
-    x01.oneEighties > 0 && `180 ×${x01.oneEighties}`,
-    x01.checkoutDarts > 0 && `${t('checkout')} ${Math.round((x01.checkouts / x01.checkoutDarts) * 100)}%`,
-    x01.highestCheckout > 0 && `${t('highCheckout')} ${x01.highestCheckout}`,
-    x01.bestLeg !== null && `${t('bestLeg')} ${x01.bestLeg}`,
-    cricket.matches > 0 && `MPR ${cricket.marksPerRound.toFixed(2)}`,
-    record.clock.matches > 0 && `${t('clock')} ${Math.round(record.clock.hitRate * 100)}%`,
-    record.killer.matches > 0 && `${t('killer')} ${t('knockouts')} ${record.killer.eliminations}`,
-  ].filter((chip): chip is string => Boolean(chip))
+  const families = Object.keys(recordChips) as FamilyId[]
+  const chips = families.flatMap((family) => familyChips(family, record, t))
   return (
     <article className="hcard">
       <div className="hcard__head">
