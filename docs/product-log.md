@@ -190,9 +190,74 @@ The order is reliability first, then the stats players care about, then reach (n
 - New events `RoundLimitReached` and `SuddenDeath`. A leg won at the limit is not a checkout.
 - Saved matches without `maxRounds` have no limit.
 
+## Iteration 8 — New game mode: 321
+
+**Why this mode:** a quick party game that anyone can play without knowing checkouts, with a twist that keeps every player in the race until the end.
+
+**What was built**
+- `src/domain/three21/`: the rules. Sides count up from 0; the first to reach exactly 321 wins at once. Going over bounces back by the excess (360 → 282). Landing on an opponent's score sends them back to 0. Two new domain events, `Bounced` and `KnockedBack`, drive the banners and the stats.
+- UI: score cards with a progress bar towards 321 and the points to go, and *BOUNCE* / *KNOCKED BACK* banners in the style of the X01 bust banner. The progress bar class is now shared with Around the Clock.
+- Stats: final score, darts thrown and knock-backs, on the winner screen and in the player records.
+
+**Decisions**
+- *Bounce instead of bust:* chosen over "bust, turn reset" and "back to 0". It keeps a player near the finish moving, without a hard penalty.
+- *Knock-back always on*, as in the pub game; no setup option to keep the setup screen short.
+- *Any dart finishes*, no round limit on the setup screen: a party game, not a checkout drill. Merged after the round limit landed, 321 got it in the domain like every mode (closest to 321 wins at the limit), but only X01 offers it.
+- *Mode id `three21`, not `'321'`:* integer-like object keys are listed first by `Object.keys`, which would have put the mode first on the setup screen.
+- *Headline is the current score*, so team members are credited the net change of their darts, bounces included; a knock-back by an opponent is not charged to anyone.
+
+**Verified:** 8 rule tests, the contract suite for the new mode and 2 stats tests (188 tests). Browser check at phone width: five modes fit on the selector, bounce and knock-back banners, the winner screen, undo of a knock-back and resume after a reload.
+
+**Challenge — what could be better**
+- *The banners last one dart:* a knock-back on the first dart of a turn disappears on the next dart, as the bust banner does. **Accepted** for consistency.
+- *The caller stays silent on knock-backs*, which are the funniest moment of the game. **Backlog:** a "Back to zero!" call.
+- *No variants* (bust instead of bounce, double out). The rules would take them as config. **Backlog.**
+
+## Iteration 9 — A proper quit dialog
+
+**Why:** Quit used the browser's `window.confirm`. On phones it looks foreign (a system box titled with the site address), does not follow the app's theme or language, and its OK and Cancel buttons are small and placed differently on each browser. Quitting by mistake loses the match, so this is the one confirmation that has to be clear.
+
+**What was built**
+- `src/ui/ConfirmDialog.tsx`: a reusable confirmation modal built on the native `<dialog>` element, with a title, a message and two actions. The confirm action can be styled as destructive.
+- The game screen's Quit button opens it: *Quit this match?*, "The match in progress will be lost and won't be added to the history.", then *Keep playing* and a red *Quit* (EN / FR).
+- No dialog before the first dart: there is nothing to lose, so Quit leaves at once.
+
+**Decisions**
+- *Native `<dialog>` with `showModal()`*, no library: the browser traps focus, makes the rest of the page inert, puts the dialog above everything and closes it on Escape. It matches the app's "no runtime dependency beyond React" rule.
+- *The safe choice is the default:* *Keep playing* gets the focus, and Escape or a tap outside the card both keep playing. Only an explicit tap on *Quit* ends the match.
+- *The message says what is lost* (the match and its place in the history), instead of a bare "Are you sure?".
+- *Same look as the winner overlay* (blurred backdrop, dark card, rise animation), and animations are off with reduced motion, like the rest of the app.
+
+**Verified:** typecheck and the test suite. Browser check at phone width: Quit before any dart goes straight to setup; after a dart the dialog opens with *Keep playing* focused; Escape, a tap outside and *Keep playing* all keep the match, a tap on the card does not close it, and *Quit* goes back to setup. No native browser dialog appears.
+
+**Challenge — what could be better**
+- *Deleting a match in the History screen still uses `window.confirm`.* It can use the same `ConfirmDialog`. **Next**, small.
+- *No component test:* the project's tests run in Node, without a DOM. The behaviour is covered by the browser check only. **Accepted**, as for the service worker.
+
+## Iteration 10 — Sliding selectors on the setup screen
+
+**Why:** the game mode and X01 start score selectors switched their highlight instantly. A highlight that slides from the old choice to the new one shows what changed at a glance and makes the first screen feel more finished.
+
+**What was built**
+- `src/ui/SegControl.tsx`: a segmented control whose green highlight (the *thumb*) is a separate element that slides under the buttons to the picked option, with a slight overshoot.
+- Used for the **game mode** selector and the **X01 start score** selector (301 / 501 / 701).
+
+**Decisions**
+- *The thumb is measured from the active button* (its position and size), not computed as "index × width". The game mode buttons have uneven widths and "Crazy Cricket" wraps onto two lines, so equal slots would be wrong.
+- *It follows layout changes:* a `ResizeObserver` re-measures on rotation, window resizes and language changes ("Clock" → "Horloge" changes the widths).
+- *No slide on first display:* the thumb jumps into place when the screen opens, and slides only on later changes, so the setup screen doesn't animate on its own.
+- *Reduced motion* is already handled by the global rule that turns transitions off: the thumb jumps straight to the new option.
+- *Scope:* only the two setup selectors asked for. The game screen's Board/Pad switch, the keypad's Single/Double/Triple and the History tabs keep the instant highlight; they use the same CSS and could switch to `SegControl` in one line each.
+
+**Verified:** typecheck and the test suite. Browser check at phone width: the thumb lines up with the active button in both selectors (including "Crazy Cricket" on two lines), after switching to French, and the position sampled frame by frame slides from 701 to 301 in about 0.3 s with a small overshoot.
+
+**Challenge — what could be better**
+- *Buttons are toggles, not a radio group:* they use `aria-pressed`. A `radiogroup` with arrow-key navigation would be more correct for screen readers. **Backlog.**
+- *No automated test* for the measuring (no DOM in the test runner). **Accepted**, covered by the browser check.
+
 ## Where the app stands, and what's next
 
-After five iterations the app covers what a pub, club or garage session needs: it works offline, gives pro-level stats and a history, has four game modes with team play, and a caller.
+After eight iterations the app covers what a pub, club or garage session needs: it works offline, gives pro-level stats and a history, has five game modes with team play, and a caller.
 
 **Next candidates, by value:**
 1. **Backup and restore** (export/import the history as a file). History lives in one browser; losing it hurts more as it grows.

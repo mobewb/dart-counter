@@ -13,6 +13,7 @@ const requests: { [K in GameModeId]: MatchRequest & { mode: K } } = {
   crazy: { mode: 'crazy', names: ['Ann', 'Bob'], options: {} },
   clock: { mode: 'clock', names: ['Ann', 'Bob'], options: {} },
   killer: { mode: 'killer', names: ['Ann', 'Bob'], options: { lives: 3 } },
+  three21: { mode: 'three21', names: ['Ann', 'Bob'], options: {} },
 }
 
 /** A player's history record after one match. */

@@ -7,7 +7,7 @@ The ubiquitous language of Dart Counter. Code, docs and commits use these terms;
 | Term | Definition | UI (EN / FR) |
 | --- | --- | --- |
 | **Match** | The whole contest between players, from start to winner. | "match" / "match" |
-| **Game mode** | The rule set a match is played with: X01, Cricket, Crazy Cricket, Around the Clock or Killer. | Game / Jeu |
+| **Game mode** | The rule set a match is played with: X01, Cricket, Crazy Cricket, Around the Clock, Killer or 321. | Game / Jeu |
 | **Player** | A participant in a match (1 to 8). | Player / Joueur |
 | **Team** | One or more players sharing one score in team play; members take turns. | Team / Équipe |
 | **Side** | Who a score belongs to: a single player, or a team. The domain code calls sides "players" (`currentPlayer`, `playerCount`). | — |
@@ -62,6 +62,14 @@ The ubiquitous language of Dart Counter. Code, docs and commits use these terms;
 | **Lives** | What a side starts with (1–5); losing the last one knocks it out. | Lives / Vies |
 | **Killer** | A side that has hit its own double; only killers take lives. | KILLER / KILLER |
 | **Knockout** | A side losing its last life. | Out, Knockouts / Éliminé, Éliminations |
+
+## 321
+
+| Term | Definition | UI (EN / FR) |
+| --- | --- | --- |
+| **Score** | Points a side has added up from 0; 321 exactly wins. The code calls the mode `three21`. | Score / Score |
+| **Bounce** | A dart that goes over 321 counts the excess backwards (360 → 282). | BOUNCE / REBOND |
+| **Knock-back** | Landing exactly on an opponent's score sends that opponent back to 0. | KNOCKED BACK / RENVOYÉ |
 
 ## Avoid
 

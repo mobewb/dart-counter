@@ -1,8 +1,9 @@
-import type { clock, cricket, Dart, DomainEvent, GameMode, killer, Limited, x01 } from '../../domain'
+import type { clock, cricket, Dart, DomainEvent, GameMode, killer, Limited, three21, x01 } from '../../domain'
 import type { Call } from '../caller'
 import type { ClockRecord, ClockStats } from './clock'
 import type { CricketRecord, CricketStats } from './cricket'
 import type { KillerRecord, KillerStats } from './killer'
+import type { Three21Record, Three21Stats } from './three21'
 import type { X01Record, X01Stats } from './x01'
 
 /** Options of a mode the player picks nothing for. */
@@ -14,10 +15,11 @@ export interface Families {
   cricket: { config: cricket.CricketConfig; state: Limited<cricket.CricketMatch>; options: NoOptions; stats: CricketStats; record: CricketRecord }
   clock: { config: clock.ClockConfig; state: Limited<clock.ClockMatch>; options: NoOptions; stats: ClockStats; record: ClockRecord }
   killer: { config: killer.KillerConfig; state: Limited<killer.KillerMatch>; options: { lives: number }; stats: KillerStats; record: KillerRecord }
+  three21: { config: three21.Three21Config; state: Limited<three21.Three21Match>; options: NoOptions; stats: Three21Stats; record: Three21Record }
 }
 
 /** The rule family of each game mode: Crazy Cricket is Cricket dealt differently. */
-export const FAMILY = { x01: 'x01', cricket: 'cricket', crazy: 'cricket', clock: 'clock', killer: 'killer' } as const
+export const FAMILY = { x01: 'x01', cricket: 'cricket', crazy: 'cricket', clock: 'clock', killer: 'killer', three21: 'three21' } as const
 
 export type GameModeId = keyof typeof FAMILY
 export type FamilyId = keyof Families

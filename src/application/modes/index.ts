@@ -1,6 +1,7 @@
 import { clockModule } from './clock'
 import { crazyModule, cricketModule } from './cricket'
 import { killerModule } from './killer'
+import { three21Module } from './three21'
 import type { GameModeId, MatchSetup, ModeModule, Setup } from './types'
 import { x01Module } from './x01'
 
@@ -9,6 +10,7 @@ export { FAMILY } from './types'
 export type { ClockRecord, ClockStats } from './clock'
 export type { CricketRecord, CricketStats } from './cricket'
 export type { KillerRecord, KillerStats } from './killer'
+export type { Three21Record, Three21Stats } from './three21'
 export type { X01Record, X01Stats } from './x01'
 
 /** One module per game mode, in the order the setup screen lists them. */
@@ -18,6 +20,7 @@ export const modules: { [K in GameModeId]: ModeModule<K> } = {
   crazy: crazyModule,
   clock: clockModule,
   killer: killerModule,
+  three21: three21Module,
 }
 
 export const gameModes = Object.keys(modules) as GameModeId[]

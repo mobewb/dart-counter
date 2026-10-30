@@ -4,6 +4,7 @@ import { gameModes, modules, type GameModeId, type MatchSetup, type Sides } from
 import type { Settings } from '../infrastructure/preferences'
 import { useI18n } from './i18n'
 import { registry } from './registry'
+import { SegControl } from './SegControl'
 
 interface Props {
   initial?: MatchSetup
@@ -114,22 +115,14 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
 
       <section className="card">
         <h2>{t('game')}</h2>
-        <div className="seg-control">
-          {gameModes.map((k) => (
-            <button key={k} className={k === kind ? 'is-active' : ''} onClick={() => setKind(k)}>{t(registry[k].label)}</button>
-          ))}
-        </div>
+        <SegControl options={gameModes.map((k) => ({ value: k, label: t(registry[k].label) }))} value={kind} onChange={setKind} />
         {hint && <p className="hint">{t(hint)}</p>}
       </section>
 
       {kind === 'x01' && (
         <section className="card">
           <h2>{t('startScore')}</h2>
-          <div className="seg-control">
-            {SCORES.map((s) => (
-              <button key={s} className={s === startScore ? 'is-active' : ''} onClick={() => setStartScore(s)}>{s}</button>
-            ))}
-          </div>
+          <SegControl options={SCORES.map((s) => ({ value: s, label: String(s) }))} value={startScore} onChange={setStartScore} />
         </section>
       )}
 

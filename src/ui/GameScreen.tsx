@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { Match } from '../application/match'
 import type { GameModeId, Setup } from '../application/modes'
 import type { Dart } from '../domain'
+import { ConfirmDialog } from './ConfirmDialog'
 import { dartLabel } from './dartLabel'
 import { Dartboard } from './Dartboard'
 import { useI18n } from './i18n'
@@ -56,7 +57,9 @@ export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgre
     </div>
   )
   const hit = (dart: Dart) => !locked && record(dart)
-  const quit = () => window.confirm(t('confirmQuit')) && onExit()
+  const [quitting, setQuitting] = useState(false)
+  // Nothing to lose before the first dart, so no need to ask.
+  const quit = () => (dartCount === 0 ? onExit() : setQuitting(true))
 
   return (
     <main className="screen game">
@@ -142,6 +145,17 @@ export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgre
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={quitting}
+        title={t('confirmQuit')}
+        confirmLabel={t('quit')}
+        cancelLabel={t('keepPlaying')}
+        danger
+        onConfirm={onExit}
+        onCancel={() => setQuitting(false)}
+      >
+        {t('quitHint')}
+      </ConfirmDialog>
     </main>
   )
 }

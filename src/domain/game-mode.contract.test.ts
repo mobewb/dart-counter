@@ -5,6 +5,7 @@ import * as killer from './killer'
 import type { Dart } from './shared-kernel/dart'
 import { replayLog } from './shared-kernel/events'
 import { results, type GameMode, type MatchCore } from './shared-kernel/game-mode'
+import * as three21 from './three21'
 import * as x01 from './x01'
 
 const s = (n: number): Dart => ({ segment: n, multiplier: 1 })
@@ -125,4 +126,11 @@ contract(
   { playerCount: 2, lives: 1 },
   [d(20), miss, miss, miss, miss, miss, d(19)],
   [s(20), s(19)],
+)
+
+contract(
+  '321',
+  three21.mode,
+  { playerCount: 2 },
+  [t(20), t(20), t(20), miss, miss, miss, t(20), t(20), t(7)],
 )
