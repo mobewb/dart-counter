@@ -24,7 +24,7 @@ function useClockView({ sides, state: match }: ViewProps<ClockSetup, clock.Clock
             <article key={i} className={`pcard${i === match.currentPlayer && !finished ? ' is-active' : ''}${match.winner === i ? ' is-winner' : ''}`}>
               <div className="pcard__name">{sides[i]}</div>
               <div className="pcard__score">{next === null ? '✓' : label(next)}</div>
-              <div className="clock-progress" role="progressbar" aria-valuemin={0} aria-valuemax={steps} aria-valuenow={p.progress}>
+              <div className="progress" role="progressbar" aria-valuemin={0} aria-valuemax={steps} aria-valuenow={p.progress}>
                 <i style={{ width: `${(p.progress / steps) * 100}%` }} />
               </div>
               <div className="pcard__meta">

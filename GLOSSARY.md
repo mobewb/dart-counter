@@ -7,7 +7,7 @@ The ubiquitous language of Dart Counter. Code, docs and commits use these terms;
 | Term | Definition | UI (EN / FR) |
 | --- | --- | --- |
 | **Match** | The whole contest between players, from start to winner. | "match" / "match" |
-| **Game mode** | The rule set a match is played with: X01, Cricket or Crazy Cricket. | Game / Jeu |
+| **Game mode** | The rule set a match is played with: X01, Cricket, Crazy Cricket, Around the Clock or 321. | Game / Jeu |
 | **Player** | A participant in a match (1 to 8). | Player / Joueur |
 | **Team** | One or more players sharing one score in team play; members take turns. | Team / Équipe |
 | **Side** | Who a score belongs to: a single player, or a team. The domain code calls sides "players" (`currentPlayer`, `playerCount`). | — |
@@ -50,6 +50,14 @@ The ubiquitous language of Dart Counter. Code, docs and commits use these terms;
 | **Points** | Earned by marks beyond the third on a target an opponent has not closed. | Points / Points |
 | **Target policy** | How a cricket match picks its targets: *fixed* (20–15 and the bull) or *reroll* (Crazy Cricket). | — |
 | **Reroll** | Crazy Cricket: after a round, targets nobody hit are replaced from the pool; their marks are discarded. | CRAZY ROLL / ROULETTE FOLLE |
+
+## 321
+
+| Term | Definition | UI (EN / FR) |
+| --- | --- | --- |
+| **Score** | Points a side has added up from 0; 321 exactly wins. The code calls the mode `three21`. | Score / Score |
+| **Bounce** | A dart that goes over 321 counts the excess backwards (360 → 282). | BOUNCE / REBOND |
+| **Knock-back** | Landing exactly on an opponent's score sends that opponent back to 0. | KNOCKED BACK / RENVOYÉ |
 
 ## Avoid
 

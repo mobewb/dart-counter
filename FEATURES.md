@@ -10,14 +10,15 @@ A mobile-first dart scoring web app. Pick a game, enter the players, and tap the
 4. [Cricket](#4-cricket)
 5. [Crazy Cricket](#5-crazy-cricket)
 6. [Around the Clock](#6-around-the-clock)
-7. [Dart input](#7-dart-input)
-8. [In-game controls](#8-in-game-controls)
-9. [End of game](#9-end-of-game)
-10. [Languages](#10-languages)
-11. [Saved data](#11-saved-data)
-12. [Mobile and display](#12-mobile-and-display)
-13. [Technical overview](#13-technical-overview)
-14. [Build, test and deploy](#14-build-test-and-deploy)
+7. [321](#7-321)
+8. [Dart input](#8-dart-input)
+9. [In-game controls](#9-in-game-controls)
+10. [End of game](#10-end-of-game)
+11. [Languages](#11-languages)
+12. [Saved data](#12-saved-data)
+13. [Mobile and display](#13-mobile-and-display)
+14. [Technical overview](#14-technical-overview)
+15. [Build, test and deploy](#15-build-test-and-deploy)
 
 ---
 
@@ -29,12 +30,13 @@ A mobile-first dart scoring web app. Pick a game, enter the players, and tap the
 | **Cricket** | Close 20 → 15 and the bull with 3 marks each, and score points on numbers your opponents have not closed. |
 | **Crazy Cricket** | Cricket with six random numbers plus the bull; numbers nobody hits are rerolled each round. |
 | **Around the Clock** | Practice or race: hit 1 to 20 in order, then the bull. First to finish wins. |
+| **321** | Count up from 0 to exactly 321; going over bounces back, and landing on an opponent's score sends them back to 0. |
 
 Every mode can be played solo (each player for themselves) or in **teams** — see [Team play](#team-play).
 
 ## 2. Match setup
 
-- **Game selector** — switch between X01, Cricket, Crazy Cricket and Around the Clock; a short rules hint is shown for every mode but X01.
+- **Game selector** — switch between X01, Cricket, Crazy Cricket, Around the Clock and 321; a short rules hint is shown for every mode but X01.
 - **Players** — 1 to 8 players, with a stepper to add or remove players.
 - **Player names** — optional, up to 16 characters. Empty names default to "Player N" / "Joueur N".
 - **X01 options**
@@ -50,7 +52,7 @@ Every mode can be played solo (each player for themselves) or in **teams** — s
 
 ### Team play
 
-Available in X01, Cricket and Crazy Cricket.
+Available in every game mode.
 
 - **Teams** — 2 to 4 teams from up to 8 players; teams can be uneven (e.g. 2 against 1).
 - **Assigning players** — turning *Teams* on alternates players between team 1 and team 2. Tap a player's colored badge (T1 → T2 → T3 → T4) to move them. The setup shows each team's line-up, and *Throw!* stays disabled until at least 2 teams have players.
@@ -110,7 +112,16 @@ Same scoring and win condition as Cricket, with a random twist:
 - **Stats** — targets hit and hit rate (share of darts that hit the target), on the winner screen and in the player records.
 - Works solo, with up to 8 players, or in teams.
 
-## 7. Dart input
+## 7. 321
+
+- **Count up** — every player starts at 0 and adds the score of each dart. The first to reach **exactly 321** wins straight away, with any dart.
+- **Bounce** — a dart that goes over 321 counts the excess backwards: 300 + T20 = 360, 39 over, so the score drops to 282. Play goes on, and a "BOUNCE" banner is shown.
+- **Knock-back** — landing exactly on an opponent's score sends that opponent back to 0 (all of them, if several share it), with a "KNOCKED BACK" banner. A miss never knocks anyone back.
+- **Live information** — each card shows the score, a progress bar towards 321 and the points still to go.
+- **Stats** — final score and darts thrown, and knock-backs, on the winner screen and in the player records. In team play, each player is credited the net change of the darts they threw.
+- Works solo, with up to 8 players, or in teams.
+
+## 8. Dart input
 
 Two interchangeable input methods, switchable at any time during a game:
 
@@ -126,15 +137,15 @@ Two interchangeable input methods, switchable at any time during a game:
 - The multiplier resets to Single after each dart.
 - In Cricket modes, non-target numbers are faded.
 
-## 8. In-game controls
+## 9. In-game controls
 
 - **Undo** — removes the last dart, repeatedly and across turns, legs and sets (the whole game is rebuilt from the dart log). It can also be used from the winner screen to correct the last throw.
 - **Quit** — returns to the setup screen after a confirmation prompt.
-- **Caller voice** (off by default) — a spoken darts caller in English or French: the visit score ("One hundred and eighty!"), "No score", "Bust", "Game shot!", "Game shot, and the match!", and what the next thrower requires when they are on a finish ("Ann, you require 81"). In Cricket and Around the Clock, only the winner is announced. Undo and resuming a match stay silent.
+- **Caller voice** (off by default) — a spoken darts caller in English or French: the visit score ("One hundred and eighty!"), "No score", "Bust", "Game shot!", "Game shot, and the match!", and what the next thrower requires when they are on a finish ("Ann, you require 81"). In Cricket, Around the Clock and 321, only the winner is announced. Undo and resuming a match stay silent.
 - **Vibration** (on by default, on phones that support it) — a light tick on each dart, a double buzz on a bust and a longer pattern on a win.
 - **Screen wake lock** — in X01, the screen is kept on during the game (where the browser supports it).
 
-## 9. End of game
+## 10. End of game
 
 A winner overlay shows:
 - the winner's name (or team) and a trophy,
@@ -143,15 +154,17 @@ A winner overlay shows:
 - **match stats** for every player (in team play, under each player):
   - X01: first-9 average, highest visit, 180 / 140+ / 100+ counts, checkout rate (checkouts hit / darts thrown at a finishing double, with double-out), best leg in darts.
   - Cricket: marks per round (MPR) and total marks (scoring marks included).
+  - Around the Clock: hit rate.
+  - 321: knock-backs.
 - three actions: **Undo** (reopen the game), **Rematch** (same settings, same players) and **New game** (back to setup).
 
-## 10. Languages
+## 11. Languages
 
 - English and French, with the language auto-detected from the browser (French if the browser language is French, English otherwise).
 - Can be switched manually on the setup screen; the choice is remembered.
 - All UI texts, hints and rule explanations are translated.
 
-## 11. Saved data
+## 12. Saved data
 
 Everything is stored on the device, in the browser; nothing is sent anywhere.
 
@@ -165,7 +178,7 @@ Everything is stored on the device, in the browser; nothing is sent anywhere.
 - **Storage** — IndexedDB for matches, `localStorage` for preferences. The app asks the browser to keep this data persistent. Clearing the site data deletes it, and it is not synced between devices.
 - **Fail-safe** — if storage is unavailable (blocked, private mode, full), the app keeps working without saving.
 
-## 12. Mobile and display
+## 13. Mobile and display
 
 - Designed first for phones: compact layouts for game and setup screens on small screens.
 - Landscape layout for short viewports.
@@ -175,7 +188,7 @@ Everything is stored on the device, in the browser; nothing is sent anywhere.
 - **Works offline** — after the first visit, the app loads and plays with no network (a service worker caches it). Online, the latest version is always loaded.
 - **App icon** — a ghost in front of a dartboard, used as the browser tab icon and as the home-screen icon (iOS and Android). The app can be added to the home screen and opens full-screen.
 
-## 13. Technical overview
+## 14. Technical overview
 
 | Area | Details |
 | --- | --- |
@@ -195,6 +208,7 @@ src/
 │   ├── x01/                   X01 match: bust, double in/out, legs, sets, checkout, average
 │   ├── cricket/               Cricket match, fixed and reroll (crazy) target policies
 │   ├── clock/                 Around the Clock match
+│   ├── three21/               321 match: bounce and knock-back
 │   └── game-mode.contract.test.ts   Rules every game mode must follow
 ├── application/             Use cases in plain TypeScript
 │   ├── match-setup.ts         startMatch, rematch (deals crazy cricket again)
@@ -216,6 +230,7 @@ src/
     ├── modes/x01/             X01 player cards, checkout chip, bust banner
     ├── modes/cricket/         Marks grid, targets strip and roulette
     ├── modes/clock/           Next-target cards and progress bars
+    ├── modes/three21/         Score cards, bounce and knock-back banners
     ├── use-match.ts           Adapts the match session to React
     ├── Setup.tsx              Game mode selection and options
     ├── Dartboard.tsx, Keypad.tsx, dartLabel.ts, i18n.tsx, styles.css
@@ -229,7 +244,7 @@ Design notes:
 - **Teams are sides** — the game rules score *sides*; a side is one player or a team. Who throws within a team is derived from the dart log, so undo, resume and history work unchanged ([ADR-005](docs/adr/005-teams-are-sides.md)).
 - **Tests** — unit tests for each game mode, a contract suite run against every mode, and use-case tests.
 
-## 14. Build, test and deploy
+## 15. Build, test and deploy
 
 | Command | Purpose |
 | --- | --- |

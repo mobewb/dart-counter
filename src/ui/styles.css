@@ -442,6 +442,6 @@ button.team-badge { min-height: 44px; }
 .history__empty { text-align: center; padding: 32px 8px; }
 .history .topbar > span { width: 44px; }
 
-/* Around the Clock */
-.clock-progress { height: 6px; border-radius: 99px; background: rgb(255 255 255 / 0.1); overflow: hidden; margin: 4px 0; }
-.clock-progress i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.3s; }
+/* Progress bar: Around the Clock, 321 */
+.progress { height: 6px; border-radius: 99px; background: rgb(255 255 255 / 0.1); overflow: hidden; margin: 4px 0; }
+.progress i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.3s; }

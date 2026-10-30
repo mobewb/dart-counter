@@ -159,9 +159,32 @@ The order is reliability first, then the stats players care about, then reach (n
 - *No volume or voice picker.* The system volume and the device's default voice are used. **Backlog** if users ask.
 - *Cricket could call more* (e.g. "Triple 20, three marks"). Cricket callers rarely do this; the winner call is enough. **Skipped.**
 
+## Iteration 6 — New game mode: 321
+
+**Why this mode:** a quick party game that anyone can play without knowing checkouts, with a twist that keeps every player in the race until the end.
+
+**What was built**
+- `src/domain/three21/`: the rules. Sides count up from 0; the first to reach exactly 321 wins at once. Going over bounces back by the excess (360 → 282). Landing on an opponent's score sends them back to 0. Two new domain events, `Bounced` and `KnockedBack`, drive the banners and the stats.
+- UI: score cards with a progress bar towards 321 and the points to go, and *BOUNCE* / *KNOCKED BACK* banners in the style of the X01 bust banner. The progress bar class is now shared with Around the Clock.
+- Stats: final score, darts thrown and knock-backs, on the winner screen and in the player records.
+
+**Decisions**
+- *Bounce instead of bust:* chosen over "bust, turn reset" and "back to 0". It keeps a player near the finish moving, without a hard penalty.
+- *Knock-back always on*, as in the pub game; no setup option to keep the setup screen short.
+- *Any dart finishes*, no round limit: a party game, not a checkout drill.
+- *Mode id `three21`, not `'321'`:* integer-like object keys are listed first by `Object.keys`, which would have put the mode first on the setup screen.
+- *Headline is the current score*, so team members are credited the net change of their darts, bounces included; a knock-back by an opponent is not charged to anyone.
+
+**Verified:** 8 rule tests, the contract suite for the new mode and 2 stats tests (188 tests). Browser check at phone width: five modes fit on the selector, bounce and knock-back banners, the winner screen, undo of a knock-back and resume after a reload.
+
+**Challenge — what could be better**
+- *The banners last one dart:* a knock-back on the first dart of a turn disappears on the next dart, as the bust banner does. **Accepted** for consistency.
+- *The caller stays silent on knock-backs*, which are the funniest moment of the game. **Backlog:** a "Back to zero!" call.
+- *No variants* (bust instead of bounce, double out, round limit). The rules would take them as config. **Backlog.**
+
 ## Where the app stands, and what's next
 
-After five iterations the app covers what a pub, club or garage session needs: it works offline, gives pro-level stats and a history, has four game modes with team play, and a caller.
+After six iterations the app covers what a pub, club or garage session needs: it works offline, gives pro-level stats and a history, has five game modes with team play, and a caller.
 
 **Next candidates, by value:**
 1. **Backup and restore** (export/import the history as a file). History lives in one browser; losing it hurts more as it grows.

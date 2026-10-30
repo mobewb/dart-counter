@@ -4,6 +4,7 @@ import * as cricket from './cricket'
 import type { Dart } from './shared-kernel/dart'
 import { replayLog } from './shared-kernel/events'
 import { results, type GameMode, type MatchCore } from './shared-kernel/game-mode'
+import * as three21 from './three21'
 import * as x01 from './x01'
 
 const s = (n: number): Dart => ({ segment: n, multiplier: 1 })
@@ -114,4 +115,11 @@ contract(
   clock.mode,
   { playerCount: 2, sequence: [1, 2, 3, 25] },
   [s(1), d(2), t(3), miss, miss, miss, s(25)],
+)
+
+contract(
+  '321',
+  three21.mode,
+  { playerCount: 2 },
+  [t(20), t(20), t(20), miss, miss, miss, t(20), t(20), t(7)],
 )

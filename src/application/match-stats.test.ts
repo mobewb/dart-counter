@@ -81,3 +81,19 @@ describe('Around the Clock stats', () => {
     expect(bob).toEqual({ kind: 'clock', dartsThrown: 3, hits: 1, hitRate: 1 / 3 })
   })
 })
+
+describe('321 stats', () => {
+  it('counts knock-backs and bounces for the player who threw them', () => {
+    const setup = startMatch({ mode: 'three21', names: ['Ann', 'Bob'] })
+    // Ann scores 60; Bob lands on 60 and knocks her back to 0.
+    const [ann, bob] = matchStats(setup, [t(20), miss, miss, s(20), s(20), s(20)])
+    expect(ann).toEqual({ kind: 'three21', dartsThrown: 3, knockBacks: 0, bounces: 0 })
+    expect(bob).toEqual({ kind: 'three21', dartsThrown: 3, knockBacks: 1, bounces: 0 })
+  })
+
+  it('counts bounces over 321', () => {
+    const setup = startMatch({ mode: 'three21', names: ['Ann', 'Bob'] })
+    const [ann] = matchStats(setup, [...repeat(t(20), 3), ...repeat(miss, 3), ...repeat(t(20), 3)])
+    expect(ann).toMatchObject({ dartsThrown: 6, bounces: 1 })
+  })
+})

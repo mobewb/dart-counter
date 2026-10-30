@@ -7,7 +7,7 @@ type KeyValueStore = Pick<Storage, 'getItem' | 'setItem'>
 const LANG = `${STORAGE_NAME}:lang`
 const LAST_SETUP = `${STORAGE_NAME}:last-setup`
 const SETTINGS = `${STORAGE_NAME}:settings`
-const MODES = ['x01', 'cricket', 'crazy', 'clock']
+const MODES = ['x01', 'cricket', 'crazy', 'clock', 'three21']
 
 /** localStorage, or undefined where it is blocked (some private modes). */
 function defaultStore(): KeyValueStore | undefined {

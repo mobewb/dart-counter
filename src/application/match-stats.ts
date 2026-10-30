@@ -45,7 +45,16 @@ export interface ClockStats {
   hitRate: number
 }
 
-export type PlayerStats = X01Stats | CricketStats | ClockStats
+export interface Three21Stats {
+  kind: 'three21'
+  dartsThrown: number
+  /** Opponents sent back to 0 by landing on their score. */
+  knockBacks: number
+  /** Darts that went over 321 and bounced back. */
+  bounces: number
+}
+
+export type PlayerStats = X01Stats | CricketStats | ClockStats | Three21Stats
 
 const perThree = (total: number, darts: number) => (darts === 0 ? 0 : (total / darts) * 3)
 
@@ -135,9 +144,22 @@ function clockStats(setup: MatchSetup, log: Step[]): ClockStats[] {
   return stats.map((s) => ({ kind: 'clock', ...s, hitRate: s.dartsThrown === 0 ? 0 : s.hits / s.dartsThrown }))
 }
 
+function three21Stats(setup: MatchSetup, log: Step[]): Three21Stats[] {
+  const stats = setup.names.map(() => ({ dartsThrown: 0, knockBacks: 0, bounces: 0 }))
+  for (const { player, events } of log) {
+    stats[player]!.dartsThrown++
+    for (const event of events) {
+      if (event.type === 'KnockedBack') stats[player]!.knockBacks += event.players.length
+      if (event.type === 'Bounced') stats[player]!.bounces++
+    }
+  }
+  return stats.map((s) => ({ kind: 'three21', ...s }))
+}
+
 /** Each player's stats for the match so far, by player index. */
 export function matchStats(setup: MatchSetup, darts: readonly Dart[]): PlayerStats[] {
   const log = steps(setup, darts).steps
   if (setup.mode === 'x01') return x01Stats(setup, log)
+  if (setup.mode === 'three21') return three21Stats(setup, log)
   return setup.mode === 'clock' ? clockStats(setup, log) : cricketStats(setup, log)
 }

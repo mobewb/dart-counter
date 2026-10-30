@@ -36,6 +36,11 @@ export interface PlayerRecord {
     /** Share of darts that hit the target, 0 to 1. */
     hitRate: number
   }
+  three21: {
+    matches: number
+    dartsThrown: number
+    knockBacks: number
+  }
 }
 
 const key = (name: string) => name.trim().toLocaleLowerCase()
@@ -53,6 +58,7 @@ function emptyRecord(name: string): PlayerRecord {
     x01: { matches: 0, dartsThrown: 0, points: 0, average: 0, highestVisit: 0, oneEighties: 0, checkouts: 0, checkoutDarts: 0, highestCheckout: 0, bestLeg: null },
     cricket: { matches: 0, dartsThrown: 0, marks: 0, marksPerRound: 0 },
     clock: { matches: 0, dartsThrown: 0, hits: 0, hitRate: 0 },
+    three21: { matches: 0, dartsThrown: 0, knockBacks: 0 },
   }
 }
 
@@ -90,6 +96,10 @@ export function playerRecords(history: readonly FinishedMatch[]): PlayerRecord[]
         record.clock.matches++
         record.clock.dartsThrown += mine.dartsThrown
         record.clock.hits += mine.hits
+      } else if (mine.kind === 'three21') {
+        record.three21.matches++
+        record.three21.dartsThrown += mine.dartsThrown
+        record.three21.knockBacks += mine.knockBacks
       } else {
         record.cricket.matches++
         record.cricket.dartsThrown += mine.dartsThrown
