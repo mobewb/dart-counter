@@ -55,7 +55,7 @@ function updatePlayer(state: X01Match, index: number, patch: Partial<X01Player>)
   return { ...state, players }
 }
 
-function winLeg(state: X01Match, index: number): Move<X01Match> {
+export function winLeg(state: X01Match, index: number): Move<X01Match> {
   const { config } = state
   const player = state.players[index]!
   const legs = player.legs + 1

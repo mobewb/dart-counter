@@ -1,14 +1,11 @@
-import type { MatchSetup } from '../../../application/match-setup'
-import type { PlayerStats } from '../../../application/match-stats'
+import type { ClockRecord, ClockStats } from '../../../application/modes'
 import { clock } from '../../../domain'
 import { useI18n, type Key } from '../../i18n'
 import type { ModeView, ViewProps } from '../types'
 
-type ClockSetup = Extract<MatchSetup, { mode: 'clock' }>
-
 const label = (target: number) => (target === 25 ? 'B' : String(target))
 
-function useClockView({ sides, state: match }: ViewProps<ClockSetup, clock.ClockMatch>) {
+function useClockView({ sides, state: match }: ViewProps<'clock'>) {
   const { t } = useI18n()
   const finished = match.status === 'finished'
   const steps = match.config.sequence.length
@@ -45,13 +42,15 @@ function useClockView({ sides, state: match }: ViewProps<ClockSetup, clock.Clock
   }
 }
 
-function clockDetails(stats: PlayerStats, t: (key: Key) => string): string[] {
-  if (stats.kind !== 'clock') return []
+function clockDetails(stats: ClockStats, t: (key: Key) => string): string[] {
   return [`${t('hitRate')} ${Math.round(stats.hitRate * 100)}%`]
 }
 
-export const clockView: ModeView<ClockSetup, clock.ClockMatch> = {
-  rules: clock.mode,
+export function clockRecordChips(record: ClockRecord, t: (key: Key) => string): string[] {
+  return [`${t('clock')} ${Math.round(record.hitRate * 100)}%`]
+}
+
+export const clockView: ModeView<'clock'> = {
   label: 'clock',
   hint: 'clockHint',
   result: { label: 'targetsHit', format: String },

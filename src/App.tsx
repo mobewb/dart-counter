@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
-import { leaveMatch, newCurrentMatch, progress, resumeMatch, saveProgress } from './application/match-persistence'
+import type { Match } from './application/match'
+import { leaveMatch, newCurrentMatch, resumeMatch, saveProgress } from './application/match-persistence'
 import type { CurrentMatch, MatchRepository } from './application/match-repository'
-import { rematch as dealRematch, type MatchSetup } from './application/match-setup'
-import type { Dart } from './domain'
+import { rematch as dealRematch } from './application/match-setup'
+import type { MatchSetup } from './application/modes'
 import { requestPersistentStorage } from './infrastructure/persistent-storage'
 import { loadLastSetup, loadSettings, saveLastSetup, saveSettings, type Settings } from './infrastructure/preferences'
 import { GameScreen } from './ui/GameScreen'
 import { History } from './ui/History'
 import { I18nProvider } from './ui/i18n'
-import { viewFor } from './ui/registry'
 import { Setup } from './ui/Setup'
 
 /** Saving is best effort: the match goes on if storage fails. */
@@ -45,10 +45,8 @@ export function App({ repository }: { repository: MatchRepository }) {
   }
 
   const record = useCallback(
-    (darts: readonly Dart[]) => {
-      if (!current) return
-      const next = progress(current, darts)
-      saveProgress(repository, next.match, next.outcome).catch(warn)
+    (match: Match) => {
+      if (current) saveProgress(repository, current, match).catch(warn)
     },
     [current, repository],
   )
@@ -69,7 +67,6 @@ export function App({ repository }: { repository: MatchRepository }) {
       ) : (
         <GameScreen
           key={current.id}
-          view={viewFor(current.setup)}
           setup={current.setup}
           initialDarts={current.darts}
           onProgress={record}

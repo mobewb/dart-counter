@@ -1,5 +1,6 @@
 import { isValidDart, type Dart } from '../shared-kernel/dart'
 import { replayLog, type DomainEvent, type Move } from '../shared-kernel/events'
+import type { RoundLimitConfig } from '../shared-kernel/round-limit'
 
 const DARTS_PER_TURN = 3
 const BULL = 25
@@ -7,10 +8,12 @@ const BULL = 25
 /** Around the Clock: 1 to 20 in order, then the bull. */
 export const CLOCK_SEQUENCE = [...Array.from({ length: 20 }, (_, i) => i + 1), BULL]
 
-export interface ClockConfig {
+export interface ClockConfig extends RoundLimitConfig {
   playerCount: number
   /** Targets to hit in order; any multiplier counts. */
   sequence: number[]
+  /** A double moves 2 targets on, a triple 3; the last target is never skipped. Off in matches saved before it existed. */
+  skipAhead?: boolean
 }
 
 export interface ClockPlayer {
@@ -52,7 +55,11 @@ export function applyDart(state: ClockMatch, dart: Dart): Move<ClockMatch> {
   const { config, currentPlayer } = state
   const me = state.players[currentPlayer]!
   const hit = dart.segment !== 0 && dart.segment === targetOf(state, currentPlayer)
-  const updated = { progress: me.progress + (hit ? 1 : 0), dartsThrown: me.dartsThrown + 1 }
+  const last = config.sequence.length - 1
+  const step = !hit ? 0 : config.skipAhead ? dart.multiplier : 1
+  // Skipping stops on the last target, which must be hit itself.
+  const progress = me.progress === last ? me.progress + step : Math.min(me.progress + step, last)
+  const updated = { progress, dartsThrown: me.dartsThrown + 1 }
   const players = state.players.map((p, i) => (i === currentPlayer ? updated : p))
 
   if (updated.progress >= config.sequence.length) {

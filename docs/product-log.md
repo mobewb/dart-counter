@@ -159,7 +159,38 @@ The order is reliability first, then the stats players care about, then reach (n
 - *No volume or voice picker.* The system volume and the device's default voice are used. **Backlog** if users ask.
 - *Cricket could call more* (e.g. "Triple 20, three marks"). Cricket callers rarely do this; the winner call is enough. **Skipped.**
 
-## Iteration 6 — New game mode: 321
+## Iteration 6 — New game mode: Killer
+
+**Why:** Killer was the most requested party mode, and the next candidate after the caller.
+
+**Rules chosen** (classic pub rules): each player throws for a number; one hit on your own double makes you a killer; a killer's hit on an opponent's double takes 1 life; a killer hitting their own double loses a life. 1 to 5 lives, 3 by default. Last side standing wins.
+
+**What was built**
+- `domain/killer`: a `draw` phase, then `play`. The draw is part of the dart log, so undo and resume work as in every other mode.
+- New events `NumberDrawn`, `KillerArmed`, `LifeLost` and `PlayerEliminated`. The caller announces them as they happen.
+- Killer stats (lives taken, knockouts) on the winner screen and in the player records; a *Lives* stepper on the setup screen.
+
+**Decisions**
+- *The draw is one dart per side, with a rethrow on a miss, the bull or a taken number.* That breaks the contract's "3 darts per turn", so the contract test now takes an `opening` log that settles the match before play. Draw darts are not counted.
+- *A side's points are the lives it took*, not the lives it has left: the contract credits a dart's points to the side that threw it, and a lost life belongs to the victim.
+- *A side that knocks itself out loses the rest of its turn*: it is out.
+- *Teams work for free*: a team draws one number and shares its lives.
+
+**Challenge — what could be better**
+- *Variants* (marks to arm instead of one double, triples take 2 lives, the app deals the numbers). **Backlog**, config-only.
+- *Lives left are not in the stats*; the headline is lives taken. **Accepted:** the winner is the one with lives left.
+
+## Iteration 7 — Around the Clock skip ahead, and a round limit
+
+**Skip ahead:** in Around the Clock a double moves a player on 2 numbers and a triple 3; the bull is never skipped. It is a `skipAhead` config flag, on for new matches: saved matches replay with the rule they were played under.
+
+**Round limit:** an X01 leg can be cut short after N rounds (default 20, or off). The setup screen offers it for X01 only; the other modes support it in the domain but don't show it.
+- One decorator, `withRoundLimit`, in the shared kernel; each mode only says how sides rank (`standing`), and Killer which sides are in play and that the draw doesn't count. X01 gives a leg, not the match, at the limit.
+- Ties play sudden death: one more full round, only the tied sides can win. Skipping the other sides' turns would have meant changing every mode's turn order; letting them throw keeps the modes untouched. **Accepted.**
+- New events `RoundLimitReached` and `SuddenDeath`. A leg won at the limit is not a checkout.
+- Saved matches without `maxRounds` have no limit.
+
+## Iteration 8 — New game mode: 321
 
 **Why this mode:** a quick party game that anyone can play without knowing checkouts, with a twist that keeps every player in the race until the end.
 
@@ -171,7 +202,7 @@ The order is reliability first, then the stats players care about, then reach (n
 **Decisions**
 - *Bounce instead of bust:* chosen over "bust, turn reset" and "back to 0". It keeps a player near the finish moving, without a hard penalty.
 - *Knock-back always on*, as in the pub game; no setup option to keep the setup screen short.
-- *Any dart finishes*, no round limit: a party game, not a checkout drill.
+- *Any dart finishes*, no round limit on the setup screen: a party game, not a checkout drill. Merged after the round limit landed, 321 got it in the domain like every mode (closest to 321 wins at the limit), but only X01 offers it.
 - *Mode id `three21`, not `'321'`:* integer-like object keys are listed first by `Object.keys`, which would have put the mode first on the setup screen.
 - *Headline is the current score*, so team members are credited the net change of their darts, bounces included; a knock-back by an opponent is not charged to anyone.
 
@@ -180,9 +211,9 @@ The order is reliability first, then the stats players care about, then reach (n
 **Challenge — what could be better**
 - *The banners last one dart:* a knock-back on the first dart of a turn disappears on the next dart, as the bust banner does. **Accepted** for consistency.
 - *The caller stays silent on knock-backs*, which are the funniest moment of the game. **Backlog:** a "Back to zero!" call.
-- *No variants* (bust instead of bounce, double out, round limit). The rules would take them as config. **Backlog.**
+- *No variants* (bust instead of bounce, double out). The rules would take them as config. **Backlog.**
 
-## Iteration 7 — A proper quit dialog
+## Iteration 9 — A proper quit dialog
 
 **Why:** Quit used the browser's `window.confirm`. On phones it looks foreign (a system box titled with the site address), does not follow the app's theme or language, and its OK and Cancel buttons are small and placed differently on each browser. Quitting by mistake loses the match, so this is the one confirmation that has to be clear.
 
@@ -203,7 +234,7 @@ The order is reliability first, then the stats players care about, then reach (n
 - *Deleting a match in the History screen still uses `window.confirm`.* It can use the same `ConfirmDialog`. **Next**, small.
 - *No component test:* the project's tests run in Node, without a DOM. The behaviour is covered by the browser check only. **Accepted**, as for the service worker.
 
-## Iteration 8 — Sliding selectors on the setup screen
+## Iteration 10 — Sliding selectors on the setup screen
 
 **Why:** the game mode and X01 start score selectors switched their highlight instantly. A highlight that slides from the old choice to the new one shows what changed at a glance and makes the first screen feel more finished.
 
@@ -230,7 +261,7 @@ After eight iterations the app covers what a pub, club or garage session needs: 
 
 **Next candidates, by value:**
 1. **Backup and restore** (export/import the history as a file). History lives in one browser; losing it hurts more as it grows.
-2. **Killer** party game (assigned numbers, lives). The most requested party mode; the contract makes it low-risk.
+2. **Killer variants** (arm with marks, triples take 2 lives, dealt numbers).
 3. **Around the Clock variants** (skip ahead with doubles/triples, doubles only); config-only.
 4. **Trends** in player records (average per match over time, as a small chart).
 5. **Visit total entry** for X01 (type "60" instead of three darts). It needs a rule for the checkout dart: a total entry can't know whether the last dart was a double, so the app would have to ask.

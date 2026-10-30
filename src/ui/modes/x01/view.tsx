@@ -1,14 +1,11 @@
 import { useEffect } from 'react'
-import type { MatchSetup } from '../../../application/match-setup'
-import type { PlayerStats } from '../../../application/match-stats'
+import type { X01Record, X01Stats } from '../../../application/modes'
 import { x01 } from '../../../domain'
 import { dartLabel } from '../../dartLabel'
 import { useI18n, type Key } from '../../i18n'
 import type { ModeView, ViewProps } from '../types'
 
-type X01Setup = Extract<MatchSetup, { mode: 'x01' }>
-
-function useX01View({ setup, sides, state: match, events }: ViewProps<X01Setup, x01.X01Match>) {
+function useX01View({ setup, sides, state: match, events }: ViewProps<'x01'>) {
   const { t } = useI18n()
   const { config } = setup
   const finished = match.status === 'finished'
@@ -75,8 +72,7 @@ function useX01View({ setup, sides, state: match, events }: ViewProps<X01Setup, 
   }
 }
 
-function x01Details(stats: PlayerStats, t: (key: Key) => string): string[] {
-  if (stats.kind !== 'x01') return []
+function x01Details(stats: X01Stats, t: (key: Key) => string): string[] {
   const { firstNine, highestVisit, tons, tonForties, oneEighties, checkoutDarts, checkouts, bestLeg } = stats
   return [
     `${t('firstNine')} ${firstNine.toFixed(1)}`,
@@ -89,8 +85,18 @@ function x01Details(stats: PlayerStats, t: (key: Key) => string): string[] {
   ].filter((chip): chip is string => Boolean(chip))
 }
 
-export const x01View: ModeView<X01Setup, x01.X01Match> = {
-  rules: x01.mode,
+export function x01RecordChips(record: X01Record, t: (key: Key) => string): string[] {
+  return [
+    `X01 ${t('avg')} ${record.average.toFixed(1)}`,
+    record.highestVisit > 0 && `${t('highest')} ${record.highestVisit}`,
+    record.oneEighties > 0 && `180 ×${record.oneEighties}`,
+    record.checkoutDarts > 0 && `${t('checkout')} ${Math.round((record.checkouts / record.checkoutDarts) * 100)}%`,
+    record.highestCheckout > 0 && `${t('highCheckout')} ${record.highestCheckout}`,
+    record.bestLeg !== null && `${t('bestLeg')} ${record.bestLeg}`,
+  ].filter((chip): chip is string => Boolean(chip))
+}
+
+export const x01View: ModeView<'x01'> = {
   label: 'x01',
   keepAwake: true,
   result: { label: 'avg', format: (value) => value.toFixed(1) },

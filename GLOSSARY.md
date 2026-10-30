@@ -7,13 +7,15 @@ The ubiquitous language of Dart Counter. Code, docs and commits use these terms;
 | Term | Definition | UI (EN / FR) |
 | --- | --- | --- |
 | **Match** | The whole contest between players, from start to winner. | "match" / "match" |
-| **Game mode** | The rule set a match is played with: X01, Cricket, Crazy Cricket, Around the Clock or 321. | Game / Jeu |
+| **Game mode** | The rule set a match is played with: X01, Cricket, Crazy Cricket, Around the Clock, Killer or 321. | Game / Jeu |
 | **Player** | A participant in a match (1 to 8). | Player / Joueur |
 | **Team** | One or more players sharing one score in team play; members take turns. | Team / Équipe |
 | **Side** | Who a score belongs to: a single player, or a team. The domain code calls sides "players" (`currentPlayer`, `playerCount`). | — |
 | **Thrower** | The player throwing the current turn; in team play, the team member whose turn it is. | to throw / à lancer |
 | **Turn** | One player's visit at the board: up to 3 darts. | — |
-| **Round** | Every player has taken one turn. | — |
+| **Round** | Every player has taken one turn. | Round / Tour |
+| **Round limit** | The most rounds a match (an X01 leg) lasts; then the best-placed side wins. | Max rounds / Tours max |
+| **Sudden death** | Extra rounds after the limit, one at a time, until one of the tied sides leads alone. | Sudden death / Mort subite |
 | **Dart** | One throw: a segment and a multiplier. | Darts / Fléchettes |
 | **Segment** | The number hit: 1–20, 25 for the bull, 0 for a miss. | — |
 | **Multiplier** | Single (1), double (2) or triple (3). The bull has no triple. | Single, Double, Triple / Simple, Double, Triple |
@@ -50,6 +52,16 @@ The ubiquitous language of Dart Counter. Code, docs and commits use these terms;
 | **Points** | Earned by marks beyond the third on a target an opponent has not closed. | Points / Points |
 | **Target policy** | How a cricket match picks its targets: *fixed* (20–15 and the bull) or *reroll* (Crazy Cricket). | — |
 | **Reroll** | Crazy Cricket: after a round, targets nobody hit are replaced from the pool; their marks are discarded. | CRAZY ROLL / ROULETTE FOLLE |
+
+## Killer
+
+| Term | Definition | UI (EN / FR) |
+| --- | --- | --- |
+| **Draw** | The opening phase: each side throws one dart for its number. | Throw for your number / Lancez pour tirer votre numéro |
+| **Number** | A side's own segment, 1–20, from the draw. | — |
+| **Lives** | What a side starts with (1–5); losing the last one knocks it out. | Lives / Vies |
+| **Killer** | A side that has hit its own double; only killers take lives. | KILLER / KILLER |
+| **Knockout** | A side losing its last life. | Out, Knockouts / Éliminé, Éliminations |
 
 ## 321
 

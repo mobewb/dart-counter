@@ -41,7 +41,25 @@ describe('Around the Clock', () => {
     expect(replay(short, [s(1), s(25)]).winner).toBe(0)
   })
 
-  it('passes the turn after 3 darts', () => {
+  describe('skip ahead', () => {
+    const skip = config({ skipAhead: true })
+
+    it('moves 1 target on for a single, 2 for a double, 3 for a triple', () => {
+      expect(replay(skip, [s(1)]).players[0]!.progress).toBe(1)
+      expect(replay(skip, [d(1)]).players[0]!.progress).toBe(2)
+      expect(replay(skip, [t(1)]).players[0]!.progress).toBe(3)
+      expect(targetOf(replay(skip, [t(1), d(4)]), 0)).toBe(6)
+    })
+
+    it('never skips the bull, which must be hit itself', () => {
+      const short = config({ skipAhead: true, sequence: [1, 2, 25] })
+      expect(targetOf(replay(short, [t(1)]), 0)).toBe(25)
+      expect(replay(short, [t(1)]).status).toBe('playing')
+      expect(replay(short, [t(1), s(25)]).winner).toBe(0)
+    })
+  })
+
+    it('passes the turn after 3 darts', () => {
     const move = replayLog(newMatch(config()), applyDart, [miss, miss, miss])
     expect(move.state.currentPlayer).toBe(1)
     expect(move.events).toEqual([{ type: 'TurnEnded', player: 0 }])

@@ -1,12 +1,13 @@
 import { dartScore, isValidDart, type Dart } from '../shared-kernel/dart'
 import { replayLog, type DomainEvent, type Move } from '../shared-kernel/events'
+import type { RoundLimitConfig } from '../shared-kernel/round-limit'
 
 const DARTS_PER_TURN = 3
 
 /** The score to reach exactly. */
 export const TARGET = 321
 
-export interface Three21Config {
+export interface Three21Config extends RoundLimitConfig {
   playerCount: number
 }
 

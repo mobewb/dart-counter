@@ -1,12 +1,9 @@
-import type { MatchSetup } from '../../../application/match-setup'
-import type { PlayerStats } from '../../../application/match-stats'
+import type { Three21Record, Three21Stats } from '../../../application/modes'
 import { three21 } from '../../../domain'
 import { useI18n, type Key } from '../../i18n'
 import type { ModeView, ViewProps } from '../types'
 
-type Three21Setup = Extract<MatchSetup, { mode: 'three21' }>
-
-function useThree21View({ sides, state: match, events }: ViewProps<Three21Setup, three21.Three21Match>) {
+function useThree21View({ sides, state: match, events }: ViewProps<'three21'>) {
   const { t } = useI18n()
   const finished = match.status === 'finished'
   const bounced = events.some((e) => e.type === 'Bounced')
@@ -47,13 +44,15 @@ function useThree21View({ sides, state: match, events }: ViewProps<Three21Setup,
   }
 }
 
-function three21Details(stats: PlayerStats, t: (key: Key) => string): string[] {
-  if (stats.kind !== 'three21') return []
+function three21Details(stats: Three21Stats, t: (key: Key) => string): string[] {
   return [`${t('knockBacks')} ${stats.knockBacks}`]
 }
 
-export const three21View: ModeView<Three21Setup, three21.Three21Match> = {
-  rules: three21.mode,
+export function three21RecordChips(record: Three21Record, t: (key: Key) => string): string[] {
+  return [`321 ${t('knockBacks')} ${record.knockBacks}`]
+}
+
+export const three21View: ModeView<'three21'> = {
   label: 'three21',
   hint: 'three21Hint',
   result: { label: 'score', format: String },

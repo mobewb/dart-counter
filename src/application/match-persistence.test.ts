@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { Dart } from '../domain'
 import type { CurrentMatch, FinishedMatch, MatchRepository } from './match-repository'
-import { leaveMatch, newCurrentMatch, progress, resumeMatch, saveProgress } from './match-persistence'
+import { openMatch } from './match'
+import { leaveMatch, newCurrentMatch, resumeMatch, saveProgress } from './match-persistence'
 import { startMatch } from './match-setup'
 
 function memoryRepository(): MatchRepository & { history: Map<string, FinishedMatch> } {
@@ -21,12 +22,12 @@ function memoryRepository(): MatchRepository & { history: Map<string, FinishedMa
 const d = (n: number): Dart => ({ segment: n, multiplier: 2 })
 const s = (n: number): Dart => ({ segment: n, multiplier: 1 })
 const rules = { startScore: 40, doubleIn: false, doubleOut: true, legsToWinSet: 1, setsToWinMatch: 1 }
-const setup = startMatch({ mode: 'x01', names: ['Ann', 'Bob'], rules })
+const setup = startMatch({ mode: 'x01', names: ['Ann', 'Bob'], options: rules })
 
 /** Records `darts` as the match's new log, the way the game screen does. */
-const play = (repo: MatchRepository, match: CurrentMatch, darts: Dart[], now = 10) => {
-  const next = progress(match, darts, now)
-  return saveProgress(repo, next.match, next.outcome).then(() => next.match)
+const play = async (repo: MatchRepository, match: CurrentMatch, darts: Dart[], now = 10) => {
+  await saveProgress(repo, match, openMatch(match.setup, darts), now)
+  return (await repo.loadCurrent())!
 }
 
 describe('match persistence', () => {
@@ -51,7 +52,7 @@ describe('match persistence', () => {
 
   it('keeps each player\'s own results in a team match', async () => {
     const repo = memoryRepository()
-    const teams = startMatch({ mode: 'x01', names: ['Ann', 'Bob', 'Cid'], teams: [0, 1, 0], rules })
+    const teams = startMatch({ mode: 'x01', names: ['Ann', 'Bob', 'Cid'], teams: [0, 1, 0], options: rules })
     await play(repo, newCurrentMatch(teams, 0, 't'), [s(20), s(10), s(6), ...[0, 0, 0].map(() => s(0)), d(2)])
     const [entry] = await repo.listFinished()
     expect(entry!.results.map((r) => r.dartsThrown)).toEqual([4, 3])

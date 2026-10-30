@@ -1,5 +1,6 @@
 import { isValidDart, type Dart } from '../shared-kernel/dart'
 import { replayLog, type DomainEvent, type Move } from '../shared-kernel/events'
+import type { RoundLimitConfig } from '../shared-kernel/round-limit'
 
 const DARTS_PER_TURN = 3
 const MARKS_TO_CLOSE = 3
@@ -16,7 +17,7 @@ export const CRICKET_TARGETS = [20, 19, 18, 17, 16, 15, BULL]
  */
 export type TargetPolicy = { kind: 'fixed' } | { kind: 'reroll'; pool: number[] }
 
-export interface CricketConfig {
+export interface CricketConfig extends RoundLimitConfig {
   playerCount: number
   /** Segments that count at the start, with 25 for the bull. */
   targets: number[]

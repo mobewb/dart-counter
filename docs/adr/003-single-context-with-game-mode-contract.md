@@ -1,6 +1,6 @@
 # ADR-003: One bounded context, a shared GameMode contract and a UI registry
 
-- Status: Accepted
+- Status: Accepted, amended by ADR-006
 - Date: 2026-10-27
 
 ## Context

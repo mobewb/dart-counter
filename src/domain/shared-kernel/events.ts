@@ -10,6 +10,17 @@ export type DomainEvent =
   | { type: 'MatchWon'; player: number }
   /** Crazy cricket: indexes of the targets that were replaced. */
   | { type: 'TargetsRerolled'; replaced: number[] }
+  /** The round limit was reached and this side was best placed: it wins the match (a leg in X01). */
+  | { type: 'RoundLimitReached'; player: number }
+  /** Sides tied at the round limit; they play one more round. */
+  | { type: 'SuddenDeath'; players: number[] }
+  /** Killer: a side drew its number. */
+  | { type: 'NumberDrawn'; player: number; number: number }
+  /** Killer: a side hit its own double and can now take lives. */
+  | { type: 'KillerArmed'; player: number }
+  | { type: 'LifeLost'; player: number }
+  /** Killer: a side lost its last life. */
+  | { type: 'PlayerEliminated'; player: number }
   /** 321: the dart went over 321 and the excess counted backwards. */
   | { type: 'Bounced'; player: number }
   /** 321: `by` landed on the score of `players`, who go back to 0. */
