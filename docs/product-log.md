@@ -203,9 +203,30 @@ The order is reliability first, then the stats players care about, then reach (n
 - *Deleting a match in the History screen still uses `window.confirm`.* It can use the same `ConfirmDialog`. **Next**, small.
 - *No component test:* the project's tests run in Node, without a DOM. The behaviour is covered by the browser check only. **Accepted**, as for the service worker.
 
+## Iteration 8 — Sliding selectors on the setup screen
+
+**Why:** the game mode and X01 start score selectors switched their highlight instantly. A highlight that slides from the old choice to the new one shows what changed at a glance and makes the first screen feel more finished.
+
+**What was built**
+- `src/ui/SegControl.tsx`: a segmented control whose green highlight (the *thumb*) is a separate element that slides under the buttons to the picked option, with a slight overshoot.
+- Used for the **game mode** selector and the **X01 start score** selector (301 / 501 / 701).
+
+**Decisions**
+- *The thumb is measured from the active button* (its position and size), not computed as "index × width". The game mode buttons have uneven widths and "Crazy Cricket" wraps onto two lines, so equal slots would be wrong.
+- *It follows layout changes:* a `ResizeObserver` re-measures on rotation, window resizes and language changes ("Clock" → "Horloge" changes the widths).
+- *No slide on first display:* the thumb jumps into place when the screen opens, and slides only on later changes, so the setup screen doesn't animate on its own.
+- *Reduced motion* is already handled by the global rule that turns transitions off: the thumb jumps straight to the new option.
+- *Scope:* only the two setup selectors asked for. The game screen's Board/Pad switch, the keypad's Single/Double/Triple and the History tabs keep the instant highlight; they use the same CSS and could switch to `SegControl` in one line each.
+
+**Verified:** typecheck and the test suite. Browser check at phone width: the thumb lines up with the active button in both selectors (including "Crazy Cricket" on two lines), after switching to French, and the position sampled frame by frame slides from 701 to 301 in about 0.3 s with a small overshoot.
+
+**Challenge — what could be better**
+- *Buttons are toggles, not a radio group:* they use `aria-pressed`. A `radiogroup` with arrow-key navigation would be more correct for screen readers. **Backlog.**
+- *No automated test* for the measuring (no DOM in the test runner). **Accepted**, covered by the browser check.
+
 ## Where the app stands, and what's next
 
-After seven iterations the app covers what a pub, club or garage session needs: it works offline, gives pro-level stats and a history, has five game modes with team play, and a caller.
+After eight iterations the app covers what a pub, club or garage session needs: it works offline, gives pro-level stats and a history, has five game modes with team play, and a caller.
 
 **Next candidates, by value:**
 1. **Backup and restore** (export/import the history as a file). History lives in one browser; losing it hurts more as it grows.

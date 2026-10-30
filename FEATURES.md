@@ -36,11 +36,11 @@ Every mode can be played solo (each player for themselves) or in **teams** — s
 
 ## 2. Match setup
 
-- **Game selector** — switch between X01, Cricket, Crazy Cricket, Around the Clock and 321; a short rules hint is shown for every mode but X01.
+- **Game selector** — switch between X01, Cricket, Crazy Cricket, Around the Clock and 321; a short rules hint is shown for every mode but X01. The highlight slides to the picked mode.
 - **Players** — 1 to 8 players, with a stepper to add or remove players.
 - **Player names** — optional, up to 16 characters. Empty names default to "Player N" / "Joueur N".
 - **X01 options**
-  - Start score: 301, 501 or 701.
+  - Start score: 301, 501 or 701, with the same sliding highlight.
   - Double in (off by default).
   - Double out (on by default).
   - Legs to win a set: 1 to 11 (default 3).
@@ -188,7 +188,7 @@ Everything is stored on the device, in the browser; nothing is sent anywhere.
 - Landscape layout for short viewports.
 - Safe-area insets supported (notch, home indicator).
 - Responsive layout capped at a comfortable width on tablets and desktops.
-- Respects `prefers-reduced-motion`.
+- Respects `prefers-reduced-motion`: animations are turned off, and sliding highlights jump straight to the picked option.
 - **Works offline** — after the first visit, the app loads and plays with no network (a service worker caches it). Online, the latest version is always loaded.
 - **App icon** — a ghost in front of a dartboard, used as the browser tab icon and as the home-screen icon (iOS and Android). The app can be added to the home screen and opens full-screen.
 
@@ -232,6 +232,7 @@ src/
     ├── registry.ts            One entry per game mode
     ├── GameScreen.tsx         Generic game screen: turn, input, undo, winner overlay
     ├── ConfirmDialog.tsx      Modal confirmation on the native <dialog> (quit)
+    ├── SegControl.tsx         Segmented control with a sliding highlight (setup)
     ├── modes/x01/             X01 player cards, checkout chip, bust banner
     ├── modes/cricket/         Marks grid, targets strip and roulette
     ├── modes/clock/           Next-target cards and progress bars
