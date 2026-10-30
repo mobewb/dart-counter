@@ -140,7 +140,11 @@ Two interchangeable input methods, switchable at any time during a game:
 ## 9. In-game controls
 
 - **Undo** — removes the last dart, repeatedly and across turns, legs and sets (the whole game is rebuilt from the dart log). It can also be used from the winner screen to correct the last throw.
-- **Quit** — returns to the setup screen after a confirmation prompt.
+- **Quit** — returns to the setup screen. Once a dart has been thrown, a confirmation dialog asks first: *Quit this match?* with a reminder that the match will be lost and not added to the history.
+  - *Keep playing* is the default choice (focused when the dialog opens), so a stray tap or Enter does not end the match.
+  - *Quit* is shown in red as a destructive action.
+  - Escape or a tap outside the dialog also keeps playing.
+  - Before the first dart there is nothing to lose, so Quit leaves straight away.
 - **Caller voice** (off by default) — a spoken darts caller in English or French: the visit score ("One hundred and eighty!"), "No score", "Bust", "Game shot!", "Game shot, and the match!", and what the next thrower requires when they are on a finish ("Ann, you require 81"). In Cricket, Around the Clock and 321, only the winner is announced. Undo and resuming a match stay silent.
 - **Vibration** (on by default, on phones that support it) — a light tick on each dart, a double buzz on a bust and a longer pattern on a win.
 - **Screen wake lock** — in X01, the screen is kept on during the game (where the browser supports it).
@@ -227,6 +231,7 @@ src/
 └── ui/                      React
     ├── registry.ts            One entry per game mode
     ├── GameScreen.tsx         Generic game screen: turn, input, undo, winner overlay
+    ├── ConfirmDialog.tsx      Modal confirmation on the native <dialog> (quit)
     ├── modes/x01/             X01 player cards, checkout chip, bust banner
     ├── modes/cricket/         Marks grid, targets strip and roulette
     ├── modes/clock/           Next-target cards and progress bars

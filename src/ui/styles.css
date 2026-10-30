@@ -176,6 +176,25 @@ h1, h2, p { margin: 0; }
 .overlay__stats b { font-size: 1.2rem; }
 .overlay__actions { display: grid; gap: 8px; }
 
+/* ---------- confirm dialog ---------- */
+.confirm { padding: 20px; border: 0; background: transparent; color: var(--text); max-width: none; max-height: none; width: 100%; height: 100%; margin: 0; display: none; place-items: center; }
+.confirm[open] { display: grid; animation: fade 0.2s; }
+.confirm::backdrop { background: rgb(4 6 12 / 0.8); backdrop-filter: blur(10px); }
+.confirm__card {
+  width: min(380px, 100%); display: grid; gap: 10px; padding: 24px 20px 20px; text-align: center;
+  background: linear-gradient(180deg, #18213f, #0d1226); border: 1px solid var(--line);
+  border-radius: 24px; box-shadow: 0 24px 60px -20px rgb(0 0 0 / 0.8);
+  animation: rise 0.3s cubic-bezier(0.2, 1.2, 0.4, 1);
+}
+.confirm h2 { font-size: 1.3rem; font-weight: 800; }
+.confirm p { color: var(--muted); font-size: 0.92rem; line-height: 1.4; }
+.confirm__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.confirm__actions button { padding: 14px; border-radius: 14px; font-weight: 700; font-size: 1rem; }
+.confirm__cancel { border: 1px solid var(--line); color: var(--text); }
+.confirm__ok { background: rgb(255 255 255 / 0.1); color: var(--text); }
+.confirm__ok.is-danger { background: var(--hot); color: #fff; box-shadow: 0 10px 28px -10px var(--hot); }
+.confirm__ok:active, .confirm__cancel:active { transform: scale(0.97); }
+
 @media (min-width: 720px) {
   .screen.game { max-width: 760px; }
   .pcard { flex-basis: 170px; }

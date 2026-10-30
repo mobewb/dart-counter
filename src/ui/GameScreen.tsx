@@ -3,6 +3,7 @@ import type { MatchSetup } from '../application/match-setup'
 import { matchStats } from '../application/match-stats'
 import { sideNames, teamPlay } from '../application/sides'
 import { results, type Dart, type MatchCore } from '../domain'
+import { ConfirmDialog } from './ConfirmDialog'
 import { dartLabel } from './dartLabel'
 import { Dartboard } from './Dartboard'
 import { useI18n } from './i18n'
@@ -58,7 +59,9 @@ export function GameScreen<Setup extends MatchSetup, State extends MatchCore>({ 
     </div>
   )
   const hit = (dart: Dart) => !locked && record(dart)
-  const quit = () => window.confirm(t('confirmQuit')) && onExit()
+  const [quitting, setQuitting] = useState(false)
+  // Nothing to lose before the first dart, so no need to ask.
+  const quit = () => (dartCount === 0 ? onExit() : setQuitting(true))
 
   return (
     <main className="screen game">
@@ -139,6 +142,17 @@ export function GameScreen<Setup extends MatchSetup, State extends MatchCore>({ 
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={quitting}
+        title={t('confirmQuit')}
+        confirmLabel={t('quit')}
+        cancelLabel={t('keepPlaying')}
+        danger
+        onConfirm={onExit}
+        onCancel={() => setQuitting(false)}
+      >
+        {t('quitHint')}
+      </ConfirmDialog>
     </main>
   )
 }

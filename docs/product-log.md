@@ -182,9 +182,30 @@ The order is reliability first, then the stats players care about, then reach (n
 - *The caller stays silent on knock-backs*, which are the funniest moment of the game. **Backlog:** a "Back to zero!" call.
 - *No variants* (bust instead of bounce, double out, round limit). The rules would take them as config. **Backlog.**
 
+## Iteration 7 — A proper quit dialog
+
+**Why:** Quit used the browser's `window.confirm`. On phones it looks foreign (a system box titled with the site address), does not follow the app's theme or language, and its OK and Cancel buttons are small and placed differently on each browser. Quitting by mistake loses the match, so this is the one confirmation that has to be clear.
+
+**What was built**
+- `src/ui/ConfirmDialog.tsx`: a reusable confirmation modal built on the native `<dialog>` element, with a title, a message and two actions. The confirm action can be styled as destructive.
+- The game screen's Quit button opens it: *Quit this match?*, "The match in progress will be lost and won't be added to the history.", then *Keep playing* and a red *Quit* (EN / FR).
+- No dialog before the first dart: there is nothing to lose, so Quit leaves at once.
+
+**Decisions**
+- *Native `<dialog>` with `showModal()`*, no library: the browser traps focus, makes the rest of the page inert, puts the dialog above everything and closes it on Escape. It matches the app's "no runtime dependency beyond React" rule.
+- *The safe choice is the default:* *Keep playing* gets the focus, and Escape or a tap outside the card both keep playing. Only an explicit tap on *Quit* ends the match.
+- *The message says what is lost* (the match and its place in the history), instead of a bare "Are you sure?".
+- *Same look as the winner overlay* (blurred backdrop, dark card, rise animation), and animations are off with reduced motion, like the rest of the app.
+
+**Verified:** typecheck and the test suite. Browser check at phone width: Quit before any dart goes straight to setup; after a dart the dialog opens with *Keep playing* focused; Escape, a tap outside and *Keep playing* all keep the match, a tap on the card does not close it, and *Quit* goes back to setup. No native browser dialog appears.
+
+**Challenge — what could be better**
+- *Deleting a match in the History screen still uses `window.confirm`.* It can use the same `ConfirmDialog`. **Next**, small.
+- *No component test:* the project's tests run in Node, without a DOM. The behaviour is covered by the browser check only. **Accepted**, as for the service worker.
+
 ## Where the app stands, and what's next
 
-After six iterations the app covers what a pub, club or garage session needs: it works offline, gives pro-level stats and a history, has five game modes with team play, and a caller.
+After seven iterations the app covers what a pub, club or garage session needs: it works offline, gives pro-level stats and a history, has five game modes with team play, and a caller.
 
 **Next candidates, by value:**
 1. **Backup and restore** (export/import the history as a file). History lives in one browser; losing it hurts more as it grows.
