@@ -49,10 +49,13 @@ export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgre
   const [input, setInput] = useState<'board' | 'pad'>('board')
   useWakeLock(view.keepAwake ?? false)
   useCaller(match, settings)
-  const { info, board, turnExtras, afterTurn, targets, marked, locked = false } = view.useView({ setup, sides, state, events: match.events, dartCount })
+  const { info, board, turnExtras, afterTurn, targets, aim: route, marked, locked = false } = view.useView({ setup, sides, state, events: match.events, dartCount })
 
   const finished = state.status === 'finished'
   const winning = useMemo(() => (locked ? [] : winningDarts(match)), [match, locked])
+  // What the board and pad point to: the darts that win now, else the mode's suggestion.
+  const aim = winning.length > 0 ? winning : finished || locked ? [] : route ?? []
+  const aimLabel = t(winning.length > 0 ? 'winningDart' : 'aimDart')
   const chips = (player: number) => (
     <div className="statline">
       {view.details(match.stats[player]!, t).map((chip) => <span key={chip}>{chip}</span>)}
@@ -99,7 +102,7 @@ export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgre
       <section className="input">
         {/* The gold highlight in words; kept mounted so screen readers announce changes. */}
         <div className="sr-only" role="status">
-          {winning.length > 0 && `${t('toWin')} ${winning.map((d) => spokenDart(d, t)).join(', ')}`}
+          {aim.length > 0 && `${t(winning.length > 0 ? 'toWin' : 'aimAt')} ${aim.map((d) => spokenDart(d, t)).join(', ')}`}
         </div>
         <div className="seg-control seg-control--small">
           <button className={input === 'board' ? 'is-active' : ''} onClick={() => setInput('board')}>{t('board')}</button>
@@ -107,11 +110,11 @@ export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgre
         </div>
         {input === 'board' ? (
           <>
-            <Dartboard onHit={hit} disabled={finished || locked} targets={targets} marked={marked} winning={winning} />
+            <Dartboard onHit={hit} disabled={finished || locked} targets={targets} marked={marked} aim={aim} />
             <button className="miss" disabled={finished || locked} onClick={() => hit({ segment: 0, multiplier: 1 })}>{t('miss')}</button>
           </>
         ) : (
-          <Keypad onHit={hit} disabled={finished || locked} targets={targets} marked={marked} winning={winning} />
+          <Keypad onHit={hit} disabled={finished || locked} targets={targets} marked={marked} aim={aim} aimLabel={aimLabel} />
         )}
       </section>
 

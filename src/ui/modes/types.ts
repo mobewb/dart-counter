@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import type { GameModeId, Setup, StateOf, StatsOf } from '../../application/modes'
-import type { DomainEvent } from '../../domain'
+import type { Dart, DomainEvent } from '../../domain'
 import type { Key } from '../i18n'
 
 export interface ViewProps<K extends GameModeId> {
@@ -25,6 +25,8 @@ export interface View {
   afterTurn?: ReactNode
   /** Segments that count; others are faded on the board and pad. */
   targets?: number[]
+  /** Darts to aim at when no single dart wins now, such as the next dart of the X01 checkout. */
+  aim?: Dart[]
   /** Numbers whose double takes a life, marked with a skull on the board and pad (Killer). */
   marked?: number[]
   /** Blocks input and undo, e.g. while the crazy cricket roulette spins. */

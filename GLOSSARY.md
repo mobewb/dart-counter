@@ -38,7 +38,7 @@ The ubiquitous language of Dart Counter. Code, docs and commits use these terms;
 | **Double in** | A player's score only starts counting once they hit a double. | Double in / Double pour entrer |
 | **Double out** | A leg must be finished on a double. | Double out / Double pour finir |
 | **Bust** | An invalid score (below zero, zero without a valid finish, or 1 with double out). The turn is cancelled and the remaining score restored. | BUST / BUST |
-| **Checkout** | A suggested sequence of darts to finish the leg this turn. | Checkout / Finition |
+| **Checkout** | A suggested sequence of darts to finish the leg this turn; its next dart is pointed to on the board and pad. | Checkout / Finition |
 | **3-dart average** | Points scored per 3 darts; busted darts count, their points do not. | Avg / Moy. |
 
 > "Manches" is the French UI label for **Leg**, not for Set or Round.

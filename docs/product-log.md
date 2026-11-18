@@ -271,6 +271,20 @@ The order is reliability first, then the stats players care about, then reach (n
 
 **Verified:** typecheck and the test suite (new `winning-darts.test.ts` covering X01 double and single out, a leg win, 321, the round limit with and without a bust, and a finished match). Browser check at phone width: on 40 with double out, the pad's 20 glows on Double and the Double tab has the dot, and the board outlines D20.
 
+## Iteration 12 — Point to the checkout dart, fade the rest
+
+**Why:** with 100 left the checkout chip said *T20 · D20*, but the board and pad showed nothing, because no single dart could win. Players expected the dart to throw to stand out.
+
+**What was built**
+- In X01 the board and pad now point to the next dart of the checkout (T20 on 100, then D20). When one dart can win, the winning darts still take priority.
+- Whenever darts are pointed to, every other bed and pad button fades. On the pad a number stays bright if any of its beds is aimed at, and the tab dot says which multiplier.
+- The screen-reader status line says "Visez Triple 20" for a route dart and "Pour gagner : Double 8" for a winning one.
+
+**Decisions**
+- *The mode view suggests, the screen decides.* X01's view returns the checkout's first dart as `aim`. The game screen uses the winning darts first, else that suggestion, so other modes can suggest darts later without touching the board or pad.
+
+**Verified:** typecheck and the test suite (no new unit test: the route comes from `x01.checkout`, already tested, and the choice is one line in the screen). Browser check at phone width on 121 left: T20 is the only bright bed and button, the Triple tab has the dot, and after T20 and T15 the status moves to Triple 15, then "Pour gagner : Double 8".
+
 ## Where the app stands, and what's next
 
 After eight iterations the app covers what a pub, club or garage session needs: it works offline, gives pro-level stats and a history, has five game modes with team play, and a caller.

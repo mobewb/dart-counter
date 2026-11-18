@@ -64,6 +64,8 @@ function useX01View({ setup, sides, state: match, events }: ViewProps<'x01'>) {
         {!current.in && <span className="chip">{t('notIn')}</span>}
       </>
     ),
+    // The dart to throw now; the chip shows the rest of the route.
+    aim: hint ? hint.slice(0, 1) : undefined,
     afterTurn: busted && (
       <div className="bust" role="status">
         <strong>{t('bust')}</strong> {t('bustHint')}
