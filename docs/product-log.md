@@ -262,6 +262,6 @@ After eight iterations the app covers what a pub, club or garage session needs: 
 **Next candidates, by value:**
 1. **Backup and restore** (export/import the history as a file). History lives in one browser; losing it hurts more as it grows.
 2. **Killer variants** (arm with marks, triples take 2 lives, dealt numbers).
-3. **Around the Clock variants** (skip ahead with doubles/triples, doubles only); config-only.
+3. **Around the Clock variants** (doubles only, reverse); config-only. Skip ahead shipped in iteration 7.
 4. **Trends** in player records (average per match over time, as a small chart).
 5. **Visit total entry** for X01 (type "60" instead of three darts). It needs a rule for the checkout dart: a total entry can't know whether the last dart was a double, so the app would have to ask.

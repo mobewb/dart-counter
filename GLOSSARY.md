@@ -21,6 +21,7 @@ The ubiquitous language of Dart Counter. Code, docs and commits use these terms;
 | **Multiplier** | Single (1), double (2) or triple (3). The bull has no triple. | Single, Double, Triple / Simple, Double, Triple |
 | **Bull** | Segment 25. Outer bull is a single (25), bull's eye is a double (50). | Bull / Bull |
 | **Miss** | A dart that scores nothing (segment 0). | Miss / Raté |
+| **Target** | A segment the game mode tells a side to hit. Each mode says which: Cricket's targets, Around the Clock's next number. | Targets, Aim at / Cibles, Visez |
 | **Current match** | The match being played, saved after every dart so it can be resumed. | — |
 | **Match history** | The finished matches kept on the device, most recent first. | — |
 
@@ -45,13 +46,22 @@ The ubiquitous language of Dart Counter. Code, docs and commits use these terms;
 
 | Term | Definition | UI (EN / FR) |
 | --- | --- | --- |
-| **Target** | A segment that counts in the match (six numbers plus the bull). | Shoot for / Visez |
+| **Cricket target** | One of the seven segments that count in the match (six numbers plus the bull). | Shoot for / Visez |
 | **Mark** | One hit on a target: a single is 1 mark, a double 2, a triple 3. | — |
 | **Closed** | A target on which a player has 3 marks. | — |
 | **Dead** | A target closed by every player; it no longer scores. | Dead / Mort |
 | **Points** | Earned by marks beyond the third on a target an opponent has not closed. | Points / Points |
 | **Target policy** | How a cricket match picks its targets: *fixed* (20–15 and the bull) or *reroll* (Crazy Cricket). | — |
 | **Reroll** | Crazy Cricket: after a round, targets nobody hit are replaced from the pool; their marks are discarded. | CRAZY ROLL / ROULETTE FOLLE |
+
+## Around the Clock
+
+| Term | Definition | UI (EN / FR) |
+| --- | --- | --- |
+| **Sequence** | The targets to hit in order: 1 to 20, then the bull. Any multiplier counts. | — |
+| **Skip ahead** | A double moves a side 2 targets on, a triple 3; the bull is never skipped, it must be hit itself. Always on. | — |
+
+The first side to hit the bull wins straight away. The French UI name is "Horloge" (mode) and "Tour de l'horloge" (hint).
 
 ## Killer
 
