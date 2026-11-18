@@ -278,6 +278,7 @@ The order is reliability first, then the stats players care about, then reach (n
 **What was built**
 - In X01 the board and pad now point to the next dart of the checkout (T20 on 100, then D20). When one dart can win, the winning darts still take priority.
 - Whenever darts are pointed to, every other bed and pad button fades. On the pad a number stays bright if any of its beds is aimed at, and the tab dot says which multiplier.
+- *On single out the checkout now starts at 180* (three T20), not 170: the view cut every finish off at 170, the double-out maximum.
 - The screen-reader status line says "Visez Triple 20" for a route dart and "Pour gagner : Double 8" for a winning one.
 
 **Decisions**
