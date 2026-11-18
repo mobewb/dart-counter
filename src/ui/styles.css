@@ -45,7 +45,7 @@ h1, h2, p { margin: 0; }
 .card__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 
 .seg-control { display: flex; gap: 4px; padding: 4px; background: rgb(0 0 0 / 0.35); border-radius: 14px; border: 1px solid var(--line); }
-.seg-control button { flex: 1; padding: 12px 8px; border-radius: 10px; font-weight: 700; color: var(--muted); transition: all 0.18s; }
+.seg-control button { position: relative; flex: 1; padding: 12px 8px; border-radius: 10px; font-weight: 700; color: var(--muted); transition: all 0.18s; }
 .seg-control button.is-active { color: #04140e; background: linear-gradient(135deg, var(--accent), #7cf5c8); box-shadow: 0 6px 20px -6px var(--accent); }
 .seg-control--small button { padding: 8px; font-size: 0.85rem; }
 /* Sliding highlight: the thumb moves under the buttons, which stay transparent. */
@@ -214,6 +214,12 @@ h1, h2, p { margin: 0; }
 /* ---------- setup hints, cricket ---------- */
 .hint { color: var(--muted); font-size: 0.85rem; line-height: 1.4; }
 .seg--faded { opacity: 0.28; }
+
+/* ---------- winning darts ---------- */
+.board__wins { pointer-events: none; fill: none; stroke: var(--gold); stroke-width: 2.4; stroke-linejoin: round; filter: drop-shadow(0 0 4px var(--gold)); animation: win-glow 1.6s ease-in-out infinite; }
+@keyframes win-glow { 50% { stroke-opacity: 0.45; } }
+.pad__grid button.is-win { border-color: var(--gold); color: var(--gold); background: rgb(255 200 87 / 0.14); animation: pulse 2s ease-in-out infinite; }
+.seg-control button.has-win::after { content: ''; position: absolute; top: 6px; right: 8px; width: 7px; height: 7px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 8px var(--gold); }
 .pad__grid button.is-faded { opacity: 0.35; }
 
 .cricket { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; --cols: 2; }

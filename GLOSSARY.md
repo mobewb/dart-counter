@@ -22,6 +22,7 @@ The ubiquitous language of Dart Counter. Code, docs and commits use these terms;
 | **Bull** | Segment 25. Outer bull is a single (25), bull's eye is a double (50). | Bull / Bull |
 | **Miss** | A dart that scores nothing (segment 0). | Miss / Raté |
 | **Target** | A segment the game mode tells a side to hit. Each mode says which: Cricket's targets, Around the Clock's next number. | Targets, Aim at / Cibles, Visez |
+| **Winning dart** | A dart that would win the leg (X01) or the match if the thrower hit it now; shown on the board and pad. None are shown when the side would win anyway by missing out its turn (a lead at the round limit). | — |
 | **Current match** | The match being played, saved after every dart so it can be resumed. | — |
 | **Match history** | The finished matches kept on the device, most recent first. | — |
 

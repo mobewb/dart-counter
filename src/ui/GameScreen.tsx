@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Match } from '../application/match'
 import type { GameModeId, Setup } from '../application/modes'
+import { winningDarts } from '../application/winning-darts'
 import type { Dart } from '../domain'
 import { ConfirmDialog } from './ConfirmDialog'
 import { dartLabel } from './dartLabel'
@@ -51,6 +52,7 @@ export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgre
   const { info, board, turnExtras, afterTurn, targets, marked, locked = false } = view.useView({ setup, sides, state, events: match.events, dartCount })
 
   const finished = state.status === 'finished'
+  const winning = useMemo(() => (locked ? [] : winningDarts(match)), [match, locked])
   const chips = (player: number) => (
     <div className="statline">
       {view.details(match.stats[player]!, t).map((chip) => <span key={chip}>{chip}</span>)}
@@ -101,11 +103,11 @@ export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgre
         </div>
         {input === 'board' ? (
           <>
-            <Dartboard onHit={hit} disabled={finished || locked} targets={targets} marked={marked} />
+            <Dartboard onHit={hit} disabled={finished || locked} targets={targets} marked={marked} winning={winning} />
             <button className="miss" disabled={finished || locked} onClick={() => hit({ segment: 0, multiplier: 1 })}>{t('miss')}</button>
           </>
         ) : (
-          <Keypad onHit={hit} disabled={finished || locked} targets={targets} marked={marked} />
+          <Keypad onHit={hit} disabled={finished || locked} targets={targets} marked={marked} winning={winning} />
         )}
       </section>
 
