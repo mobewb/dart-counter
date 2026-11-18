@@ -262,6 +262,7 @@ The order is reliability first, then the stats players care about, then reach (n
 **What was built**
 - `src/application/winning-darts.ts`: `winningDarts(match)` tries every dart on the board against the mode's own rules and keeps those that win the leg (X01) or the match for the side to throw.
 - The board outlines each winning bed in gold. The pad lights up a number when it wins with the multiplier picked, and puts a gold dot on any other multiplier tab that has a winning dart.
+- *For screen readers:* a polite status line reads the winning darts in words ("Pour gagner : Double 20"), which also covers the board, whose beds have no labels. Glowing pad buttons say "gagnante" / "wins", and a dotted tab says a winning dart is there.
 
 **Decisions**
 - *Ask the rules, don't recompute them.* Trying the 62 darts through `applyDart` covers double out, bust, bounce, Cricket points, Killer lives, skip ahead and the round limit, and needs nothing new from any mode.

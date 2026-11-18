@@ -216,6 +216,7 @@ h1, h2, p { margin: 0; }
 .seg--faded { opacity: 0.28; }
 
 /* ---------- winning darts ---------- */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .board__wins { pointer-events: none; fill: none; stroke: var(--gold); stroke-width: 2.4; stroke-linejoin: round; filter: drop-shadow(0 0 4px var(--gold)); animation: win-glow 1.6s ease-in-out infinite; }
 @keyframes win-glow { 50% { stroke-opacity: 0.45; } }
 .pad__grid button.is-win { border-color: var(--gold); color: var(--gold); background: rgb(255 200 87 / 0.14); animation: pulse 2s ease-in-out infinite; }

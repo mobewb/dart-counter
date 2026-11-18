@@ -30,19 +30,27 @@ export function Keypad({ onHit, disabled, targets, marked, winning = [] }: Props
     <div className="pad">
       <div className="seg-control">
         {tabs.map(([m, label]) => (
-          <button key={m} className={cls(mult === m && 'is-active', tabWins(m) && 'has-win')} onClick={() => setMult(m)}>{label}</button>
+          <button key={m} className={cls(mult === m && 'is-active', tabWins(m) && 'has-win')} onClick={() => setMult(m)}>
+            {label}
+            {tabWins(m) && <span className="sr-only">, {t('hasWinningDart')}</span>}
+          </button>
         ))}
       </div>
       <div className="pad__grid">
         {NUMBERS.map((n) => (
           <button key={n} disabled={disabled} className={cls(targets && !targets.includes(n) && 'is-faded', wins(n, mult) && 'is-win')} onClick={() => throwAt(n)}>
             {n}
+            {wins(n, mult) && <span className="sr-only">, {t('winningDart')}</span>}
             {marked?.includes(n) && <span className="pad__skull" aria-label="💀">💀</span>}
           </button>
         ))}
         {/* Outer and inner bull have their own buttons: the multiplier resets after each dart. */}
-        <button className={cls('pad__outer-bull', wins(25, 1) && 'is-win')} disabled={disabled} onClick={() => throwAt(25, 1)}>25</button>
-        <button className={cls('pad__bull', wins(25, 2) && 'is-win')} disabled={disabled} onClick={() => throwAt(25, 2)}>{t('bull')}</button>
+        <button className={cls('pad__outer-bull', wins(25, 1) && 'is-win')} disabled={disabled} onClick={() => throwAt(25, 1)}>
+          25{wins(25, 1) && <span className="sr-only">, {t('winningDart')}</span>}
+        </button>
+        <button className={cls('pad__bull', wins(25, 2) && 'is-win')} disabled={disabled} onClick={() => throwAt(25, 2)}>
+          {t('bull')}{wins(25, 2) && <span className="sr-only">, {t('winningDart')}</span>}
+        </button>
         <button className="pad__miss" disabled={disabled} onClick={() => throwAt(0, 1)}>{t('miss')}</button>
       </div>
     </div>

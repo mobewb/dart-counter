@@ -4,7 +4,7 @@ import type { GameModeId, Setup } from '../application/modes'
 import { winningDarts } from '../application/winning-darts'
 import type { Dart } from '../domain'
 import { ConfirmDialog } from './ConfirmDialog'
-import { dartLabel } from './dartLabel'
+import { dartLabel, spokenDart } from './dartLabel'
 import { Dartboard } from './Dartboard'
 import { useI18n } from './i18n'
 import { Keypad } from './Keypad'
@@ -97,6 +97,10 @@ export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgre
       </section>
 
       <section className="input">
+        {/* The gold highlight in words; kept mounted so screen readers announce changes. */}
+        <div className="sr-only" role="status">
+          {winning.length > 0 && `${t('toWin')} ${winning.map((d) => spokenDart(d, t)).join(', ')}`}
+        </div>
         <div className="seg-control seg-control--small">
           <button className={input === 'board' ? 'is-active' : ''} onClick={() => setInput('board')}>{t('board')}</button>
           <button className={input === 'pad' ? 'is-active' : ''} onClick={() => setInput('pad')}>{t('pad')}</button>
