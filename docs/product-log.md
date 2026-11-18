@@ -284,11 +284,11 @@ The order is reliability first, then the stats players care about, then reach (n
 **Decisions**
 - *The mode view suggests, the screen decides.* X01's view returns the checkout's first dart as `aim`. The game screen uses the winning darts first, else that suggestion, so other modes can suggest darts later without touching the board or pad.
 
-**Verified:** typecheck and the test suite (no new unit test: the route comes from `x01.checkout`, already tested, and the choice is one line in the screen). Browser check at phone width on 121 left: T20 is the only bright bed and button, the Triple tab has the dot, and after T20 and T15 the status moves to Triple 15, then "Pour gagner : Double 8".
+**Verified:** typecheck and the test suite (no new unit test: the route comes from `x01.checkout`, already tested, and the choice is one line in the screen). Browser check at phone width on 121 left: T20 is the only bright bed and button, the Triple tab has the dot, and after T20 and T15 the status moves to Triple 15, then "Pour gagner : Double 8". On single out with 180 left, the chip shows T20 · T20 · T20 and the aim is Triple 20.
 
 ## Where the app stands, and what's next
 
-After eight iterations the app covers what a pub, club or garage session needs: it works offline, gives pro-level stats and a history, has five game modes with team play, and a caller.
+After twelve iterations the app covers what a pub, club or garage session needs: it works offline, gives pro-level stats and a history, has six game modes with team play, a caller, and points players to the dart to throw.
 
 **Next candidates, by value:**
 1. **Backup and restore** (export/import the history as a file). History lives in one browser; losing it hurts more as it grows.
