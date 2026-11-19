@@ -171,7 +171,7 @@ On both the board and the pad, the darts worth throwing now stand out, and every
   - *Quit* is shown in red as a destructive action.
   - Escape or a tap outside the dialog also keeps playing.
   - Before the first dart there is nothing to lose, so Quit leaves straight away.
-- **Caller voice** (off by default) — a spoken darts caller in English or French: the visit score ("One hundred and eighty!"), "No score", "Bust", "Game shot!", "Game shot, and the match!", and what the next thrower requires when they are on a finish ("Ann, you require 81"). In Killer, each number drawn, new killer and knockout is announced ("Ann is a killer!", "Bob is out!"). In Cricket, Around the Clock and 321, only the winner is announced. Undo and resuming a match stay silent.
+- **Caller voice** (off by default) — a spoken darts caller in English or French: the visit score ("One hundred and eighty!"), "No score", "Bust", "Game shot!", "Game shot, and the match!", and what the next thrower requires when they are on a finish ("Ann, you require 81"). In Killer, each number drawn, new killer and knockout is announced ("Ann is a killer!", "Bob is out!"). In Cricket, Around the Clock and 321, the winner is announced. In every mode, when the turn passes, the caller names who throws next ("Bob, to throw"; in a team, the member up), unless they were just told what they require; a solo player is never named. Undo and resuming a match stay silent.
 - **Vibration** (on by default, on phones that support it) — a light tick on each dart, a double buzz on a bust and a longer pattern on a win.
 - **Screen wake lock** — in X01, the screen is kept on during the game (where the browser supports it).
 

@@ -8,6 +8,8 @@ export type Call =
   | { type: 'winner'; winner: string }
   /** X01: the next thrower is on a finish. */
   | { type: 'require'; player: string; remaining: number }
+  /** The turn passes to this player (named only when no other call names them). */
+  | { type: 'next'; player: string }
   /** Killer: a side drew its number, became a killer, or is out. */
   | { type: 'drawn'; player: string; number: number }
   | { type: 'killer'; player: string }
@@ -39,6 +41,7 @@ export function mood(call: Call): Mood {
     case 'suddenDeath':
       return 'excited'
     case 'require':
+    case 'next':
     case 'drawn':
       return 'neutral'
   }

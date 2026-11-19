@@ -15,6 +15,7 @@ function phrase(call: Call, t: (key: Key) => string): string {
     case 'matchShot': return fill('sayMatchShot', { name: call.winner })
     case 'winner': return fill('sayWinner', { name: call.winner })
     case 'require': return fill('sayRequire', { name: call.player, n: call.remaining })
+    case 'next': return fill('sayNext', { name: call.player })
     case 'drawn': return fill('sayDrawn', { name: call.player, n: call.number })
     case 'killer': return fill('sayKiller', { name: call.player })
     case 'out': return fill('sayOut', { name: call.player })
