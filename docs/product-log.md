@@ -255,13 +255,44 @@ The order is reliability first, then the stats players care about, then reach (n
 - *Buttons are toggles, not a radio group:* they use `aria-pressed`. A `radiogroup` with arrow-key navigation would be more correct for screen readers. **Backlog.**
 - *No automated test* for the measuring (no DOM in the test runner). **Accepted**, covered by the browser check.
 
+## Iteration 11 — Winning darts on the board and pad
+
+**Why:** when one dart can win, a player should see it where they enter it, not only in the X01 checkout chip. It helps beginners most, and it works in every game mode.
+
+**What was built**
+- `src/application/winning-darts.ts`: `winningDarts(match)` tries every dart on the board against the mode's own rules and keeps those that win the leg (X01) or the match for the side to throw.
+- The board outlines each winning bed in gold. The pad lights up a number when it wins with the multiplier picked, and puts a gold dot on any other multiplier tab that has a winning dart.
+- *For screen readers:* a polite status line reads the winning darts in words ("Pour gagner : Double 20"), which also covers the board, whose beds have no labels. Glowing pad buttons say "gagnante" / "wins", and a dotted tab says a winning dart is there.
+
+**Decisions**
+- *Ask the rules, don't recompute them.* Trying the 62 darts through `applyDart` covers double out, bust, bounce, Cricket points, Killer lives, skip ahead and the round limit, and needs nothing new from any mode.
+- *Nothing shows when the side wins anyway by missing out its turn.* At the round limit the leader wins whatever they throw, busts included (a bust ends the turn early), so highlighting beds would mean nothing. Checking a single miss wasn't enough: the review caught the bust case.
+- *Hidden while the board is locked* (the Crazy Cricket roll).
+
+**Verified:** typecheck and the test suite (new `winning-darts.test.ts` covering X01 double and single out, a leg win, 321, the round limit with and without a bust, and a finished match). Browser check at phone width: on 40 with double out, the pad's 20 glows on Double and the Double tab has the dot, and the board outlines D20.
+
+## Iteration 12 — Point to the checkout dart, fade the rest
+
+**Why:** with 100 left the checkout chip said *T20 · D20*, but the board and pad showed nothing, because no single dart could win. Players expected the dart to throw to stand out.
+
+**What was built**
+- In X01 the board and pad now point to the next dart of the checkout (T20 on 100, then D20). When one dart can win, the winning darts still take priority.
+- Whenever darts are pointed to, every other bed and pad button fades. On the pad a number stays bright if any of its beds is aimed at, and the tab dot says which multiplier.
+- *On single out the checkout now starts at 180* (three T20), not 170: the view cut every finish off at 170, the double-out maximum.
+- The screen-reader status line says "Visez Triple 20" for a route dart and "Pour gagner : Double 8" for a winning one.
+
+**Decisions**
+- *The mode view suggests, the screen decides.* X01's view returns the checkout's first dart as `aim`. The game screen uses the winning darts first, else that suggestion, so other modes can suggest darts later without touching the board or pad.
+
+**Verified:** typecheck and the test suite (no new unit test: the route comes from `x01.checkout`, already tested, and the choice is one line in the screen). Browser check at phone width on 121 left: T20 is the only bright bed and button, the Triple tab has the dot, and after T20 and T15 the status moves to Triple 15, then "Pour gagner : Double 8". On single out with 180 left, the chip shows T20 · T20 · T20 and the aim is Triple 20.
+
 ## Where the app stands, and what's next
 
-After eight iterations the app covers what a pub, club or garage session needs: it works offline, gives pro-level stats and a history, has five game modes with team play, and a caller.
+After twelve iterations the app covers what a pub, club or garage session needs: it works offline, gives pro-level stats and a history, has six game modes with team play, a caller, and points players to the dart to throw.
 
 **Next candidates, by value:**
 1. **Backup and restore** (export/import the history as a file). History lives in one browser; losing it hurts more as it grows.
 2. **Killer variants** (arm with marks, triples take 2 lives, dealt numbers).
-3. **Around the Clock variants** (skip ahead with doubles/triples, doubles only); config-only.
+3. **Around the Clock variants** (doubles only, reverse); config-only. Skip ahead shipped in iteration 7.
 4. **Trends** in player records (average per match over time, as a small chart).
 5. **Visit total entry** for X01 (type "60" instead of three darts). It needs a rule for the checkout dart: a total entry can't know whether the last dart was a double, so the app would have to ask.

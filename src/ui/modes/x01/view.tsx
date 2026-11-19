@@ -11,7 +11,8 @@ function useX01View({ setup, sides, state: match, events }: ViewProps<'x01'>) {
   const finished = match.status === 'finished'
   const current = match.players[match.currentPlayer]!
   const dartsLeft = 3 - match.turnDarts.length
-  const hint = !finished && current.in && current.remaining <= 170
+  // The highest finish: 170 on double out (T20 T20 Bull), 180 on single out (three T20).
+  const hint = !finished && current.in && current.remaining <= (config.doubleOut ? 170 : 180)
     ? x01.checkout(current.remaining, config.doubleOut, dartsLeft)
     : null
   const busted = events.some((e) => e.type === 'Bust')
@@ -64,6 +65,8 @@ function useX01View({ setup, sides, state: match, events }: ViewProps<'x01'>) {
         {!current.in && <span className="chip">{t('notIn')}</span>}
       </>
     ),
+    // The dart to throw now; the chip shows the rest of the route.
+    aim: hint ? hint.slice(0, 1) : undefined,
     afterTurn: busted && (
       <div className="bust" role="status">
         <strong>{t('bust')}</strong> {t('bustHint')}

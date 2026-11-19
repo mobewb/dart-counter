@@ -44,6 +44,11 @@ function lastVisit<State extends { turnDarts: Dart[] }>(steps: readonly Step<Sta
 function callsOf<K extends GameModeId>(module: ModeModule<K>, setup: Setup<K>, steps: readonly Step<StateOf<K>>[], sideNames: string[], nextThrower: number): Call[] {
   const last = steps.at(-1)
   if (!last) return []
+  return withNext(saidOf(module, setup, steps, sideNames, nextThrower), last, setup.names, nextThrower)
+}
+
+function saidOf<K extends GameModeId>(module: ModeModule<K>, setup: Setup<K>, steps: readonly Step<StateOf<K>>[], sideNames: string[], nextThrower: number): Call[] {
+  const last = steps.at(-1)!
   const limit = last.events.find((e) => e.type === 'RoundLimitReached')
   if (limit) {
     const leader = sideNames[limit.player]!
@@ -53,6 +58,13 @@ function callsOf<K extends GameModeId>(module: ModeModule<K>, setup: Setup<K>, s
     ? module.calls({ last, visit: lastVisit(steps), config: setup.config, sideNames, names: setup.names, nextThrower })
     : last.events.some((e) => e.type === 'MatchWon') ? [{ type: 'winner', winner: sideNames[last.after.winner!]! }] : []
   return last.events.some((e) => e.type === 'SuddenDeath') ? [...said, { type: 'suddenDeath' }] : said
+}
+
+/** Once the turn passes, names who throws next, unless a call already did ("Ann, you require 81") or they play alone. */
+function withNext<State extends { status: string }>(said: Call[], last: Step<State>, names: readonly string[], nextThrower: number): Call[] {
+  const passes = last.events.some((e) => e.type === 'TurnEnded') && last.after.status !== 'finished'
+  if (!passes || names.length < 2 || said.some((c) => c.type === 'require')) return said
+  return [...said, { type: 'next', player: names[nextThrower]! }]
 }
 
 /**

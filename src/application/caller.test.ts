@@ -24,12 +24,12 @@ describe('caller', () => {
   })
 
   it('calls the visit score', () => {
-    expect(calls(x01(), repeat(t(20), 3))).toEqual([{ type: 'visit', score: 180 }])
-    expect(calls(x01(), [t(20), s(5), s(1)])).toEqual([{ type: 'visit', score: 66 }])
+    expect(calls(x01(), repeat(t(20), 3))).toEqual([{ type: 'visit', score: 180 }, { type: 'next', player: 'Bob' }])
+    expect(calls(x01(), [t(20), s(5), s(1)])).toEqual([{ type: 'visit', score: 66 }, { type: 'next', player: 'Bob' }])
   })
 
   it('calls no score for a visit of misses', () => {
-    expect(calls(x01(), repeat(miss, 3))).toEqual([{ type: 'noScore' }])
+    expect(calls(x01(), repeat(miss, 3))).toEqual([{ type: 'noScore' }, { type: 'next', player: 'Bob' }])
   })
 
   it('calls a bust', () => {
@@ -37,8 +37,8 @@ describe('caller', () => {
   })
 
   it('tells the next thrower what they require when they are on a finish', () => {
-    // Ann scores 100; Bob, next, is on 501: no finish, nothing more to say.
-    expect(calls(x01(), [t(20), s(20), s(20)])).toEqual([{ type: 'visit', score: 100 }])
+    // Ann scores 100; Bob, next, is on 501: no finish, so he is only told it is his turn.
+    expect(calls(x01(), [t(20), s(20), s(20)])).toEqual([{ type: 'visit', score: 100 }, { type: 'next', player: 'Bob' }])
     // Ann scores 180, 180, 60 (81 left) while Bob misses; after Bob's last visit, Ann requires 81.
     const log = [...repeat(t(20), 3), ...repeat(miss, 3), ...repeat(t(20), 3), ...repeat(miss, 3), ...repeat(s(20), 3), ...repeat(miss, 3)]
     expect(calls(x01(), log)).toEqual([{ type: 'noScore' }, { type: 'require', player: 'Ann', remaining: 81 }])
@@ -64,7 +64,7 @@ describe('caller', () => {
   it('calls each Killer draw, arming and knockout as it happens', () => {
     const killer = startMatch({ mode: 'killer', names: ['Ann', 'Bob'], options: { lives: 1 } })
     expect(calls(killer, [miss])).toEqual([])
-    expect(calls(killer, [s(20)])).toEqual([{ type: 'drawn', player: 'Ann', number: 20 }])
+    expect(calls(killer, [s(20)])).toEqual([{ type: 'drawn', player: 'Ann', number: 20 }, { type: 'next', player: 'Bob' }])
     expect(calls(killer, [s(20), s(19), d(20)])).toEqual([{ type: 'killer', player: 'Ann' }])
     expect(calls(killer, [s(20), s(19), d(20), d(19)])).toEqual([
       { type: 'out', player: 'Bob' },
@@ -78,12 +78,25 @@ describe('caller', () => {
       { type: 'roundLimit', player: 'Ann' },
       { type: 'winner', winner: 'Ann' },
     ])
-    expect(calls(clock(1), repeat(miss, 6))).toEqual([{ type: 'suddenDeath' }])
+    expect(calls(clock(1), repeat(miss, 6))).toEqual([{ type: 'suddenDeath' }, { type: 'next', player: 'Ann' }])
   })
 
   it('calls an X01 leg won at the round limit, not a game shot', () => {
     const setup = startMatch({ mode: 'x01', names: ['Ann', 'Bob'], options: { ...rules, legsToWinSet: 2 }, maxRounds: 1 })
-    expect(calls(setup, [t(20), t(20), t(20), s(1), s(1), s(1)])).toEqual([{ type: 'roundLimit', player: 'Ann' }])
+    expect(calls(setup, [t(20), t(20), t(20), s(1), s(1), s(1)])).toEqual([{ type: 'roundLimit', player: 'Ann' }, { type: 'next', player: 'Bob' }])
+  })
+
+  it('names who throws next once the turn passes, in every mode', () => {
+    expect(calls(x01(), [t(20), t(20)])).toEqual([])
+    const cricket = startMatch({ mode: 'cricket', options: {}, names: ['Ann', 'Bob'] })
+    expect(calls(cricket, repeat(t(20), 3))).toEqual([{ type: 'next', player: 'Bob' }])
+    const teams = startMatch({ mode: 'cricket', options: {}, names: ['Ann', 'Bob', 'Cid', 'Dee'], teams: [0, 1, 0, 1] })
+    expect(calls(teams, repeat(miss, 6))).toEqual([{ type: 'next', player: 'Cid' }])
+  })
+
+  it('does not name a player who plays alone', () => {
+    const solo = startMatch({ mode: 'x01', names: ['Ann'], options: rules })
+    expect(calls(solo, repeat(t(20), 3))).toEqual([{ type: 'visit', score: 180 }])
   })
 
   it('roars for a maximum or a win, gets excited from a ton, and sounds flat for a poor visit', () => {

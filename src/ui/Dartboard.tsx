@@ -24,34 +24,54 @@ interface Props {
   targets?: number[]
   /** Numbers marked with a skull on their double ring (Killer). */
   marked?: number[]
+  /** Darts to aim at, outlined in gold; every other bed is faded while there are any. */
+  aim?: Dart[]
 }
 
-export function Dartboard({ onHit, disabled, targets, marked }: Props) {
+/** The shapes of one numbered bed: two for a single (outer and inner), one otherwise. The bull is drawn as circles. */
+function bed({ segment, multiplier }: Dart): string[] {
+  const i = ORDER.indexOf(segment)
+  const a0 = i * SPAN - SPAN / 2
+  const a1 = a0 + SPAN
+  if (multiplier === 3) return [sector(R.singleIn, R.tripleOut, a0, a1)]
+  if (multiplier === 2) return [sector(R.singleOut, R.doubleOut, a0, a1)]
+  return [sector(R.tripleOut, R.singleOut, a0, a1), sector(R.outerBull, R.singleIn, a0, a1)]
+}
+
+export function Dartboard({ onHit, disabled, targets, marked, aim = [] }: Props) {
+  const faded = (segment: number, multiplier: Multiplier) =>
+    (targets && !targets.includes(segment)) || (aim.length > 0 && !aim.some((d) => d.segment === segment && d.multiplier === multiplier))
   const hit = (segment: number, multiplier: Multiplier) => () => !disabled && onHit({ segment, multiplier })
   return (
     <svg className={`board${disabled ? ' board--off' : ''}`} viewBox="-135 -135 270 270" role="group" aria-label="Dartboard">
       <circle r="124" className="board__rim" />
       <circle r="112" className="board__ring" />
       {ORDER.map((n, i) => {
-        const a0 = i * SPAN - SPAN / 2
-        const a1 = a0 + SPAN
         const dark = i % 2 === 0
-        const fade = targets && !targets.includes(n) ? ' seg--faded' : ''
         const [lx, ly] = point(119, i * SPAN)
         const [sx, sy] = point((R.singleOut + R.doubleOut) / 2, i * SPAN)
         return (
           <g key={n}>
-            <path d={sector(R.tripleOut, R.singleOut, a0, a1)} className={(dark ? 'seg seg--dark' : 'seg seg--light') + fade} onClick={hit(n, 1)} />
-            <path d={sector(R.outerBull, R.singleIn, a0, a1)} className={(dark ? 'seg seg--dark' : 'seg seg--light') + fade} onClick={hit(n, 1)} />
-            <path d={sector(R.singleIn, R.tripleOut, a0, a1)} className={(dark ? 'seg seg--red' : 'seg seg--green') + fade} onClick={hit(n, 3)} />
-            <path d={sector(R.singleOut, R.doubleOut, a0, a1)} className={(dark ? 'seg seg--red' : 'seg seg--green') + fade} onClick={hit(n, 2)} />
+            {([1, 3, 2] as const).flatMap((m) => bed({ segment: n, multiplier: m }).map((d, j) => (
+              <path key={`${m}-${j}`} d={d} className={(m === 1 ? (dark ? 'seg seg--dark' : 'seg seg--light') : (dark ? 'seg seg--red' : 'seg seg--green')) + (faded(n, m) ? ' seg--faded' : '')} onClick={hit(n, m)} />
+            )))}
             <text x={lx} y={ly} className="board__num" textAnchor="middle" dominantBaseline="central">{n}</text>
             {marked?.includes(n) && <text x={sx} y={sy} className="board__skull" textAnchor="middle" dominantBaseline="central">💀</text>}
           </g>
         )
       })}
-      <circle r={R.outerBull} className={'seg seg--green' + (targets && !targets.includes(25) ? ' seg--faded' : '')} onClick={hit(25, 1)} />
-      <circle r={R.bull} className={'seg seg--red' + (targets && !targets.includes(25) ? ' seg--faded' : '')} onClick={hit(25, 2)} />
+      <circle r={R.outerBull} className={'seg seg--green' + (faded(25, 1) ? ' seg--faded' : '')} onClick={hit(25, 1)} />
+      <circle r={R.bull} className={'seg seg--red' + (faded(25, 2) ? ' seg--faded' : '')} onClick={hit(25, 2)} />
+      {/* Drawn last so no neighbouring bed covers the outline; taps go through to the beds. */}
+      <g className="board__wins" aria-hidden="true">
+        {aim.flatMap((dart) => {
+          const key = `${dart.multiplier}x${dart.segment}`
+          if (dart.segment !== 25) return bed(dart).map((d, j) => <path key={`${key}-${j}`} d={d} />)
+          // The outer bull is the ring around the bull's eye.
+          const radii = dart.multiplier === 2 ? [R.bull] : [R.outerBull, R.bull]
+          return radii.map((r) => <circle key={`${key}-${r}`} r={r} />)
+        })}
+      </g>
     </svg>
   )
 }

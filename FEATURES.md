@@ -83,7 +83,7 @@ Available in every game mode.
 - Remaining score for every player, with the active player highlighted (and scrolled into view on small screens).
 - **3-dart average** per player (points per 3 darts; busted turns count their darts but not their points).
 - The 3 dart slots of the current turn, showing each dart as `20`, `D16`, `T19`, `25`, `BULL` or a miss.
-- **Checkout suggestions** — when the remaining score is 170 or less and the player is in, a recommended finish is shown, adapted to the number of darts left in the turn and to the double-out setting. It is a heuristic: fewest darts first, avoid bull setups, prefer the easiest finishing double (D20, D16, D8, …), and throw the highest-scoring setup dart first.
+- **Checkout suggestions** — when the remaining score can be finished in one visit (170 or less with double out, 180 or less with single out) and the player is in, a recommended finish is shown, adapted to the number of darts left in the turn and to the double-out setting. It is a heuristic: fewest darts first, avoid bull setups, prefer the easiest finishing double (D20, D16, D8, …), and throw the highest-scoring setup dart first. The board and pad point to the dart to throw now (see [Aim highlight](#aim-highlight)).
 - Match info in the top bar: start score, `DI`/`DO`/`SO` (double in / double out / straight out) and "First to N" when relevant.
 
 ## 4. Cricket
@@ -151,9 +151,17 @@ Two interchangeable input methods, switchable at any time during a game:
 
 ### Pad
 - Multiplier tabs: Single / Double / Triple.
-- Number buttons 1–20, a Bull button (a triple on the bull falls back to a single) and a Miss button.
+- Number buttons 1–20, a **25** (outer bull) and a **Bull** (bull's eye) button, which ignore the multiplier, and a Miss button.
 - The multiplier resets to Single after each dart.
-- In Cricket modes, non-target numbers are faded.
+- Numbers that don't count are faded: non-targets in Cricket, all but the next target in Around the Clock, in Killer, taken numbers during the draw, then every number but the thrower's own (or, for a killer, the numbers still in play).
+
+### Aim highlight
+On both the board and the pad, the darts worth throwing now stand out, and everything else fades:
+- **Winning darts** — every dart that would win the leg (X01) or the match right now, in any game mode: D20 on 40 with double out, T7 in 321 from 300, the bull at the end of Around the Clock. Nothing is shown when the side would win anyway by missing out its turn (a lead at the round limit).
+- **Checkout dart** — in X01, when no single dart wins, the next dart of the checkout suggestion (T20 on 100, then D20).
+- **Board** — the aimed beds are outlined in gold.
+- **Pad** — an aimed number glows gold with the matching multiplier picked, and a gold dot marks a multiplier tab that holds an aimed dart.
+- **Screen readers** — a status line reads the darts in words ("To win: Double 20", "Aim at Triple 20"), and the glowing buttons and dotted tabs say so too.
 
 ## 10. In-game controls
 
@@ -163,7 +171,7 @@ Two interchangeable input methods, switchable at any time during a game:
   - *Quit* is shown in red as a destructive action.
   - Escape or a tap outside the dialog also keeps playing.
   - Before the first dart there is nothing to lose, so Quit leaves straight away.
-- **Caller voice** (off by default) — a spoken darts caller in English or French: the visit score ("One hundred and eighty!"), "No score", "Bust", "Game shot!", "Game shot, and the match!", and what the next thrower requires when they are on a finish ("Ann, you require 81"). In Killer, each number drawn, new killer and knockout is announced ("Ann is a killer!", "Bob is out!"). In Cricket, Around the Clock and 321, only the winner is announced. Undo and resuming a match stay silent.
+- **Caller voice** (off by default) — a spoken darts caller in English or French: the visit score ("One hundred and eighty!"), "No score", "Bust", "Game shot!", "Game shot, and the match!", and what the next thrower requires when they are on a finish ("Ann, you require 81"). In Killer, each number drawn, new killer and knockout is announced ("Ann is a killer!", "Bob is out!"). In Cricket, Around the Clock and 321, the winner is announced. In every mode, when the turn passes, the caller names who throws next ("Bob, to throw"; in a team, the member up), unless they were just told what they require; a solo player is never named. Undo and resuming a match stay silent.
 - **Vibration** (on by default, on phones that support it) — a light tick on each dart, a double buzz on a bust and a longer pattern on a win.
 - **Screen wake lock** — in X01, the screen is kept on during the game (where the browser supports it).
 
@@ -171,12 +179,13 @@ Two interchangeable input methods, switchable at any time during a game:
 
 A winner overlay shows:
 - the winner's name (or team) and a trophy,
-- stats for every player or team — 3-dart average and darts thrown in X01, points and darts thrown in Cricket,
+- stats for every player or team — the mode's headline figure and darts thrown: 3-dart average in X01, points in Cricket, targets reached in Around the Clock, lives taken in Killer, score in 321,
 - in team play, each player's own stats as well,
 - **match stats** for every player (in team play, under each player):
   - X01: first-9 average, highest visit, 180 / 140+ / 100+ counts, checkout rate (checkouts hit / darts thrown at a finishing double, with double-out), best leg in darts.
   - Cricket: marks per round (MPR) and total marks (scoring marks included).
   - Around the Clock: hit rate.
+  - Killer: knockouts.
   - 321: knock-backs.
 - three actions: **Undo** (reopen the game), **Rematch** (same settings, same players) and **New game** (back to setup).
 
@@ -216,7 +225,7 @@ Everything is stored on the device, in the browser; nothing is sent anywhere.
 | --- | --- |
 | Stack | React 19, TypeScript, Vite, Vitest |
 | Dependencies | Only `react` and `react-dom` at runtime |
-| Persistence | IndexedDB (match in progress, match history) and `localStorage` (language, last setup); see [ADR-004](docs/adr/004-indexeddb-match-repository.md) |
+| Persistence | IndexedDB (match in progress, match history) and `localStorage` (language, last setup, sound settings); see [ADR-004](docs/adr/004-indexeddb-match-repository.md) |
 | Backend | None — fully static front-end |
 
 ### Architecture
@@ -240,6 +249,7 @@ src/
 │   ├── match-repository.ts    MatchRepository port: current match and history
 │   ├── match-persistence.ts   saveProgress, resumeMatch, leaveMatch
 │   ├── history.ts             Player records across the match history
+│   ├── winning-darts.ts       The darts that would win now, for the aim highlight
 │   └── caller.ts              What a darts caller can announce, and its mood
 ├── infrastructure/          Adapters to the browser
 │   ├── indexeddb-repository.ts   MatchRepository on IndexedDB
@@ -278,4 +288,4 @@ Design notes:
 | `npm run typecheck` | Type-check only |
 | `npm test` | Run the unit tests |
 
-CI/CD: the app is type-checked, tested and built on every push, and deployed to **GitHub Pages** (`.github/workflows/pages.yml`) and **GitLab Pages** (`.gitlab-ci.yml`) from the main branch.
+CI/CD: the app is type-checked, tested and built on every push. **GitHub Pages** (`.github/workflows/pages.yml`) deploys `main` at the site root and `develop` under `/develop/`, each with its own storage. **GitLab Pages** (`.gitlab-ci.yml`) deploys the default branch.
