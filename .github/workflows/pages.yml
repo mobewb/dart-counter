@@ -1,16 +1,22 @@
 name: Deploy to GitHub Pages
 
-# One Pages site per repository: main is served at the root and develop
-# under /develop/, so a push to either branch rebuilds both.
+# One Pages site per repository: main is served at the root, develop under
+# /develop/ and the UI rework proposal under /proposition/, so a push to any
+# of them rebuilds all three. The proposal is optional: if its branch is gone
+# or its build fails, main and develop still deploy, without /proposition/.
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, mobewb/rework-de-lui-avec-proposition]
   workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
+
+env:
+  # Also listed in on.push.branches, which cannot read env.
+  PROPOSITION_BRANCH: mobewb/rework-de-lui-avec-proposition
 
 concurrency:
   group: pages
@@ -28,6 +34,19 @@ jobs:
         with:
           ref: develop
           path: develop
+      - name: Look for the proposition branch
+        id: proposition
+        env:
+          GH_REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          if git ls-remote --exit-code --heads "$GH_REPO_URL" "$PROPOSITION_BRANCH" > /dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.proposition.outputs.exists == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.PROPOSITION_BRANCH }}
+          path: proposition
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -48,7 +67,19 @@ jobs:
           npm run typecheck
           npm test
           VITE_STORAGE_NAME=dart-counter-develop npx vite build --base=/${{ github.event.repository.name }}/develop/
-      - run: cp -r develop/dist main/dist/develop
+      - name: Build proposition
+        if: steps.proposition.outputs.exists == 'true'
+        continue-on-error: true
+        working-directory: proposition
+        # Its own storage names too: trying the proposal leaves main's and develop's data alone.
+        run: |
+          npm ci
+          npm run typecheck
+          npm test
+          VITE_STORAGE_NAME=dart-counter-proposition npx vite build --base=/${{ github.event.repository.name }}/proposition/
+      - run: |
+          cp -r develop/dist main/dist/develop
+          if [ -d proposition/dist ]; then cp -r proposition/dist main/dist/proposition; fi
       - uses: actions/upload-pages-artifact@v3
         with:
           path: main/dist

@@ -288,4 +288,4 @@ Design notes:
 | `npm run typecheck` | Type-check only |
 | `npm test` | Run the unit tests |
 
-CI/CD: the app is type-checked, tested and built on every push. **GitHub Pages** (`.github/workflows/pages.yml`) deploys `main` at the site root and `develop` under `/develop/`, each with its own storage. **GitLab Pages** (`.gitlab-ci.yml`) deploys the default branch.
+CI/CD: the app is type-checked, tested and built on every push. **GitHub Pages** (`.github/workflows/pages.yml`) deploys `main` at the site root, `develop` under `/develop/` and the UI rework proposal (`mobewb/rework-de-lui-avec-proposition`) under `/proposition/`, each with its own storage. **GitLab Pages** (`.gitlab-ci.yml`) deploys the default branch.
