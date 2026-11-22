@@ -1,6 +1,7 @@
 import type { ClockRecord, ClockStats } from '../../../application/modes'
 import { clock } from '../../../domain'
 import { useI18n, type Key } from '../../i18n'
+import { Orbit, Rivals, shownSide } from '../Orbit'
 import type { ModeView, ViewProps } from '../types'
 
 const label = (target: number) => (target === 25 ? 'B' : String(target))
@@ -13,25 +14,33 @@ function useClockView({ sides, state: match }: ViewProps<'clock'>) {
 
   return {
     info: <strong>{t('clock')}</strong>,
-    board: (
-      <section className="players" data-count={match.players.length}>
-        {match.players.map((p, i) => {
-          const next = clock.targetOf(match, i)
-          return (
-            <article key={i} className={`pcard${i === match.currentPlayer && !finished ? ' is-active' : ''}${match.winner === i ? ' is-winner' : ''}`}>
-              <div className="pcard__name">{sides[i]}</div>
-              <div className="pcard__score">{next === null ? '✓' : label(next)}</div>
-              <div className="progress" role="progressbar" aria-valuemin={0} aria-valuemax={steps} aria-valuenow={p.progress}>
-                <i style={{ width: `${(p.progress / steps) * 100}%` }} />
-              </div>
-              <div className="pcard__meta">
-                <span>{p.progress} / {steps}</span>
-              </div>
-            </article>
-          )
-        })}
-      </section>
-    ),
+    board: (() => {
+      const shown = shownSide(match.winner, match.currentPlayer)
+      const value = (i: number) => {
+        const next = clock.targetOf(match, i)
+        return next === null ? '✓' : label(next)
+      }
+      return (
+        <>
+          <Orbit
+            name={sides[shown]!}
+            value={value(shown)}
+            done={match.players[shown]!.progress / steps}
+            winner={match.winner === shown}
+            meta={<span><b>{match.players[shown]!.progress}</b> / {steps}</span>}
+          />
+          <Rivals
+            rivals={match.players.flatMap((p, i) => i === shown ? [] : [{
+              name: sides[i]!,
+              value: value(i),
+              done: p.progress / steps,
+              winner: match.winner === i,
+              meta: `${p.progress} / ${steps}`,
+            }])}
+          />
+        </>
+      )
+    })(),
     turnExtras: current !== null && !finished && (
       <span className="chip chip--checkout">
         {t('aimAt')} <b>{current === 25 ? t('bull') : current}</b>

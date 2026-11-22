@@ -125,6 +125,7 @@ const dict = {
     multiplier: 'Multiplier',
     cancel: 'Cancel',
     delete: 'Delete',
+    winner: 'winner',
   },
   fr: {
     tagline: 'Comptez. Visez les doubles.',
@@ -249,6 +250,7 @@ const dict = {
     multiplier: 'Multiplicateur',
     cancel: 'Annuler',
     delete: 'Supprimer',
+    winner: 'vainqueur',
   },
 }
 

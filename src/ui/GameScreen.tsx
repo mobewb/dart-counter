@@ -127,7 +127,10 @@ export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgre
       {finished && state.winner !== null && (
         <div className="overlay">
           <div className="overlay__card" role="dialog" aria-modal="true" aria-labelledby="winner-title" aria-describedby="winner-text">
-            <div className="trophy" aria-hidden>🏆</div>
+            <svg className="trophy" viewBox="0 0 100 100" aria-hidden="true">
+              <circle cx="50" cy="50" r="42" />
+              <path d="M32 51l12 12 24-26" />
+            </svg>
             <h2 id="winner-title">{sides[state.winner]}</h2>
             <p id="winner-text">{t(setup.teams ? 'winTeam' : 'wins')}</p>
             <div className="overlay__stats">

@@ -47,12 +47,16 @@ function MatchCard({ match, onDelete }: { match: FinishedMatch; onDelete: () => 
       <div className="hcard__head">
         <strong>{t(view.label)}{variant}</strong>
         <span>{when}</span>
-        <button className="hcard__delete" onClick={onDelete} aria-label={t('deleteMatch')}>🗑</button>
+        <button className="hcard__delete" onClick={onDelete} aria-label={t('deleteMatch')}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
+          </svg>
+        </button>
       </div>
       <ul className="hcard__sides">
         {sides.map((name, i) => (
           <li key={i} className={i === match.winner ? 'is-winner' : ''}>
-            <span>{i === match.winner ? '🏆 ' : ''}{name}</span>
+            <span>{name}{i === match.winner && <span className="sr-only">, {t('winner')}</span>}</span>
             <b>{view.result.format(match.results[i]?.value ?? 0)}</b>
           </li>
         ))}

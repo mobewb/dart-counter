@@ -1,6 +1,7 @@
 import type { X01Record, X01Stats } from '../../../application/modes'
 import { x01 } from '../../../domain'
 import { useI18n, type Key } from '../../i18n'
+import { Orbit, Rivals, shownSide } from '../Orbit'
 import type { ModeView, ViewProps } from '../types'
 
 function useX01View({ setup, sides, state: match, events }: ViewProps<'x01'>) {
@@ -26,66 +27,43 @@ function useX01View({ setup, sides, state: match, events }: ViewProps<'x01'>) {
         {showLegs && <span>· {t('firstTo')} {config.legsToWinSet}{showSets ? ` / ${config.setsToWinMatch}` : ''}</span>}
       </>
     ),
-    board: (
-      <>
-        {(() => {
-          // The ring follows the player to throw, or the winner once the match is over.
-          const shown = match.winner ?? match.currentPlayer
-          const p = match.players[shown]!
-          const done = Math.min(100, Math.max(0, (1 - p.remaining / config.startScore) * 100))
-          return (
-            <section className={`orbit${match.winner === shown ? ' is-winner' : ''}`} aria-label={sides[shown]}>
-              <div className="orbit__ring">
-                <svg viewBox="0 0 200 200" aria-hidden="true">
-                  <circle className="orbit__track" cx="100" cy="100" r="90" />
-                  <circle className="orbit__fill" cx="100" cy="100" r="90" pathLength={100} strokeDasharray={`${done} 100`} />
-                </svg>
-                <div className="orbit__center">
-                  <span className="orbit__name">
-                    {match.legStarter === shown && <i className="dot" title="leg starter" />}
-                    {sides[shown]}
-                  </span>
-                  <span key={p.remaining} className="orbit__score">{p.remaining}</span>
-                  <span className="orbit__meta">
-                    <span>{t('avg')} <b>{x01.threeDartAverage(p).toFixed(1)}</b></span>
-                    {showLegs && (
-                      <span>
-                        {showSets && <>{t('set')} <b>{p.sets}</b> · </>}
-                        {t('leg')} <b>{p.legs}</b>
-                      </span>
-                    )}
-                  </span>
-                </div>
-              </div>
-            </section>
-          )
-        })()}
-        {match.players.length > 1 && (
-          <section className="rivals">
-            {match.players.map((p, i) => i === (match.winner ?? match.currentPlayer) ? null : (
-              <article key={i} className={`rival${match.winner === i ? ' is-winner' : ''}`}>
-                <div className="rival__row">
-                  <span className="rival__name">
-                    {match.legStarter === i && <i className="dot" title="leg starter" />}
-                    {sides[i]}
-                  </span>
-                  <span className="rival__score">{p.remaining}</span>
-                </div>
-                <div className="rival__bar" aria-hidden="true">
-                  <i style={{ width: `${Math.min(100, Math.max(0, (1 - p.remaining / config.startScore) * 100))}%` }} />
-                </div>
+    board: (() => {
+      const shown = shownSide(match.winner, match.currentPlayer)
+      const p = match.players[shown]!
+      const done = (q: typeof p) => 1 - q.remaining / config.startScore
+      return (
+        <>
+          <Orbit
+            name={sides[shown]!}
+            value={p.remaining}
+            done={done(p)}
+            starter={match.legStarter === shown}
+            winner={match.winner === shown}
+            meta={
+              <>
+                <span>{t('avg')} <b>{x01.threeDartAverage(p).toFixed(1)}</b></span>
                 {showLegs && (
-                  <span className="rival__legs">
-                    {showSets && <>{t('set')} {p.sets} · </>}
-                    {t('leg')} {p.legs}
+                  <span>
+                    {showSets && <>{t('set')} <b>{p.sets}</b> · </>}
+                    {t('leg')} <b>{p.legs}</b>
                   </span>
                 )}
-              </article>
-            ))}
-          </section>
-        )}
-      </>
-    ),
+              </>
+            }
+          />
+          <Rivals
+            rivals={match.players.flatMap((q, i) => i === shown ? [] : [{
+              name: sides[i]!,
+              value: q.remaining,
+              done: done(q),
+              starter: match.legStarter === i,
+              winner: match.winner === i,
+              meta: showLegs && <>{showSets && <>{t('set')} {q.sets} · </>}{t('leg')} {q.legs}</>,
+            }])}
+          />
+        </>
+      )
+    })(),
     turnExtras: (
       <>
         {/* The route itself fills the empty dart slots. */}

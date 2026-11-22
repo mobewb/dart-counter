@@ -111,7 +111,11 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
       <header className="hero">
         <button className="history-link" onClick={onHistory}>{t('history')}</button>
         <button className="lang" onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')}>{lang === 'fr' ? 'EN' : 'FR'}</button>
-        <div className="hero__logo" aria-hidden>🎯</div>
+        <svg className="hero__logo" viewBox="0 0 100 100" aria-hidden="true">
+          <circle className="track" cx="50" cy="50" r="40" />
+          <circle className="fill" cx="50" cy="50" r="40" pathLength={100} strokeDasharray="72 100" transform="rotate(-90 50 50)" />
+          <circle className="bull" cx="50" cy="50" r="9" />
+        </svg>
         <h1>Dart<span>Counter</span></h1>
         <p>{t('tagline')}</p>
       </header>
