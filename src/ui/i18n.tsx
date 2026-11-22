@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { loadLanguage, saveLanguage } from '../infrastructure/preferences'
 
 const dict = {
@@ -117,6 +117,14 @@ const dict = {
     suddenDeath: 'Sudden death',
     sayRoundLimit: 'Last round over! {name} takes it',
     saySuddenDeath: 'Sudden death!',
+    decrease: 'fewer',
+    increase: 'more',
+    playerName: 'Name of player',
+    changeTeam: 'Tap to change team',
+    inputMethod: 'Input',
+    multiplier: 'Multiplier',
+    cancel: 'Cancel',
+    delete: 'Delete',
   },
   fr: {
     tagline: 'Comptez. Visez les doubles.',
@@ -233,6 +241,14 @@ const dict = {
     suddenDeath: 'Mort subite',
     sayRoundLimit: 'Dernier tour terminé ! {name} l\'emporte',
     saySuddenDeath: 'Mort subite !',
+    decrease: 'moins',
+    increase: 'plus',
+    playerName: 'Nom du joueur',
+    changeTeam: 'Touchez pour changer d\'équipe',
+    inputMethod: 'Saisie',
+    multiplier: 'Multiplicateur',
+    cancel: 'Annuler',
+    delete: 'Supprimer',
   },
 }
 
@@ -255,6 +271,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     setLangState(next)
     saveLanguage(next)
   }
+  // Screen readers pick their voice from the page language.
+  useEffect(() => {
+    document.documentElement.lang = lang
+  }, [lang])
   const t = (key: Key) => dict[lang][key]
   return <I18nContext.Provider value={{ lang, setLang, t }}>{children}</I18nContext.Provider>
 }

@@ -28,6 +28,8 @@ function assignmentOf(teams: Sides | undefined, count: number): number[] {
 }
 
 interface StepperProps {
+  /** The setting's name for screen readers, e.g. "Players". */
+  label: string
   value: number
   min: number
   max: number
@@ -36,12 +38,13 @@ interface StepperProps {
   onChange: (v: number) => void
 }
 
-function Stepper({ value, min, max, step = 1, format = String, onChange }: StepperProps) {
+function Stepper({ label, value, min, max, step = 1, format = String, onChange }: StepperProps) {
+  const { t } = useI18n()
   return (
-    <div className="stepper">
-      <button onClick={() => onChange(Math.max(min, value - step))} disabled={value <= min} aria-label="−">−</button>
-      <output>{format(value)}</output>
-      <button onClick={() => onChange(Math.min(max, value + step))} disabled={value >= max} aria-label="+">+</button>
+    <div className="stepper" role="group" aria-label={label}>
+      <button onClick={() => onChange(Math.max(min, value - step))} disabled={value <= min} aria-label={`${label}, ${t('decrease')}`}>−</button>
+      <output aria-live="polite">{format(value)}</output>
+      <button onClick={() => onChange(Math.min(max, value + step))} disabled={value >= max} aria-label={`${label}, ${t('increase')}`}>+</button>
     </div>
   )
 }
@@ -115,21 +118,21 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
 
       <section className="card">
         <h2>{t('game')}</h2>
-        <SegControl options={gameModes.map((k) => ({ value: k, label: t(registry[k].label) }))} value={kind} onChange={setKind} />
+        <SegControl label={t('game')} options={gameModes.map((k) => ({ value: k, label: t(registry[k].label) }))} value={kind} onChange={setKind} />
         {hint && <p className="hint">{t(hint)}</p>}
       </section>
 
       {kind === 'x01' && (
         <section className="card">
           <h2>{t('startScore')}</h2>
-          <SegControl options={SCORES.map((s) => ({ value: s, label: String(s) }))} value={startScore} onChange={setStartScore} />
+          <SegControl label={t('startScore')} options={SCORES.map((s) => ({ value: s, label: String(s) }))} value={startScore} onChange={setStartScore} />
         </section>
       )}
 
       <section className="card">
         <div className="card__row">
           <h2>{t('players')}</h2>
-          <Stepper value={names.length} min={1} max={8} onChange={resize} />
+          <Stepper label={t('players')} value={names.length} min={1} max={8} onChange={resize} />
         </div>
         <div className="names">
           {names.map((name, i) => (
@@ -137,11 +140,12 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
               <input
                 value={name}
                 maxLength={16}
+                aria-label={`${t('playerName')} ${i + 1}`}
                 placeholder={`${t('player')} ${i + 1}`}
                 onChange={(e) => setNames((prev) => prev.map((n, j) => (j === i ? e.target.value : n)))}
               />
               {teamMode && (
-                <button className={`team-badge team-${teams[i]}`} onClick={() => cycleTeam(i)} aria-label={`${t('team')} ${teams[i]! + 1}`}>
+                <button className={`team-badge team-${teams[i]}`} onClick={() => cycleTeam(i)} aria-label={`${displayName(i)}, ${t('team')} ${teams[i]! + 1}. ${t('changeTeam')}`}>
                   T{teams[i]! + 1}
                 </button>
               )}
@@ -170,11 +174,11 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
           <Toggle label={t('doubleOut')} checked={doubleOut} onChange={setDoubleOut} />
           <div className="card__row">
             <span>{t('legsToWin')}</span>
-            <Stepper value={legs} min={1} max={11} onChange={setLegs} />
+            <Stepper label={t('legsToWin')} value={legs} min={1} max={11} onChange={setLegs} />
           </div>
           <div className="card__row">
             <span>{t('setsToWin')}</span>
-            <Stepper value={sets} min={1} max={7} onChange={setSets} />
+            <Stepper label={t('setsToWin')} value={sets} min={1} max={7} onChange={setSets} />
           </div>
         </section>
       )}
@@ -184,7 +188,7 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
           <h2>{t('rules')}</h2>
           <div className="card__row">
             <span>{t('lives')}</span>
-            <Stepper value={lives} min={1} max={5} onChange={setLives} />
+            <Stepper label={t('lives')} value={lives} min={1} max={5} onChange={setLives} />
           </div>
         </section>
       )}
@@ -193,7 +197,7 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
         <section className="card">
           <div className="card__row">
             <h2>{t('maxRounds')}</h2>
-            <Stepper value={maxRounds} min={0} max={50} step={5} format={(v) => (v === 0 ? t('off') : String(v))} onChange={setMaxRounds} />
+            <Stepper label={t('maxRounds')} value={maxRounds} min={0} max={50} step={5} format={(v) => (v === 0 ? t('off') : String(v))} onChange={setMaxRounds} />
           </div>
           {maxRounds > 0 && <p className="hint">{t('maxRoundsHint')}</p>}
         </section>

@@ -3,8 +3,10 @@ import { deleteFromHistory, loadHistory, playerRecords, type PlayerRecord } from
 import type { FinishedMatch, MatchRepository } from '../application/match-repository'
 import { sideNames } from '../application/match-setup'
 import type { FamilyId } from '../application/modes'
+import { ConfirmDialog } from './ConfirmDialog'
 import { useI18n, type Key } from './i18n'
 import { recordChips, registry } from './registry'
+import { SegControl } from './SegControl'
 
 interface Props {
   repository: MatchRepository
@@ -63,6 +65,8 @@ export function History({ repository, onBack }: Props) {
   const { t } = useI18n()
   const [matches, setMatches] = useState<FinishedMatch[] | null>(null)
   const [tab, setTab] = useState<'players' | 'matches'>('players')
+  // The match waiting for the delete to be confirmed.
+  const [deleting, setDeleting] = useState<string | null>(null)
 
   useEffect(() => {
     loadHistory(repository).then(setMatches, () => setMatches([]))
@@ -71,7 +75,7 @@ export function History({ repository, onBack }: Props) {
   const records = useMemo(() => playerRecords(matches ?? []), [matches])
 
   const remove = (id: string) => {
-    if (!window.confirm(t('confirmDelete'))) return
+    setDeleting(null)
     deleteFromHistory(repository, id)
       .then(() => setMatches((list) => list?.filter((m) => m.id !== id) ?? null))
       .catch((error) => console.warn('Could not delete the match', error))
@@ -85,18 +89,30 @@ export function History({ repository, onBack }: Props) {
         <span />
       </header>
 
-      <div className="seg-control">
-        <button className={tab === 'players' ? 'is-active' : ''} onClick={() => setTab('players')}>{t('players')}</button>
-        <button className={tab === 'matches' ? 'is-active' : ''} onClick={() => setTab('matches')}>{t('matches')}</button>
-      </div>
+      <SegControl
+        label={t('history')}
+        options={[{ value: 'players' as const, label: t('players') }, { value: 'matches' as const, label: t('matches') }]}
+        value={tab}
+        onChange={setTab}
+      />
 
       {matches === null ? null : matches.length === 0 ? (
         <p className="hint history__empty">{t('noHistory')}</p>
       ) : tab === 'players' ? (
         records.map((record) => <PlayerCard key={record.name.toLocaleLowerCase()} record={record} />)
       ) : (
-        matches.map((match) => <MatchCard key={match.id} match={match} onDelete={() => remove(match.id)} />)
+        matches.map((match) => <MatchCard key={match.id} match={match} onDelete={() => setDeleting(match.id)} />)
       )}
+
+      <ConfirmDialog
+        open={deleting !== null}
+        title={t('confirmDelete')}
+        confirmLabel={t('delete')}
+        cancelLabel={t('cancel')}
+        danger
+        onConfirm={() => deleting !== null && remove(deleting)}
+        onCancel={() => setDeleting(null)}
+      />
     </main>
   )
 }

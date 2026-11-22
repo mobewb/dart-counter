@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Dart, Multiplier } from '../domain'
 import { useI18n } from './i18n'
+import { SegControl } from './SegControl'
 
 interface Props {
   onHit: (dart: Dart) => void
@@ -32,14 +33,12 @@ export function Keypad({ onHit, disabled, targets, marked, aim = [], aimLabel = 
   const cls = (...names: (string | false | undefined)[]) => names.filter(Boolean).join(' ') || undefined
   return (
     <div className="pad">
-      <div className="seg-control">
-        {tabs.map(([m, label]) => (
-          <button key={m} className={cls(mult === m && 'is-active', tabAimed(m) && 'has-win')} onClick={() => setMult(m)}>
-            {label}
-            {tabAimed(m) && <span className="sr-only">, {t('hasAimDart')}</span>}
-          </button>
-        ))}
-      </div>
+      <SegControl
+        label={t('multiplier')}
+        options={tabs.map(([m, label]) => ({ value: m, label, className: tabAimed(m) ? 'has-win' : undefined, note: tabAimed(m) ? t('hasAimDart') : undefined }))}
+        value={mult}
+        onChange={setMult}
+      />
       <div className="pad__grid">
         {NUMBERS.map((n) => (
           <button key={n} disabled={disabled} className={cls(faded(n) && 'is-faded', aimed(n, mult) && 'is-win')} onClick={() => throwAt(n)}>

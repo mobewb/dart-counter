@@ -10,6 +10,7 @@ import { useI18n } from './i18n'
 import { Keypad } from './Keypad'
 import type { Settings } from '../infrastructure/preferences'
 import { registry } from './registry'
+import { SegControl } from './SegControl'
 import { useCaller } from './use-caller'
 import { useMatch } from './use-match'
 
@@ -68,15 +69,15 @@ export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgre
 
   return (
     <main className="screen game">
-      <header className="topbar">
+      <header className="topbar" inert={finished}>
         <button className="ghost" onClick={quit} aria-label={t('quit')}>✕<span className="label"> {t('quit')}</span></button>
         <div className="topbar__info">{info}</div>
         <button className="ghost undo" onClick={undo} disabled={dartCount === 0 || locked} aria-label={t('undo')}>↶<span className="label"> {t('undo')}</span></button>
       </header>
 
-      {board}
+      <div className="game__board" inert={finished}>{board}</div>
 
-      <section className="turn">
+      <section className="turn" inert={finished}>
         <div className="turn__head">
           <span className="turn__who">{names[match.thrower]} <small>{t('toThrow')}</small></span>
           {turnExtras}
@@ -99,18 +100,21 @@ export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgre
         {afterTurn}
       </section>
 
-      <section className="input">
+      <section className="input" inert={finished}>
         {/* The gold highlight in words; kept mounted so screen readers announce changes. */}
         <div className="sr-only" role="status">
           {aim.length > 0 && `${t(winning.length > 0 ? 'toWin' : 'aimAt')} ${aim.map((d) => spokenDart(d, t)).join(', ')}`}
         </div>
-        <div className="seg-control seg-control--small">
-          <button className={input === 'board' ? 'is-active' : ''} onClick={() => setInput('board')}>{t('board')}</button>
-          <button className={input === 'pad' ? 'is-active' : ''} onClick={() => setInput('pad')}>{t('pad')}</button>
-        </div>
+        <SegControl
+          small
+          label={t('inputMethod')}
+          options={[{ value: 'board' as const, label: t('board') }, { value: 'pad' as const, label: t('pad') }]}
+          value={input}
+          onChange={setInput}
+        />
         {input === 'board' ? (
           <>
-            <Dartboard onHit={hit} disabled={finished || locked} targets={targets} marked={marked} aim={aim} />
+            <Dartboard label={t('board')} onHit={hit} disabled={finished || locked} targets={targets} marked={marked} aim={aim} />
             <button className="miss" disabled={finished || locked} onClick={() => hit({ segment: 0, multiplier: 1 })}>{t('miss')}</button>
           </>
         ) : (
@@ -120,10 +124,10 @@ export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgre
 
       {finished && state.winner !== null && (
         <div className="overlay">
-          <div className="overlay__card">
+          <div className="overlay__card" role="dialog" aria-modal="true" aria-labelledby="winner-title" aria-describedby="winner-text">
             <div className="trophy" aria-hidden>🏆</div>
-            <h2>{sides[state.winner]}</h2>
-            <p>{t(setup.teams ? 'winTeam' : 'wins')}</p>
+            <h2 id="winner-title">{sides[state.winner]}</h2>
+            <p id="winner-text">{t(setup.teams ? 'winTeam' : 'wins')}</p>
             <div className="overlay__stats">
               {match.results.map((r, i) => (
                 <div key={i} className={i === state.winner ? 'is-winner' : ''}>
@@ -148,7 +152,7 @@ export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgre
             )}
             <div className="overlay__actions">
               <button className="ghost" onClick={undo}>↶ {t('undo')}</button>
-              <button className="cta" onClick={onRematch}>{t('rematch')}</button>
+              <button className="cta" autoFocus onClick={onRematch}>{t('rematch')}</button>
               <button className="ghost" onClick={onExit}>{t('newGame')}</button>
             </div>
           </div>
