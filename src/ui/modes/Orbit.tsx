@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useI18n } from '../i18n'
 
 /** Clamps a share of the way done to the 0–100 a ring or bar draws. */
 function percent(done: number): number {
@@ -23,17 +24,20 @@ interface OrbitProps {
 
 /** The side to throw, its figure in a ring that fills as it nears the goal. */
 export function Orbit({ name, value, done, meta, extra, starter = false, winner = false, hot = false }: OrbitProps) {
+  const { t } = useI18n()
   return (
     <section className={`orbit${winner ? ' is-winner' : ''}${hot ? ' orbit--hot' : ''}`} aria-label={name}>
       <div className="orbit__ring">
         <svg viewBox="0 0 200 200" aria-hidden="true">
           <circle className="orbit__track" cx="100" cy="100" r="90" />
-          <circle className="orbit__fill" cx="100" cy="100" r="90" pathLength={100} strokeDasharray={`${percent(done)} 100`} />
+          {/* Left out at zero: a round cap alone would draw a dot. */}
+          {percent(done) > 0 && <circle className="orbit__fill" cx="100" cy="100" r="90" pathLength={100} strokeDasharray={`${percent(done)} 100`} />}
         </svg>
         <div className="orbit__center">
           <span className="orbit__name">
-            {starter && <i className="dot" title="leg starter" />}
+            {starter && <i className="dot" aria-hidden="true" />}
             {name}
+            {starter && <span className="sr-only">, {t('legStarter')}</span>}
           </span>
           {/* Keyed on the value so each change pops in. */}
           <span key={String(value)} className="orbit__score">{value}</span>
@@ -41,6 +45,8 @@ export function Orbit({ name, value, done, meta, extra, starter = false, winner 
           {extra}
         </div>
       </div>
+      {/* Says who is up and their figure after every dart and turn change. */}
+      <span className="sr-only" role="status">{typeof value === 'string' || typeof value === 'number' ? `${name}, ${value}` : name}</span>
     </section>
   )
 }
@@ -60,6 +66,7 @@ export interface Rival {
 
 /** The other sides, compact. */
 export function Rivals({ rivals }: { rivals: Rival[] }) {
+  const { t } = useI18n()
   if (rivals.length === 0) return null
   return (
     <section className="rivals">
@@ -67,8 +74,9 @@ export function Rivals({ rivals }: { rivals: Rival[] }) {
         <article key={i} className={`rival${r.winner ? ' is-winner' : ''}${r.out ? ' is-out' : ''}`}>
           <div className="rival__row">
             <span className="rival__name">
-              {r.starter && <i className="dot" title="leg starter" />}
+              {r.starter && <i className="dot" aria-hidden="true" />}
               {r.name}
+              {r.starter && <span className="sr-only">, {t('legStarter')}</span>}
             </span>
             <span className="rival__score">{r.value}</span>
           </div>

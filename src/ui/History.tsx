@@ -89,7 +89,7 @@ export function History({ repository, onBack }: Props) {
     <main className="screen history">
       <header className="topbar">
         <button className="ghost" onClick={onBack} aria-label={t('back')}>←<span className="label"> {t('back')}</span></button>
-        <div className="topbar__info"><strong>{t('history')}</strong></div>
+        <h1 className="topbar__info"><strong>{t('history')}</strong></h1>
         <span />
       </header>
 

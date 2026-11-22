@@ -23,7 +23,7 @@ function useKillerView({ sides, state: match }: ViewProps<'killer'>) {
     board: (() => {
       const shown = shownSide(match.winner, match.currentPlayer)
       const lives = (p: typeof me) => (
-        <div className="killer-lives" aria-label={`${p.lives} ${t('lives')}`}>
+        <div className="killer-lives" role="img" aria-label={`${p.lives} ${t('lives')}`}>
           {Array.from({ length: match.config.lives }, (_, life) => (
             <i key={life} className={life < p.lives ? 'is-on' : ''} />
           ))}

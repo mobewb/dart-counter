@@ -3,6 +3,7 @@ import { MAX_TEAMS, startMatch } from '../application/match-setup'
 import { modules, type GameModeId, type MatchSetup, type Sides } from '../application/modes'
 import type { Settings } from '../infrastructure/preferences'
 import { useI18n } from './i18n'
+import { Logo } from './Logo'
 import { ModePicker } from './ModePicker'
 import { registry } from './registry'
 import { SegControl } from './SegControl'
@@ -112,11 +113,7 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
       <header className="hero">
         <button className="history-link" onClick={onHistory}>{t('history')}</button>
         <button className="lang" onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')}>{lang === 'fr' ? 'EN' : 'FR'}</button>
-        <svg className="hero__logo" viewBox="0 0 100 100" aria-hidden="true">
-          <circle className="track" cx="50" cy="50" r="40" />
-          <circle className="fill" cx="50" cy="50" r="40" pathLength={100} strokeDasharray="72 100" transform="rotate(-90 50 50)" />
-          <circle className="bull" cx="50" cy="50" r="9" />
-        </svg>
+        <Logo className="hero__logo" />
         <h1>Dart<span>Counter</span></h1>
         <p>{t('tagline')}</p>
       </header>

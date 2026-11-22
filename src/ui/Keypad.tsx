@@ -44,7 +44,7 @@ export function Keypad({ onHit, disabled, targets, marked, aim = [], aimLabel = 
           <button key={n} disabled={disabled} className={cls(faded(n) && 'is-faded', aimed(n, mult) && 'is-win')} onClick={() => throwAt(n)}>
             {n}
             {aimed(n, mult) && <span className="sr-only">, {aimLabel}</span>}
-            {marked?.includes(n) && <span className="pad__skull" aria-label="💀">💀</span>}
+            {marked?.includes(n) && <><span className="pad__skull" aria-hidden="true">💀</span><span className="sr-only">, {t('takesLife')}</span></>}
           </button>
         ))}
         {/* Outer and inner bull have their own buttons: the multiplier resets after each dart. */}

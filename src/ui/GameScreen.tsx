@@ -69,6 +69,7 @@ export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgre
 
   return (
     <main className="screen game">
+      <h1 className="sr-only">{t(view.label)}</h1>
       <header className="topbar" inert={finished}>
         <button className="ghost" onClick={quit} aria-label={t('quit')}>✕<span className="label"> {t('quit')}</span></button>
         <div className="topbar__info">{info}</div>
@@ -94,7 +95,7 @@ export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgre
             const planned = d || finished ? undefined : plan[i - state.turnDarts.length]
             return (
               <div key={i} className={`slot${d ? ' is-filled' : ''}${planned ? ' is-plan' : ''}`}>
-                {d ? dartLabel(d, t('miss')) : planned ? dartLabel(planned) : '·'}
+                {d ? dartLabel(d, t('miss')) : planned ? <><span className="sr-only">{t('checkout')} </span>{dartLabel(planned)}</> : <span aria-hidden="true">·</span>}
               </div>
             )
           })}
