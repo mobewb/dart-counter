@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { MAX_TEAMS, startMatch } from '../application/match-setup'
-import { gameModes, modules, type GameModeId, type MatchSetup, type Sides } from '../application/modes'
+import { modules, type GameModeId, type MatchSetup, type Sides } from '../application/modes'
 import type { Settings } from '../infrastructure/preferences'
 import { useI18n } from './i18n'
+import { ModePicker } from './ModePicker'
 import { registry } from './registry'
 import { SegControl } from './SegControl'
 
@@ -122,7 +123,7 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
 
       <section className="card">
         <h2>{t('game')}</h2>
-        <SegControl label={t('game')} options={gameModes.map((k) => ({ value: k, label: t(registry[k].label) }))} value={kind} onChange={setKind} />
+        <ModePicker value={kind} onChange={setKind} />
         {hint && <p className="hint">{t(hint)}</p>}
       </section>
 

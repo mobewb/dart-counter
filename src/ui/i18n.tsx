@@ -126,6 +126,12 @@ const dict = {
     cancel: 'Cancel',
     delete: 'Delete',
     winner: 'winner',
+    x01Tagline: 'Count down to zero',
+    cricketTagline: 'Close 15 to 20 and the bull',
+    crazyTagline: 'Random numbers, rerolled',
+    clockTagline: '1 to 20 in order',
+    killerTagline: 'Last one standing',
+    three21Tagline: 'Hit exactly 321',
   },
   fr: {
     tagline: 'Comptez. Visez les doubles.',
@@ -251,6 +257,12 @@ const dict = {
     cancel: 'Annuler',
     delete: 'Supprimer',
     winner: 'vainqueur',
+    x01Tagline: 'Descendez à zéro',
+    cricketTagline: 'Fermez du 15 au 20 et le bull',
+    crazyTagline: 'Numéros au hasard, retirés',
+    clockTagline: 'De 1 à 20 dans l\'ordre',
+    killerTagline: 'Le dernier debout gagne',
+    three21Tagline: 'Atteignez 321 pile',
   },
 }
 
