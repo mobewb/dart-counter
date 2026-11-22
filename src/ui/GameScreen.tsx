@@ -50,7 +50,7 @@ export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgre
   const [input, setInput] = useState<'board' | 'pad'>('board')
   useWakeLock(view.keepAwake ?? false)
   useCaller(match, settings)
-  const { info, board, turnExtras, afterTurn, targets, aim: route, marked, locked = false } = view.useView({ setup, sides, state, events: match.events, dartCount })
+  const { info, board, turnExtras, afterTurn, targets, aim: route, plan = [], marked, locked = false } = view.useView({ setup, sides, state, events: match.events, dartCount })
 
   const finished = state.status === 'finished'
   const winning = useMemo(() => (locked ? [] : winningDarts(match)), [match, locked])
@@ -90,9 +90,11 @@ export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgre
         <div className="slots">
           {[0, 1, 2].map((i) => {
             const d = state.turnDarts[i]
+            // An empty slot shows the dart the plan suggests for it.
+            const planned = d || finished ? undefined : plan[i - state.turnDarts.length]
             return (
-              <div key={i} className={`slot${d ? ' is-filled' : ''}`}>
-                {d ? dartLabel(d, t('miss')) : '·'}
+              <div key={i} className={`slot${d ? ' is-filled' : ''}${planned ? ' is-plan' : ''}`}>
+                {d ? dartLabel(d, t('miss')) : planned ? dartLabel(planned) : '·'}
               </div>
             )
           })}

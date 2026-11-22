@@ -1,7 +1,5 @@
-import { useEffect } from 'react'
 import type { X01Record, X01Stats } from '../../../application/modes'
 import { x01 } from '../../../domain'
-import { dartLabel } from '../../dartLabel'
 import { useI18n, type Key } from '../../i18n'
 import type { ModeView, ViewProps } from '../types'
 
@@ -17,11 +15,6 @@ function useX01View({ setup, sides, state: match, events }: ViewProps<'x01'>) {
     : null
   const busted = events.some((e) => e.type === 'Bust')
 
-  // Keep the active player in view on small screens.
-  useEffect(() => {
-    document.querySelector('.pcard.is-active')?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' })
-  }, [match.currentPlayer])
-
   const showLegs = config.legsToWinSet > 1 || config.setsToWinMatch > 1
   const showSets = config.setsToWinMatch > 1
 
@@ -34,39 +27,75 @@ function useX01View({ setup, sides, state: match, events }: ViewProps<'x01'>) {
       </>
     ),
     board: (
-      <section className="players" data-count={match.players.length}>
-        {match.players.map((p, i) => (
-          <article key={i} className={`pcard${i === match.currentPlayer && !finished ? ' is-active' : ''}${match.winner === i ? ' is-winner' : ''}`}>
-            <div className="pcard__name">
-              {match.legStarter === i && <i className="dot" title="leg starter" />}
-              {sides[i]}
-            </div>
-            <div className="pcard__score">{p.remaining}</div>
-            <div className="pcard__meta">
-              {showLegs && (
-                <span>
-                  {showSets && <>{t('set')} <b>{p.sets}</b> · </>}
-                  {t('leg')} <b>{p.legs}</b>
-                </span>
-              )}
-              <span>{t('avg')} <b>{x01.threeDartAverage(p).toFixed(1)}</b></span>
-            </div>
-          </article>
-        ))}
-      </section>
+      <>
+        {(() => {
+          // The ring follows the player to throw, or the winner once the match is over.
+          const shown = match.winner ?? match.currentPlayer
+          const p = match.players[shown]!
+          const done = Math.min(100, Math.max(0, (1 - p.remaining / config.startScore) * 100))
+          return (
+            <section className={`orbit${match.winner === shown ? ' is-winner' : ''}`} aria-label={sides[shown]}>
+              <div className="orbit__ring">
+                <svg viewBox="0 0 200 200" aria-hidden="true">
+                  <circle className="orbit__track" cx="100" cy="100" r="90" />
+                  <circle className="orbit__fill" cx="100" cy="100" r="90" pathLength={100} strokeDasharray={`${done} 100`} />
+                </svg>
+                <div className="orbit__center">
+                  <span className="orbit__name">
+                    {match.legStarter === shown && <i className="dot" title="leg starter" />}
+                    {sides[shown]}
+                  </span>
+                  <span key={p.remaining} className="orbit__score">{p.remaining}</span>
+                  <span className="orbit__meta">
+                    <span>{t('avg')} <b>{x01.threeDartAverage(p).toFixed(1)}</b></span>
+                    {showLegs && (
+                      <span>
+                        {showSets && <>{t('set')} <b>{p.sets}</b> · </>}
+                        {t('leg')} <b>{p.legs}</b>
+                      </span>
+                    )}
+                  </span>
+                </div>
+              </div>
+            </section>
+          )
+        })()}
+        {match.players.length > 1 && (
+          <section className="rivals">
+            {match.players.map((p, i) => i === (match.winner ?? match.currentPlayer) ? null : (
+              <article key={i} className={`rival${match.winner === i ? ' is-winner' : ''}`}>
+                <div className="rival__row">
+                  <span className="rival__name">
+                    {match.legStarter === i && <i className="dot" title="leg starter" />}
+                    {sides[i]}
+                  </span>
+                  <span className="rival__score">{p.remaining}</span>
+                </div>
+                <div className="rival__bar" aria-hidden="true">
+                  <i style={{ width: `${Math.min(100, Math.max(0, (1 - p.remaining / config.startScore) * 100))}%` }} />
+                </div>
+                {showLegs && (
+                  <span className="rival__legs">
+                    {showSets && <>{t('set')} {p.sets} · </>}
+                    {t('leg')} {p.legs}
+                  </span>
+                )}
+              </article>
+            ))}
+          </section>
+        )}
+      </>
     ),
     turnExtras: (
       <>
-        {hint && (
-          <span className="chip chip--checkout">
-            {t('checkout')} <b>{hint.map((d) => dartLabel(d)).join(' · ')}</b>
-          </span>
-        )}
+        {/* The route itself fills the empty dart slots. */}
+        {hint && <span className="chip chip--checkout">{t('checkout')}</span>}
         {!current.in && <span className="chip">{t('notIn')}</span>}
       </>
     ),
     // The dart to throw now; the chip shows the rest of the route.
     aim: hint ? hint.slice(0, 1) : undefined,
+    plan: hint ?? undefined,
     afterTurn: busted && (
       <div className="bust" role="status">
         <strong>{t('bust')}</strong> {t('bustHint')}
