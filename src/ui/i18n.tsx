@@ -146,6 +146,7 @@ const dict = {
     nightTagline: 'Last orders? One more leg.',
     allAchievements: 'All achievements',
     changeMode: 'Change',
+    switchLanguage: 'Language: English. Switch to French',
     nobodyYet: 'nobody yet',
   },
   fr: {
@@ -292,6 +293,7 @@ const dict = {
     nightTagline: 'Dernière tournée ? Encore une manche.',
     allAchievements: 'Tous les succès',
     changeMode: 'Changer',
+    switchLanguage: 'Langue : français. Passer en anglais',
     nobodyYet: 'personne pour l\'instant',
   },
 }

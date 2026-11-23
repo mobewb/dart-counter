@@ -156,7 +156,8 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
     <main className="screen setup">
       <header className="hero">
         <button className="history-link" onClick={onHistory}>{t('history')}</button>
-        <button className="lang" onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')}>{lang === 'fr' ? 'EN' : 'FR'}</button>
+        {/* Shows the language in use; tapping switches to the other one. */}
+        <button className="lang" onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')} aria-label={t('switchLanguage')}>{lang === 'fr' ? 'FR' : 'EN'}</button>
         {/* Not a control: tapping it is an easter egg. */}
         <span className="hero__mark" onClick={spinLogo}>
           <Logo className={`hero__logo${spinning ? ' is-spinning' : ''}`} onAnimationEnd={() => setSpinning(false)} />
