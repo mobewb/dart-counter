@@ -200,7 +200,7 @@ A winner overlay shows:
 - **Secrets** — six more, shown as *???* until earned (the 170 checkout, a finish on double 1, 20-5-1, three misses, 3 bounces in 321, a win between midnight and 5 am).
 - **During play** — a visit that earns a highlight (180, Shanghai, nine marks, triple kill, three in a bed, 26, three misses) pops a toast with the thrower's name; the big ones and every win add confetti. Undo and resume stay quiet.
 - **Winner screen** — lists what each player unlocked for the first time in this match. Unnamed players see what the match itself earned.
-- **History → Achievements** — every named player's badges with their unlock date and a progress bar, then the easter eggs found on this device.
+- **History → Achievements** — every named player's badges with their unlock date and a progress bar; then *All achievements*, always shown, with how to earn each one and who has (secrets stay hidden until someone earns them); then the easter eggs found on this device.
 
 ### Easter eggs
 Five secrets hidden in the app, kept on the device (`localStorage`), each announced with a *Secret found!* toast the first time: tapping the logo, the Konami code on the setup screen (it toggles a colour-cycling accent), a player named after the old mascot, tapping the winner's trophy, and opening the app late at night.

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ACHIEVEMENTS, playerAchievements, type PlayerAchievements } from '../application/achievements'
+import { ACHIEVEMENTS, playerAchievements, type AchievementId, type PlayerAchievements } from '../application/achievements'
 import { deleteFromHistory, loadHistory, playerRecords, type PlayerRecord } from '../application/history'
 import type { FinishedMatch, MatchRepository } from '../application/match-repository'
 import { sideNames } from '../application/match-setup'
@@ -39,15 +39,13 @@ function PlayerCard({ record }: { record: PlayerRecord }) {
   )
 }
 
-function Badge({ icon, name, how, earned, at }: { icon: string; name: string; how: string; earned: boolean; at?: number }) {
-  const { lang } = useI18n()
-  const when = at ? new Date(at).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-GB', { dateStyle: 'medium' }) : undefined
+function Badge({ icon, name, how, earned, note }: { icon: string; name: string; how: string; earned: boolean; note?: string }) {
   return (
     <li className={`badge${earned ? ' is-earned' : ''}`}>
       <span className="badge__icon" aria-hidden="true">{icon}</span>
       <span className="badge__text">
         <b>{name}</b>
-        <small>{how}{when && ` · ${when}`}</small>
+        <small>{how}{note && ` · ${note}`}</small>
       </span>
     </li>
   )
@@ -55,6 +53,7 @@ function Badge({ icon, name, how, earned, at }: { icon: string; name: string; ho
 
 function AchievementsCard({ player }: { player: PlayerAchievements }) {
   const { t, lang } = useI18n()
+  const date = (at: number | undefined) => (at ? new Date(at).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-GB', { dateStyle: 'medium' }) : undefined)
   // Secrets show only once earned.
   const shown = ACHIEVEMENTS.filter((a) => !a.secret || player.unlocked.has(a.id))
   const hidden = ACHIEVEMENTS.length - shown.length
@@ -68,7 +67,31 @@ function AchievementsCard({ player }: { player: PlayerAchievements }) {
       <ul className="badges">
         {shown.map(({ id }) => {
           const { icon, name, how } = achievementCopy[id]
-          return <Badge key={id} icon={icon} name={name[lang]} how={how[lang]} earned={player.unlocked.has(id)} at={player.unlocked.get(id)} />
+          return <Badge key={id} icon={icon} name={name[lang]} how={how[lang]} earned={player.unlocked.has(id)} note={date(player.unlocked.get(id))} />
+        })}
+        {Array.from({ length: hidden }, (_, i) => <Badge key={`secret-${i}`} icon="❔" name={t('secret')} how={t('secretHint')} earned={false} />)}
+      </ul>
+    </article>
+  )
+}
+
+/** Every achievement and who earned it; secrets stay hidden until someone does. */
+function CatalogCard({ players }: { players: readonly PlayerAchievements[] }) {
+  const { t, lang } = useI18n()
+  const earners = (id: AchievementId) => players.filter((p) => p.unlocked.has(id)).map((p) => p.name)
+  const shown = ACHIEVEMENTS.filter((a) => !a.secret || earners(a.id).length > 0)
+  const hidden = ACHIEVEMENTS.length - shown.length
+  return (
+    <article className="hcard">
+      <div className="hcard__head">
+        <strong>{t('allAchievements')}</strong>
+        <span>{ACHIEVEMENTS.length}</span>
+      </div>
+      <ul className="badges">
+        {shown.map(({ id }) => {
+          const { icon, name, how } = achievementCopy[id]
+          const by = earners(id)
+          return <Badge key={id} icon={icon} name={name[lang]} how={how[lang]} earned={by.length > 0} note={by.length > 0 ? by.join(', ') : t('nobodyYet')} />
         })}
         {Array.from({ length: hidden }, (_, i) => <Badge key={`secret-${i}`} icon="❔" name={t('secret')} how={t('secretHint')} earned={false} />)}
       </ul>
@@ -164,6 +187,7 @@ export function History({ repository, onBack }: Props) {
         <>
           {achievements.length === 0 && <p className="hint history__empty">{t('noAchievements')}</p>}
           {achievements.map((player) => <AchievementsCard key={player.name.toLocaleLowerCase()} player={player} />)}
+          <CatalogCard players={achievements} />
           <EggsCard />
         </>
       ) : matches.length === 0 ? (

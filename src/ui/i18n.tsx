@@ -144,7 +144,8 @@ const dict = {
     secretFound: 'Secret found!',
     noAchievements: 'Name your players and finish a match to earn achievements.',
     nightTagline: 'Last orders? One more leg.',
-    trophyLabel: 'Trophy',
+    allAchievements: 'All achievements',
+    nobodyYet: 'nobody yet',
   },
   fr: {
     tagline: 'Comptez. Visez les doubles.',
@@ -288,7 +289,8 @@ const dict = {
     secretFound: 'Secret trouvé !',
     noAchievements: 'Nommez vos joueurs et terminez une partie pour gagner des succès.',
     nightTagline: 'Dernière tournée ? Encore une manche.',
-    trophyLabel: 'Trophée',
+    allAchievements: 'Tous les succès',
+    nobodyYet: 'personne pour l\'instant',
   },
 }
 
