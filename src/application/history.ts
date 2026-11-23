@@ -17,10 +17,10 @@ export interface PlayerRecord {
   modes: { [F in FamilyId]?: Families[F]['record'] }
 }
 
-const key = (name: string) => name.trim().toLocaleLowerCase()
+export const playerKey = (name: string) => name.trim().toLocaleLowerCase()
 
 /** Names filled in for players left unnamed ("Player 2", "Joueur 3"): not a real person to track. */
-const isPlaceholder = (name: string) => /^(player|joueur) \d+$/i.test(name.trim())
+export const isPlaceholder = (name: string) => /^(player|joueur) \d+$/i.test(name.trim())
 
 type FamilyRecords = PlayerRecord['modes']
 
@@ -47,8 +47,8 @@ export function playerRecords(history: readonly FinishedMatch[]): PlayerRecord[]
     const winners = sidesOf(finished.setup)[finished.winner] ?? []
     finished.setup.names.forEach((name, player) => {
       if (isPlaceholder(name)) return
-      const record = records.get(key(name)) ?? { name, matches: 0, wins: 0, lastPlayed: 0, modes: {} }
-      records.set(key(name), record)
+      const record = records.get(playerKey(name)) ?? { name, matches: 0, wins: 0, lastPlayed: 0, modes: {} }
+      records.set(playerKey(name), record)
       record.name = name.trim()
       record.matches++
       if (winners.includes(player)) record.wins++

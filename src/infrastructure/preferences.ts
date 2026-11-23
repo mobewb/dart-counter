@@ -81,3 +81,19 @@ export function loadSettings(store = defaultStore()): Settings {
 export function saveSettings(settings: Settings, store = defaultStore()): void {
   write(store, SETTINGS, JSON.stringify(settings))
 }
+
+const EGGS = `${STORAGE_NAME}:eggs`
+
+/** The easter eggs found on this device, by id. */
+export function loadEggs(store = defaultStore()): string[] {
+  try {
+    const saved: unknown = JSON.parse(read(store, EGGS) ?? '[]')
+    return Array.isArray(saved) ? saved.filter((egg): egg is string => typeof egg === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+export function saveEggs(eggs: readonly string[], store = defaultStore()): void {
+  write(store, EGGS, JSON.stringify(eggs))
+}

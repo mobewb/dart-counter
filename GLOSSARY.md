@@ -24,6 +24,8 @@ The ubiquitous language of Dart Counter. Code, docs and commits use these terms;
 | **Target** | A segment the game mode tells a side to hit. Each mode says which: Cricket's targets, Around the Clock's next number. | Targets, Aim at / Cibles, Visez |
 | **Winning dart** | A dart that would win the leg (X01) or the match if the thrower hit it now; shown on the board and pad. None are shown when the side would win anyway by missing out its turn (a lead at the round limit). | — |
 | **Current match** | The match being played, saved after every dart so it can be resumed. | — |
+| **Achievement** | A badge a named player earns once, derived from the match history; some are secret until earned. | Achievements / Succès |
+| **Easter egg** | A hidden interaction, found once per device. | Easter eggs / Secrets cachés |
 | **Match history** | The finished matches kept on the device, most recent first. | — |
 
 ## X01

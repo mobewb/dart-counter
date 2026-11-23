@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { newlyUnlocked, visitHighlight, type AchievementId, type Played } from '../application/achievements'
 import type { Match } from '../application/match'
-import type { GameModeId, Setup } from '../application/modes'
+import { toMatchSetup, type GameModeId, type Setup } from '../application/modes'
 import { winningDarts } from '../application/winning-darts'
 import type { Dart } from '../domain'
+import { achievementCopy } from './achievement-copy'
+import { useCelebrate, useTaps } from './celebrate'
 import { ConfirmDialog } from './ConfirmDialog'
 import { dartLabel, spokenDart } from './dartLabel'
 import { Dartboard } from './Dartboard'
@@ -20,6 +23,8 @@ interface Props<K extends GameModeId> {
   initialDarts?: readonly Dart[]
   /** Called with the match after every dart or undo. */
   onProgress: (match: Match<K>) => void
+  /** The match history before this match, once loaded: to tell what it unlocks. */
+  past?: readonly Played[]
   settings: Settings
   onRematch: () => void
   onExit: () => void
@@ -34,9 +39,33 @@ function useWakeLock(enabled: boolean) {
   }, [enabled])
 }
 
+/** Highlights worth confetti, not just a toast. */
+const BIG: readonly AchievementId[] = ['oneEighty', 'nineMarks', 'tripleKill', 'shanghai']
+
+/** Cheers a visit that earns a highlight, and the win; undo and resume stay quiet. */
+function useHighlights(match: Match) {
+  const { lang } = useI18n()
+  const { toast, confetti } = useCelebrate()
+  const seen = useRef(match.darts.length)
+  useEffect(() => {
+    const thrown = match.darts.length > seen.current
+    seen.current = match.darts.length
+    if (!thrown) return
+    const highlight = visitHighlight(match)
+    if (highlight) {
+      const { icon, name } = achievementCopy[highlight]
+      toast({ icon, title: name[lang], text: match.setup.names[match.steps.at(-1)!.player] })
+      if (BIG.includes(highlight)) confetti()
+    }
+    if (match.state.status === 'finished') confetti()
+    // Only a new dart cheers, not a change of language.
+  }, [match.darts])
+}
+
 /** The game screen of every mode; the mode's view fills in its own parts. */
-export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgress, settings, onRematch, onExit }: Props<K>) {
-  const { t } = useI18n()
+export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgress, past, settings, onRematch, onExit }: Props<K>) {
+  const { t, lang } = useI18n()
+  const { findEgg, confetti } = useCelebrate()
   const { names } = setup
   const view = registry[setup.mode]
   const { match, hit: record, undo } = useMatch(setup, initialDarts)
@@ -50,6 +79,7 @@ export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgre
   const [input, setInput] = useState<'board' | 'pad'>('board')
   useWakeLock(view.keepAwake ?? false)
   useCaller(match, settings)
+  useHighlights(match)
   const { info, board, turnExtras, afterTurn, targets, aim: route, plan = [], marked, locked = false } = view.useView({ setup, sides, state, events: match.events, dartCount })
 
   const finished = state.status === 'finished'
@@ -63,6 +93,15 @@ export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgre
     </div>
   )
   const hit = (dart: Dart) => !locked && record(dart)
+  // What each player earned for the first time, once the match is won.
+  const unlocks = useMemo(
+    () => (finished && past ? newlyUnlocked(past, { setup: toMatchSetup(setup), darts: [...match.darts], finishedAt: Date.now() }) : []),
+    [finished, past, setup, match.darts],
+  )
+  const polishTrophy = useTaps(5, () => {
+    findEgg('trophy')
+    confetti()
+  })
   const [quitting, setQuitting] = useState(false)
   // Nothing to lose before the first dart, so no need to ask.
   const quit = () => (dartCount === 0 ? onExit() : setQuitting(true))
@@ -128,7 +167,8 @@ export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgre
       {finished && state.winner !== null && (
         <div className="overlay">
           <div className="overlay__card" role="dialog" aria-modal="true" aria-labelledby="winner-title" aria-describedby="winner-text">
-            <svg className="trophy" viewBox="0 0 100 100" aria-hidden="true">
+            {/* Not a control: tapping it is an easter egg. */}
+            <svg className="trophy" viewBox="0 0 100 100" aria-hidden="true" onClick={polishTrophy}>
               <circle cx="50" cy="50" r="42" />
               <path d="M32 51l12 12 24-26" />
             </svg>
@@ -155,6 +195,19 @@ export function GameScreen<K extends GameModeId>({ setup, initialDarts, onProgre
                   </div>
                 ))}
               </div>
+            )}
+            {unlocks.some((ids) => ids.length > 0) && (
+              <section className="unlocks" aria-labelledby="unlocks-title">
+                <h3 id="unlocks-title">{t('newAchievements')}</h3>
+                <ul>
+                  {unlocks.flatMap((ids, player) => ids.map((id) => (
+                    <li key={`${player}-${id}`}>
+                      <span className="unlocks__icon" aria-hidden="true">{achievementCopy[id].icon}</span>
+                      <span><b>{achievementCopy[id].name[lang]}</b><small>{names[player]}</small></span>
+                    </li>
+                  )))}
+                </ul>
+              </section>
             )}
             <div className="overlay__actions">
               <button className="ghost" onClick={undo}>↶ {t('undo')}</button>

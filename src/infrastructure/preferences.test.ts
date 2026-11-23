@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { startMatch } from '../application/match-setup'
-import { DEFAULT_SETTINGS, loadLanguage, loadLastSetup, loadSettings, saveLanguage, saveLastSetup, saveSettings } from './preferences'
+import { DEFAULT_SETTINGS, loadEggs, loadLanguage, loadLastSetup, loadSettings, saveEggs, saveLanguage, saveLastSetup, saveSettings } from './preferences'
 
 function memoryStore() {
   const data = new Map<string, string>()
@@ -17,6 +17,14 @@ const failingStore = {
 }
 
 describe('preferences', () => {
+  it('remembers the easter eggs found, and none where storage is blocked', () => {
+    const store = memoryStore()
+    expect(loadEggs(store)).toEqual([])
+    saveEggs(['logo', 'konami'], store)
+    expect(loadEggs(store)).toEqual(['logo', 'konami'])
+    expect(loadEggs(failingStore)).toEqual([])
+  })
+
   it('remembers a known language', () => {
     const store = memoryStore()
     expect(loadLanguage(['en', 'fr'], store)).toBeUndefined()

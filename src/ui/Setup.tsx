@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { MAX_TEAMS, startMatch } from '../application/match-setup'
 import { modules, type GameModeId, type MatchSetup, type Sides } from '../application/modes'
 import type { Settings } from '../infrastructure/preferences'
+import { useCelebrate, useTaps } from './celebrate'
 import { useI18n } from './i18n'
 import { Logo } from './Logo'
 import { ModePicker } from './ModePicker'
@@ -53,6 +54,32 @@ function Stepper({ label, value, min, max, step = 1, format = String, onChange }
 
 const DEFAULT_MAX_ROUNDS = 20
 
+const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a']
+
+/** Calls `onCode` when the Konami code is typed. */
+function useKonami(onCode: () => void) {
+  const typed = useRef<string[]>([])
+  const latest = useRef(onCode)
+  latest.current = onCode
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      typed.current = [...typed.current, e.key.length === 1 ? e.key.toLowerCase() : e.key].slice(-KONAMI.length)
+      if (typed.current.join() === KONAMI.join()) {
+        typed.current = []
+        latest.current()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+}
+
+/** A player named after the app's first mascot. */
+const isGhost = (name: string) => /^(ghost|boo|fant[oô]me)$/i.test(name.trim())
+
+/** Between midnight and 5 am, when only darts players are still up. */
+const lateNight = () => new Date().getHours() < 5
+
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <label className="toggle">
@@ -96,6 +123,23 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
 
   const hint = registry[kind].hint
 
+  // Easter eggs.
+  const { findEgg, confetti } = useCelebrate()
+  const [spinning, setSpinning] = useState(false)
+  const spinLogo = useTaps(7, () => {
+    setSpinning(true)
+    confetti()
+    findEgg('logo')
+  })
+  useKonami(() => {
+    document.documentElement.classList.toggle('disco')
+    findEgg('konami')
+  })
+  const ghost = names.some(isGhost)
+  useEffect(() => void (ghost && findEgg('ghost')), [ghost, findEgg])
+  const [night] = useState(lateNight)
+  useEffect(() => void (night && findEgg('night')), [night, findEgg])
+
   const start = () => {
     const finalNames = names.map((_, i) => displayName(i))
     const rules = { startScore, doubleIn, doubleOut, legsToWinSet: legs, setsToWinMatch: sets }
@@ -113,9 +157,13 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
       <header className="hero">
         <button className="history-link" onClick={onHistory}>{t('history')}</button>
         <button className="lang" onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')}>{lang === 'fr' ? 'EN' : 'FR'}</button>
-        <Logo className="hero__logo" />
+        {/* Not a control: tapping it is an easter egg. */}
+        <span className="hero__mark" onClick={spinLogo}>
+          <Logo className={`hero__logo${spinning ? ' is-spinning' : ''}`} onAnimationEnd={() => setSpinning(false)} />
+          {ghost && <span className="hero__ghost" aria-hidden="true">👻</span>}
+        </span>
         <h1>Dart<span>Counter</span></h1>
-        <p>{t('tagline')}</p>
+        <p>{t(night ? 'nightTagline' : 'tagline')}</p>
       </header>
 
       <section className="card">

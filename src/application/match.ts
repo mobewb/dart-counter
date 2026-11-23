@@ -32,6 +32,8 @@ export interface Match<K extends GameModeId = GameModeId> {
   stats: StatsOf<K>[]
   /** What a caller announces after the last dart. */
   calls: Call[]
+  /** Every dart of the log, with who threw it and the state around it. */
+  steps: readonly Step<StateOf<K>>[]
 }
 
 /** The steps of the visit that the last step belongs to. */
@@ -117,6 +119,7 @@ export function openMatch<K extends GameModeId>(setup: Setup<K>, darts: readonly
     round,
     stats: module.stats(steps, setup),
     calls: callsOf(module, setup, steps, sideNames, thrower),
+    steps,
   }
 }
 
