@@ -145,6 +145,7 @@ const dict = {
     noAchievements: 'Name your players and finish a match to earn achievements.',
     nightTagline: 'Last orders? One more leg.',
     allAchievements: 'All achievements',
+    changeMode: 'Change',
     nobodyYet: 'nobody yet',
   },
   fr: {
@@ -290,6 +291,7 @@ const dict = {
     noAchievements: 'Nommez vos joueurs et terminez une partie pour gagner des succès.',
     nightTagline: 'Dernière tournée ? Encore une manche.',
     allAchievements: 'Tous les succès',
+    changeMode: 'Changer',
     nobodyYet: 'personne pour l\'instant',
   },
 }

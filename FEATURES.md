@@ -39,7 +39,7 @@ Every mode can be played solo (each player for themselves) or in **teams** — s
 
 ## 2. Match setup
 
-- **Game selector** — switch between X01, Cricket, Crazy Cricket, Around the Clock, Killer and 321; a short rules hint is shown for every mode but X01. The highlight slides to the picked mode.
+- **Game selector** — switch between X01, Cricket, Crazy Cricket, Around the Clock, Killer and 321; a short rules hint is shown for every mode but X01. The highlight slides to the picked mode. When the setup screen is pre-filled from a previous match, the selector is folded to the picked mode with a *Change* button; tapping a mode in the grid picks it and folds it again. On a first visit the grid is open.
 - **Players** — 1 to 8 players, with a stepper to add or remove players.
 - **Player names** — optional, up to 16 characters. Empty names default to "Player N" / "Joueur N".
 - **X01 options**

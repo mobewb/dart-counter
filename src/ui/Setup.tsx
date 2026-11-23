@@ -168,7 +168,7 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
 
       <section className="card">
         <h2>{t('game')}</h2>
-        <ModePicker value={kind} onChange={setKind} />
+        <ModePicker value={kind} onChange={setKind} defaultOpen={!initial} />
         {hint && <p className="hint">{t(hint)}</p>}
       </section>
 
