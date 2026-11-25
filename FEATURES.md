@@ -50,6 +50,7 @@ Every mode can be played solo (each player for themselves) or in **teams** — s
   - Sets to win the match: 1 to 7 (default 1).
 - **Max rounds** — X01 only: Off, or 5 to 50 in steps of 5 (default 20), per leg. A round is every side taking one turn. When the last round is over, the leg goes to the lowest remaining score, and the count restarts for the next leg. (The domain can also limit Cricket, Around the Clock and Killer — most points then marks, furthest target, most lives — but the setup screen only offers it for X01.) Tied sides play **sudden death**, one more round at a time (everyone throws, only the tied sides can win), until one leads alone. The game screen shows *Round 7 / 20*, then *Sudden death*; the caller announces both. A leg won at the limit is not a checkout in the stats.
 - **Teams** — with 2 or more players, a *Teams* toggle splits them into teams (see [Team play](#team-play)).
+- **Who starts** — with 2 or more sides, a *Draw* button picks the side that throws first at random (a player, or a team in team play), and names it. Works in every game mode; in X01 the leg starter then rotates on from the drawn side. Without a draw, the first side starts.
 - **Settings memory** — the setup screen is pre-filled with the last match's mode, rules, names and teams, even after the app is closed.
 - **Language toggle** — a button on the setup screen shows the language in use (FR or EN); tapping it switches to the other one.
 - **Sound** — *Caller voice* and *Vibration* toggles, remembered on the device.

@@ -50,6 +50,29 @@ describe('startMatch', () => {
   })
 })
 
+describe('starter', () => {
+  it('passes the chosen starting side to the config', () => {
+    expect(startMatch({ mode: 'x01', names, options: rules, starter: 1 }).config.starter).toBe(1)
+    expect(startMatch({ mode: 'cricket', options: {}, names, starter: 1 }).config.starter).toBe(1)
+  })
+
+  it('leaves the starter off the config when the first side throws', () => {
+    expect('starter' in startMatch({ mode: 'x01', names, options: rules }).config).toBe(false)
+    expect('starter' in startMatch({ mode: 'x01', names, options: rules, starter: 0 }).config).toBe(false)
+  })
+
+  it('rejects a starter that is not one of the sides', () => {
+    expect(() => startMatch({ mode: 'x01', names, options: rules, starter: 2 })).toThrow()
+    expect(() => startMatch({ mode: 'x01', names, options: rules, starter: -1 })).toThrow()
+  })
+
+  it('counts sides, not players, in team play', () => {
+    const teamed = ['Ann', 'Bob', 'Cid', 'Dee']
+    expect(startMatch({ mode: 'x01', names: teamed, teams: [0, 1, 0, 1], options: rules, starter: 1 }).config.starter).toBe(1)
+    expect(() => startMatch({ mode: 'x01', names: teamed, teams: [0, 1, 0, 1], options: rules, starter: 2 })).toThrow()
+  })
+})
+
 describe('crazy cricket deal', () => {
   const deal = (random: () => number) => {
     const setup = startMatch({ mode: 'crazy', options: {}, names }, random)

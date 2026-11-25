@@ -17,11 +17,12 @@ function freshPlayer(config: X01Config): X01Player {
 
 export function newMatch(config: X01Config): X01Match {
   const players = Array.from({ length: config.playerCount }, () => freshPlayer(config))
+  const starter = config.starter ?? 0
   return {
     config,
     players,
-    currentPlayer: 0,
-    legStarter: 0,
+    currentPlayer: starter,
+    legStarter: starter,
     turnDarts: [],
     turnStart: { remaining: config.startScore, in: !config.doubleIn },
     status: 'playing',

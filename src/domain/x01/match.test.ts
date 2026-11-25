@@ -131,6 +131,16 @@ describe('legs, sets and match', () => {
     expect(m.currentPlayer).toBe(1)
   })
 
+  it('starts the first leg from the chosen starter and rotates on from it', () => {
+    const fresh = newMatch(config({ playerCount: 3, starter: 1 }))
+    expect(fresh.currentPlayer).toBe(1)
+    expect(fresh.legStarter).toBe(1)
+    const m = play(config({ startScore: 40, playerCount: 3, legsToWinSet: 2, starter: 1 }), [miss, miss, miss, d(20)])
+    expect(m.players[2]!.legs).toBe(1)
+    expect(m.legStarter).toBe(2)
+    expect(m.currentPlayer).toBe(2)
+  })
+
   it('finishes the match when the last set is won', () => {
     const m = play(config({ startScore: 40 }), [d(20)])
     expect(m.status).toBe('finished')

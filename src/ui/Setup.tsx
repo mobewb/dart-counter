@@ -106,6 +106,8 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
   const [names, setNames] = useState(initial?.names ?? ['', ''])
   const [teamPlay, setTeamPlay] = useState(Boolean(initial?.teams))
   const [teams, setTeams] = useState(() => assignmentOf(initial?.teams, names.length))
+  // The side drawn to throw first, as a side index; 0 (the first side) by default.
+  const [starter, setStarter] = useState(0)
 
   const resize = (count: number) => {
     setNames((prev) => Array.from({ length: count }, (_, i) => prev[i] ?? ''))
@@ -121,10 +123,25 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
   const canStart = (!teamMode || usedTeams.length >= 2) && enoughSides
   const displayName = (i: number) => names[i]!.trim() || `${t('player')} ${i + 1}`
 
+  // Who can throw first: one per player, or one per team. Side order matches the domain's.
+  const sideCount = teamMode ? usedTeams.length : names.length
+  const sideName = (side: number) =>
+    teamMode
+      ? teams.flatMap((n, p) => (n === usedTeams[side] ? [displayName(p)] : [])).join(' & ')
+      : displayName(side)
+  // The drawn side, falling back to the first side whenever the roster shrank below it.
+  // Derived so the render is always in range; the effect then resets the stored draw.
+  const startingSide = starter < sideCount ? starter : 0
+  useEffect(() => {
+    if (starter >= sideCount) setStarter(0)
+  }, [starter, sideCount])
+
   const hint = registry[kind].hint
 
-  // Easter eggs.
   const { findEgg, confetti } = useCelebrate()
+  const drawStarter = () => setStarter(Math.floor(Math.random() * sideCount))
+
+  // Easter eggs.
   const [spinning, setSpinning] = useState(false)
   const spinLogo = useTaps(7, () => {
     setSpinning(true)
@@ -143,7 +160,7 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
   const start = () => {
     const finalNames = names.map((_, i) => displayName(i))
     const rules = { startScore, doubleIn, doubleOut, legsToWinSet: legs, setsToWinMatch: sets }
-    const common = { names: finalNames, teams: teamMode ? teams : undefined }
+    const common = { names: finalNames, teams: teamMode ? teams : undefined, starter: startingSide }
     onStart(startMatch(
       kind === 'x01' ? { mode: kind, options: rules, maxRounds, ...common }
         : kind === 'killer' ? { mode: kind, options: { lives }, ...common }
@@ -217,6 +234,16 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
           </div>
         )}
       </section>
+
+      {sideCount >= 2 && canStart && (
+        <section className="card">
+          <div className="card__row">
+            <h2>{t('whoStarts')}</h2>
+            <button className="draw-btn" onClick={drawStarter}>🎲 {t('drawStarter')}</button>
+          </div>
+          <p className="hint" aria-live="polite">{t('startsFirst').replace('{name}', sideName(startingSide))}</p>
+        </section>
+      )}
 
       {kind === 'x01' && (
         <section className="card">

@@ -32,6 +32,14 @@ describe('Killer', () => {
       ])
     })
 
+    it('draws in turn from the chosen starter, then starts play with them', () => {
+      // Three sides, starter 1: the draw goes 1, 2, 0, then play begins with side 1.
+      const move = play([s(20), s(19), s(18)], { playerCount: 3, starter: 1 })
+      expect(move.state.players.map((p) => p.number)).toEqual([18, 20, 19])
+      expect(move.state.phase).toBe('play')
+      expect(move.state.currentPlayer).toBe(1)
+    })
+
     it('throws again on a miss, the bull or a taken number', () => {
       const m = replay(config(), [s(20), miss, s(25), d(25), s(20)])
       expect(m.phase).toBe('draw')

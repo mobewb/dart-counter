@@ -14,6 +14,8 @@ export interface ClockConfig extends RoundLimitConfig {
   sequence: number[]
   /** A double moves 2 targets on, a triple 3; the last target is never skipped. Off in matches saved before it existed. */
   skipAhead?: boolean
+  /** The side that throws first; 0 (the first side) by default. */
+  starter?: number
 }
 
 export interface ClockPlayer {
@@ -35,7 +37,7 @@ export function newMatch(config: ClockConfig): ClockMatch {
   return {
     config,
     players: Array.from({ length: config.playerCount }, () => ({ progress: 0, dartsThrown: 0 })),
-    currentPlayer: 0,
+    currentPlayer: config.starter ?? 0,
     turnDarts: [],
     status: 'playing',
     winner: null,

@@ -148,6 +148,9 @@ const dict = {
     changeMode: 'Change',
     switchLanguage: 'Language: English. Switch to French',
     nobodyYet: 'nobody yet',
+    whoStarts: 'Who starts',
+    drawStarter: 'Draw',
+    startsFirst: '{name} throws first',
   },
   fr: {
     tagline: 'Comptez. Visez les doubles.',
@@ -295,6 +298,9 @@ const dict = {
     changeMode: 'Changer',
     switchLanguage: 'Langue : français. Passer en anglais',
     nobodyYet: 'personne pour l\'instant',
+    whoStarts: 'Qui commence',
+    drawStarter: 'Tirer au sort',
+    startsFirst: '{name} lance en premier',
   },
 }
 

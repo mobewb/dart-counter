@@ -9,6 +9,8 @@ export interface X01Config extends RoundLimitConfig {
   playerCount: number
   legsToWinSet: number
   setsToWinMatch: number
+  /** The side that throws first; 0 (the first side) by default. */
+  starter?: number
 }
 
 export interface X01Player {

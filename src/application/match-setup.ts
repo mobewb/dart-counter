@@ -34,12 +34,21 @@ interface Request<K extends GameModeId> {
   names: string[]
   teams?: number[]
   maxRounds?: number
+  /** The side that throws first, as a side index; 0 (the first side) by default. */
+  starter?: number
 }
 
 export type MatchRequest = { [K in GameModeId]: Request<K> }[GameModeId]
 
 /** The round limit to add to a config, if one was picked. */
 const limitOf = (maxRounds: number | undefined) => (maxRounds === undefined ? {} : { maxRounds })
+
+/** The starting side to add to a config; left off for the first side, so default setups are unchanged. */
+function starterOf(starter: number | undefined, sides: number): { starter?: number } {
+  if (!starter) return {}
+  if (!Number.isInteger(starter) || starter < 0 || starter >= sides) throw new Error(`The starter must be a side in [0, ${sides - 1}]`)
+  return { starter }
+}
 
 function setupFor<K extends GameModeId>(request: Request<K>, random: Random): Setup<K> {
   const { mode, names } = request
@@ -48,7 +57,7 @@ function setupFor<K extends GameModeId>(request: Request<K>, random: Random): Se
   if (teams && (teams.length < 2 || teams.length > MAX_TEAMS)) throw new Error(`Team play needs 2 to ${MAX_TEAMS} teams`)
   const sides = teams?.length ?? names.length
   if (sides < module.minSides) throw new Error(`${mode} needs at least ${module.minSides} sides`)
-  const config = { ...module.deal(request.options, sides, random), ...limitOf(request.maxRounds) }
+  const config = { ...module.deal(request.options, sides, random), ...limitOf(request.maxRounds), ...starterOf(request.starter, sides) }
   return { mode, config, names, ...(teams ? { teams } : {}) }
 }
 
