@@ -9,6 +9,8 @@ export interface KillerConfig extends RoundLimitConfig {
   playerCount: number
   /** Lives each side starts with. */
   lives: number
+  /** The side that draws and throws first; 0 (the first side) by default. */
+  starter?: number
 }
 
 export interface KillerPlayer {
@@ -40,7 +42,7 @@ export function newMatch(config: KillerConfig): KillerMatch {
     config,
     players: Array.from({ length: config.playerCount }, () => ({ number: null, lives: config.lives, killer: false, livesTaken: 0, dartsThrown: 0 })),
     phase: 'draw',
-    currentPlayer: 0,
+    currentPlayer: config.starter ?? 0,
     turnDarts: [],
     status: 'playing',
     winner: null,
@@ -72,8 +74,11 @@ function draw(state: KillerMatch, dart: Dart): Move<KillerMatch> {
     { type: 'NumberDrawn', player: currentPlayer, number: dart.segment },
     { type: 'TurnEnded', player: currentPlayer },
   ]
-  const last = currentPlayer === players.length - 1
-  return { state: { ...state, players, phase: last ? 'play' : 'draw', currentPlayer: last ? 0 : currentPlayer + 1 }, events }
+  const starter = state.config.starter ?? 0
+  const count = players.length
+  // The draw ends once it comes back round to the side before the starter; play then begins with the starter.
+  const last = currentPlayer === (starter - 1 + count) % count
+  return { state: { ...state, players, phase: last ? 'play' : 'draw', currentPlayer: last ? starter : (currentPlayer + 1) % count }, events }
 }
 
 /**

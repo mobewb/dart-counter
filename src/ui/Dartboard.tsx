@@ -26,6 +26,8 @@ interface Props {
   marked?: number[]
   /** Darts to aim at, outlined in gold; every other bed is faded while there are any. */
   aim?: Dart[]
+  /** The board's name for screen readers, in the page language. */
+  label: string
 }
 
 /** The shapes of one numbered bed: two for a single (outer and inner), one otherwise. The bull is drawn as circles. */
@@ -38,12 +40,12 @@ function bed({ segment, multiplier }: Dart): string[] {
   return [sector(R.tripleOut, R.singleOut, a0, a1), sector(R.outerBull, R.singleIn, a0, a1)]
 }
 
-export function Dartboard({ onHit, disabled, targets, marked, aim = [] }: Props) {
+export function Dartboard({ label, onHit, disabled, targets, marked, aim = [] }: Props) {
   const faded = (segment: number, multiplier: Multiplier) =>
     (targets && !targets.includes(segment)) || (aim.length > 0 && !aim.some((d) => d.segment === segment && d.multiplier === multiplier))
   const hit = (segment: number, multiplier: Multiplier) => () => !disabled && onHit({ segment, multiplier })
   return (
-    <svg className={`board${disabled ? ' board--off' : ''}`} viewBox="-135 -135 270 270" role="group" aria-label="Dartboard">
+    <svg className={`board${disabled ? ' board--off' : ''}`} viewBox="-135 -135 270 270" role="group" aria-label={label}>
       <circle r="124" className="board__rim" />
       <circle r="112" className="board__ring" />
       {ORDER.map((n, i) => {

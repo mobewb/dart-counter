@@ -27,6 +27,8 @@ export interface View {
   targets?: number[]
   /** Darts to aim at when no single dart wins now, such as the next dart of the X01 checkout. */
   aim?: Dart[]
+  /** A suggested route for the darts left this turn, shown in the empty dart slots (the X01 checkout). */
+  plan?: Dart[]
   /** Numbers whose double takes a life, marked with a skull on the board and pad (Killer). */
   marked?: number[]
   /** Blocks input and undo, e.g. while the crazy cricket roulette spins. */

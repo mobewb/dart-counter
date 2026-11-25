@@ -1,8 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { MAX_TEAMS, startMatch } from '../application/match-setup'
-import { gameModes, modules, type GameModeId, type MatchSetup, type Sides } from '../application/modes'
+import { modules, type GameModeId, type MatchSetup, type Sides } from '../application/modes'
 import type { Settings } from '../infrastructure/preferences'
+import { useCelebrate, useTaps } from './celebrate'
 import { useI18n } from './i18n'
+import { Logo } from './Logo'
+import { ModePicker } from './ModePicker'
 import { registry } from './registry'
 import { SegControl } from './SegControl'
 
@@ -28,6 +31,8 @@ function assignmentOf(teams: Sides | undefined, count: number): number[] {
 }
 
 interface StepperProps {
+  /** The setting's name for screen readers, e.g. "Players". */
+  label: string
   value: number
   min: number
   max: number
@@ -36,17 +41,44 @@ interface StepperProps {
   onChange: (v: number) => void
 }
 
-function Stepper({ value, min, max, step = 1, format = String, onChange }: StepperProps) {
+function Stepper({ label, value, min, max, step = 1, format = String, onChange }: StepperProps) {
+  const { t } = useI18n()
   return (
-    <div className="stepper">
-      <button onClick={() => onChange(Math.max(min, value - step))} disabled={value <= min} aria-label="−">−</button>
-      <output>{format(value)}</output>
-      <button onClick={() => onChange(Math.min(max, value + step))} disabled={value >= max} aria-label="+">+</button>
+    <div className="stepper" role="group" aria-label={label}>
+      <button onClick={() => onChange(Math.max(min, value - step))} disabled={value <= min} aria-label={`${label}, ${t('decrease')}`}>−</button>
+      <output aria-live="polite">{format(value)}</output>
+      <button onClick={() => onChange(Math.min(max, value + step))} disabled={value >= max} aria-label={`${label}, ${t('increase')}`}>+</button>
     </div>
   )
 }
 
 const DEFAULT_MAX_ROUNDS = 20
+
+const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a']
+
+/** Calls `onCode` when the Konami code is typed. */
+function useKonami(onCode: () => void) {
+  const typed = useRef<string[]>([])
+  const latest = useRef(onCode)
+  latest.current = onCode
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      typed.current = [...typed.current, e.key.length === 1 ? e.key.toLowerCase() : e.key].slice(-KONAMI.length)
+      if (typed.current.join() === KONAMI.join()) {
+        typed.current = []
+        latest.current()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+}
+
+/** A player named after the app's first mascot. */
+const isGhost = (name: string) => /^(ghost|boo|fant[oô]me)$/i.test(name.trim())
+
+/** Between midnight and 5 am, when only darts players are still up. */
+const lateNight = () => new Date().getHours() < 5
 
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -74,6 +106,8 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
   const [names, setNames] = useState(initial?.names ?? ['', ''])
   const [teamPlay, setTeamPlay] = useState(Boolean(initial?.teams))
   const [teams, setTeams] = useState(() => assignmentOf(initial?.teams, names.length))
+  // The side drawn to throw first, as a side index; 0 (the first side) by default.
+  const [starter, setStarter] = useState(0)
 
   const resize = (count: number) => {
     setNames((prev) => Array.from({ length: count }, (_, i) => prev[i] ?? ''))
@@ -89,12 +123,44 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
   const canStart = (!teamMode || usedTeams.length >= 2) && enoughSides
   const displayName = (i: number) => names[i]!.trim() || `${t('player')} ${i + 1}`
 
+  // Who can throw first: one per player, or one per team. Side order matches the domain's.
+  const sideCount = teamMode ? usedTeams.length : names.length
+  const sideName = (side: number) =>
+    teamMode
+      ? teams.flatMap((n, p) => (n === usedTeams[side] ? [displayName(p)] : [])).join(' & ')
+      : displayName(side)
+  // The drawn side, falling back to the first side whenever the roster shrank below it.
+  // Derived so the render is always in range; the effect then resets the stored draw.
+  const startingSide = starter < sideCount ? starter : 0
+  useEffect(() => {
+    if (starter >= sideCount) setStarter(0)
+  }, [starter, sideCount])
+
   const hint = registry[kind].hint
+
+  const { findEgg, confetti } = useCelebrate()
+  const drawStarter = () => setStarter(Math.floor(Math.random() * sideCount))
+
+  // Easter eggs.
+  const [spinning, setSpinning] = useState(false)
+  const spinLogo = useTaps(7, () => {
+    setSpinning(true)
+    confetti()
+    findEgg('logo')
+  })
+  useKonami(() => {
+    document.documentElement.classList.toggle('disco')
+    findEgg('konami')
+  })
+  const ghost = names.some(isGhost)
+  useEffect(() => void (ghost && findEgg('ghost')), [ghost, findEgg])
+  const [night] = useState(lateNight)
+  useEffect(() => void (night && findEgg('night')), [night, findEgg])
 
   const start = () => {
     const finalNames = names.map((_, i) => displayName(i))
     const rules = { startScore, doubleIn, doubleOut, legsToWinSet: legs, setsToWinMatch: sets }
-    const common = { names: finalNames, teams: teamMode ? teams : undefined }
+    const common = { names: finalNames, teams: teamMode ? teams : undefined, starter: startingSide }
     onStart(startMatch(
       kind === 'x01' ? { mode: kind, options: rules, maxRounds, ...common }
         : kind === 'killer' ? { mode: kind, options: { lives }, ...common }
@@ -107,29 +173,34 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
     <main className="screen setup">
       <header className="hero">
         <button className="history-link" onClick={onHistory}>{t('history')}</button>
-        <button className="lang" onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')}>{lang === 'fr' ? 'EN' : 'FR'}</button>
-        <div className="hero__logo" aria-hidden>🎯</div>
+        {/* Shows the language in use; tapping switches to the other one. */}
+        <button className="lang" onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')} aria-label={t('switchLanguage')}>{lang === 'fr' ? 'FR' : 'EN'}</button>
+        {/* Not a control: tapping it is an easter egg. */}
+        <span className="hero__mark" onClick={spinLogo}>
+          <Logo className={`hero__logo${spinning ? ' is-spinning' : ''}`} onAnimationEnd={() => setSpinning(false)} />
+          {ghost && <span className="hero__ghost" aria-hidden="true">👻</span>}
+        </span>
         <h1>Dart<span>Counter</span></h1>
-        <p>{t('tagline')}</p>
+        <p>{t(night ? 'nightTagline' : 'tagline')}</p>
       </header>
 
       <section className="card">
         <h2>{t('game')}</h2>
-        <SegControl options={gameModes.map((k) => ({ value: k, label: t(registry[k].label) }))} value={kind} onChange={setKind} />
+        <ModePicker value={kind} onChange={setKind} defaultOpen={!initial} />
         {hint && <p className="hint">{t(hint)}</p>}
       </section>
 
       {kind === 'x01' && (
         <section className="card">
           <h2>{t('startScore')}</h2>
-          <SegControl options={SCORES.map((s) => ({ value: s, label: String(s) }))} value={startScore} onChange={setStartScore} />
+          <SegControl label={t('startScore')} options={SCORES.map((s) => ({ value: s, label: String(s) }))} value={startScore} onChange={setStartScore} />
         </section>
       )}
 
       <section className="card">
         <div className="card__row">
           <h2>{t('players')}</h2>
-          <Stepper value={names.length} min={1} max={8} onChange={resize} />
+          <Stepper label={t('players')} value={names.length} min={1} max={8} onChange={resize} />
         </div>
         <div className="names">
           {names.map((name, i) => (
@@ -137,11 +208,12 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
               <input
                 value={name}
                 maxLength={16}
+                aria-label={`${t('playerName')} ${i + 1}`}
                 placeholder={`${t('player')} ${i + 1}`}
                 onChange={(e) => setNames((prev) => prev.map((n, j) => (j === i ? e.target.value : n)))}
               />
               {teamMode && (
-                <button className={`team-badge team-${teams[i]}`} onClick={() => cycleTeam(i)} aria-label={`${t('team')} ${teams[i]! + 1}`}>
+                <button className={`team-badge team-${teams[i]}`} onClick={() => cycleTeam(i)} aria-label={`${displayName(i)}, ${t('team')} ${teams[i]! + 1}. ${t('changeTeam')}`}>
                   T{teams[i]! + 1}
                 </button>
               )}
@@ -163,6 +235,16 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
         )}
       </section>
 
+      {sideCount >= 2 && canStart && (
+        <section className="card">
+          <div className="card__row">
+            <h2>{t('whoStarts')}</h2>
+            <button className="draw-btn" onClick={drawStarter}>🎲 {t('drawStarter')}</button>
+          </div>
+          <p className="hint" aria-live="polite">{t('startsFirst').replace('{name}', sideName(startingSide))}</p>
+        </section>
+      )}
+
       {kind === 'x01' && (
         <section className="card">
           <h2>{t('rules')}</h2>
@@ -170,11 +252,11 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
           <Toggle label={t('doubleOut')} checked={doubleOut} onChange={setDoubleOut} />
           <div className="card__row">
             <span>{t('legsToWin')}</span>
-            <Stepper value={legs} min={1} max={11} onChange={setLegs} />
+            <Stepper label={t('legsToWin')} value={legs} min={1} max={11} onChange={setLegs} />
           </div>
           <div className="card__row">
             <span>{t('setsToWin')}</span>
-            <Stepper value={sets} min={1} max={7} onChange={setSets} />
+            <Stepper label={t('setsToWin')} value={sets} min={1} max={7} onChange={setSets} />
           </div>
         </section>
       )}
@@ -184,7 +266,7 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
           <h2>{t('rules')}</h2>
           <div className="card__row">
             <span>{t('lives')}</span>
-            <Stepper value={lives} min={1} max={5} onChange={setLives} />
+            <Stepper label={t('lives')} value={lives} min={1} max={5} onChange={setLives} />
           </div>
         </section>
       )}
@@ -193,7 +275,7 @@ export function Setup({ initial, onStart, onHistory, settings, onSettings }: Pro
         <section className="card">
           <div className="card__row">
             <h2>{t('maxRounds')}</h2>
-            <Stepper value={maxRounds} min={0} max={50} step={5} format={(v) => (v === 0 ? t('off') : String(v))} onChange={setMaxRounds} />
+            <Stepper label={t('maxRounds')} value={maxRounds} min={0} max={50} step={5} format={(v) => (v === 0 ? t('off') : String(v))} onChange={setMaxRounds} />
           </div>
           {maxRounds > 0 && <p className="hint">{t('maxRoundsHint')}</p>}
         </section>

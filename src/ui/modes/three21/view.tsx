@@ -1,32 +1,40 @@
 import type { Three21Record, Three21Stats } from '../../../application/modes'
 import { three21 } from '../../../domain'
 import { useI18n, type Key } from '../../i18n'
+import { Orbit, Rivals, shownSide } from '../Orbit'
 import type { ModeView, ViewProps } from '../types'
 
 function useThree21View({ sides, state: match, events }: ViewProps<'three21'>) {
   const { t } = useI18n()
-  const finished = match.status === 'finished'
   const bounced = events.some((e) => e.type === 'Bounced')
   const knocked = events.flatMap((e) => (e.type === 'KnockedBack' ? e.players : []))
 
   return {
     info: <strong>{t('three21')}</strong>,
-    board: (
-      <section className="players" data-count={match.players.length}>
-        {match.players.map((p, i) => (
-          <article key={i} className={`pcard${i === match.currentPlayer && !finished ? ' is-active' : ''}${match.winner === i ? ' is-winner' : ''}`}>
-            <div className="pcard__name">{sides[i]}</div>
-            <div className="pcard__score">{p.score}</div>
-            <div className="progress" role="progressbar" aria-valuemin={0} aria-valuemax={three21.TARGET} aria-valuenow={p.score}>
-              <i style={{ width: `${(p.score / three21.TARGET) * 100}%` }} />
-            </div>
-            <div className="pcard__meta">
-              <span><b>{three21.TARGET - p.score}</b> {t('toGo')}</span>
-            </div>
-          </article>
-        ))}
-      </section>
-    ),
+    board: (() => {
+      const shown = shownSide(match.winner, match.currentPlayer)
+      const p = match.players[shown]!
+      return (
+        <>
+          <Orbit
+            name={sides[shown]!}
+            value={p.score}
+            done={p.score / three21.TARGET}
+            winner={match.winner === shown}
+            meta={<span><b>{three21.TARGET - p.score}</b> {t('toGo')}</span>}
+          />
+          <Rivals
+            rivals={match.players.flatMap((q, i) => i === shown ? [] : [{
+              name: sides[i]!,
+              value: q.score,
+              done: q.score / three21.TARGET,
+              winner: match.winner === i,
+              meta: `${three21.TARGET - q.score} ${t('toGo')}`,
+            }])}
+          />
+        </>
+      )
+    })(),
     afterTurn: (bounced || knocked.length > 0) && (
       <>
         {bounced && (

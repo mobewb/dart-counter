@@ -9,6 +9,8 @@ export const TARGET = 321
 
 export interface Three21Config extends RoundLimitConfig {
   playerCount: number
+  /** The side that throws first; 0 (the first side) by default. */
+  starter?: number
 }
 
 export interface Three21Player {
@@ -29,7 +31,7 @@ export function newMatch(config: Three21Config): Three21Match {
   return {
     config,
     players: Array.from({ length: config.playerCount }, () => ({ score: 0, dartsThrown: 0 })),
-    currentPlayer: 0,
+    currentPlayer: config.starter ?? 0,
     turnDarts: [],
     status: 'playing',
     winner: null,

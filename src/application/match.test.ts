@@ -20,6 +20,23 @@ const doubles = (over: Partial<typeof rules> = {}) =>
 const throwers = (setup: MatchSetup, turns: number) =>
   Array.from({ length: turns }, (_, turn) => setup.names[openMatch(setup, misses(turn * 3)).thrower])
 
+describe('starter', () => {
+  it('has the chosen side throw first, then passes on from it', () => {
+    const setup = startMatch({ mode: 'cricket', options: {}, names: ['Ann', 'Bob', 'Cid'], starter: 2 })
+    expect(openMatch(setup).thrower).toBe(2)
+    expect(openMatch(setup).state.currentPlayer).toBe(2)
+    expect(openMatch(setup, misses(3)).thrower).toBe(0)
+  })
+
+  it('starts from the chosen team in team play', () => {
+    // Side 1 is Bob & Dee; its first member, Bob, throws first.
+    const setup = startMatch({ mode: 'x01', names, teams: [0, 1, 0, 1], options: rules, starter: 1 })
+    const match = openMatch(setup)
+    expect(match.thrower).toBe(1)
+    expect(match.sideNames[match.state.currentPlayer]).toBe('Bob & Dee')
+  })
+})
+
 describe('sides', () => {
   it('makes every player a side of their own without teams', () => {
     const setup = startMatch({ mode: 'cricket', options: {}, names: ['Ann', 'Bob'] })

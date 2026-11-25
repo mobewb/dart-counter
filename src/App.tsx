@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
+import type { Played } from './application/achievements'
+import { loadHistory } from './application/history'
 import type { Match } from './application/match'
 import { leaveMatch, newCurrentMatch, resumeMatch, saveProgress } from './application/match-persistence'
 import type { CurrentMatch, MatchRepository } from './application/match-repository'
@@ -6,6 +8,7 @@ import { rematch as dealRematch } from './application/match-setup'
 import type { MatchSetup } from './application/modes'
 import { requestPersistentStorage } from './infrastructure/persistent-storage'
 import { loadLastSetup, loadSettings, saveLastSetup, saveSettings, type Settings } from './infrastructure/preferences'
+import { CelebrateProvider } from './ui/celebrate'
 import { GameScreen } from './ui/GameScreen'
 import { History } from './ui/History'
 import { I18nProvider } from './ui/i18n'
@@ -35,6 +38,19 @@ export function App({ repository }: { repository: MatchRepository }) {
     return () => void (active = false)
   }, [repository])
 
+  // The history before the match being played, to tell what it unlocks.
+  const [past, setPast] = useState<Played[]>()
+  const currentId = current?.id
+  useEffect(() => {
+    if (!currentId) return
+    let active = true
+    setPast(undefined)
+    loadHistory(repository)
+      .then((history) => active && setPast(history.filter((m) => m.id !== currentId)))
+      .catch(() => active && setPast([]))
+    return () => void (active = false)
+  }, [repository, currentId])
+
   const start = (setup: MatchSetup) => {
     const match = newCurrentMatch(setup)
     setCurrent(match)
@@ -60,21 +76,24 @@ export function App({ repository }: { repository: MatchRepository }) {
 
   return (
     <I18nProvider>
-      {resuming ? null : showHistory && !current ? (
-        <History repository={repository} onBack={() => setShowHistory(false)} />
-      ) : !current ? (
-        <Setup initial={last} onStart={start} onHistory={() => setShowHistory(true)} settings={settings} onSettings={changeSettings} />
-      ) : (
-        <GameScreen
-          key={current.id}
-          setup={current.setup}
-          initialDarts={current.darts}
-          onProgress={record}
-          settings={settings}
-          onRematch={rematch}
-          onExit={exit}
-        />
-      )}
+      <CelebrateProvider>
+        {resuming ? null : showHistory && !current ? (
+          <History repository={repository} onBack={() => setShowHistory(false)} />
+        ) : !current ? (
+          <Setup initial={last} onStart={start} onHistory={() => setShowHistory(true)} settings={settings} onSettings={changeSettings} />
+        ) : (
+          <GameScreen
+            key={current.id}
+            setup={current.setup}
+            initialDarts={current.darts}
+            onProgress={record}
+            past={past}
+            settings={settings}
+            onRematch={rematch}
+            onExit={exit}
+          />
+        )}
+      </CelebrateProvider>
     </I18nProvider>
   )
 }

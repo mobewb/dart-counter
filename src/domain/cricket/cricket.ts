@@ -22,6 +22,8 @@ export interface CricketConfig extends RoundLimitConfig {
   /** Segments that count at the start, with 25 for the bull. */
   targets: number[]
   targetPolicy: TargetPolicy
+  /** The side that throws first; 0 (the first side) by default. */
+  starter?: number
 }
 
 export interface CricketPlayer {
@@ -57,7 +59,7 @@ export function newMatch(config: CricketConfig): CricketMatch {
   return {
     config,
     players: Array.from({ length: config.playerCount }, () => ({ marks: {}, points: 0, dartsThrown: 0 })),
-    currentPlayer: 0,
+    currentPlayer: config.starter ?? 0,
     turnDarts: [],
     targets: config.targets,
     poolIndex: 0,

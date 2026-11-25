@@ -15,11 +15,12 @@ A mobile-first dart scoring web app. Pick a game, enter the players, and tap the
 9. [Dart input](#9-dart-input)
 10. [In-game controls](#10-in-game-controls)
 11. [End of game](#11-end-of-game)
-12. [Languages](#12-languages)
-13. [Saved data](#13-saved-data)
-14. [Mobile and display](#14-mobile-and-display)
-15. [Technical overview](#15-technical-overview)
-16. [Build, test and deploy](#16-build-test-and-deploy)
+12. [Achievements and easter eggs](#12-achievements-and-easter-eggs)
+13. [Languages](#13-languages)
+14. [Saved data](#14-saved-data)
+15. [Mobile and display](#15-mobile-and-display)
+16. [Technical overview](#16-technical-overview)
+17. [Build, test and deploy](#17-build-test-and-deploy)
 
 ---
 
@@ -38,7 +39,7 @@ Every mode can be played solo (each player for themselves) or in **teams** — s
 
 ## 2. Match setup
 
-- **Game selector** — switch between X01, Cricket, Crazy Cricket, Around the Clock, Killer and 321; a short rules hint is shown for every mode but X01. The highlight slides to the picked mode.
+- **Game selector** — switch between X01, Cricket, Crazy Cricket, Around the Clock, Killer and 321; a short rules hint is shown for every mode but X01. The highlight slides to the picked mode. When the setup screen is pre-filled from a previous match, the selector is folded to the picked mode with a *Change* button; tapping a mode in the grid picks it and folds it again. On a first visit the grid is open.
 - **Players** — 1 to 8 players, with a stepper to add or remove players.
 - **Player names** — optional, up to 16 characters. Empty names default to "Player N" / "Joueur N".
 - **X01 options**
@@ -49,8 +50,9 @@ Every mode can be played solo (each player for themselves) or in **teams** — s
   - Sets to win the match: 1 to 7 (default 1).
 - **Max rounds** — X01 only: Off, or 5 to 50 in steps of 5 (default 20), per leg. A round is every side taking one turn. When the last round is over, the leg goes to the lowest remaining score, and the count restarts for the next leg. (The domain can also limit Cricket, Around the Clock and Killer — most points then marks, furthest target, most lives — but the setup screen only offers it for X01.) Tied sides play **sudden death**, one more round at a time (everyone throws, only the tied sides can win), until one leads alone. The game screen shows *Round 7 / 20*, then *Sudden death*; the caller announces both. A leg won at the limit is not a checkout in the stats.
 - **Teams** — with 2 or more players, a *Teams* toggle splits them into teams (see [Team play](#team-play)).
+- **Who starts** — with 2 or more sides, a *Draw* button picks the side that throws first at random (a player, or a team in team play), and names it. Works in every game mode; in X01 the leg starter then rotates on from the drawn side. Without a draw, the first side starts.
 - **Settings memory** — the setup screen is pre-filled with the last match's mode, rules, names and teams, even after the app is closed.
-- **Language toggle** — FR / EN button on the setup screen.
+- **Language toggle** — a button on the setup screen shows the language in use (FR or EN); tapping it switches to the other one.
 - **Sound** — *Caller voice* and *Vibration* toggles, remembered on the device.
 
 ### Team play
@@ -189,13 +191,30 @@ A winner overlay shows:
   - 321: knock-backs.
 - three actions: **Undo** (reopen the game), **Rematch** (same settings, same players) and **New game** (back to setup).
 
-## 12. Languages
+## 12. Achievements and easter eggs
+
+### Achievements
+- **25 achievements** (*Succès* in French), earned by named players and matched by name like the player records. They are derived from the match history, so deleting a match or undoing the winning dart takes them back.
+- **Career** — first match, first win, 10 and 50 matches, 3 wins in a row, every game mode played, a team win, an 8-player match.
+- **Darts and visits, in any mode** — bull's eye, three in a bed, Shanghai (single, double and triple of one number), 180.
+- **One mode** — X01: a checkout of 100 or more, a bull finish, a 501 nine-darter; Cricket: nine marks in a visit; Around the Clock: a win in 30 darts or fewer; Killer: 3 lives in one visit; 321: a knock-back.
+- **Secrets** — six more, shown as *???* until earned (the 170 checkout, a finish on double 1, 20-5-1, three misses, 3 bounces in 321, a win between midnight and 5 am).
+- **During play** — a visit that earns a highlight (180, Shanghai, nine marks, triple kill, three in a bed, 26, three misses) pops a toast with the thrower's name; the big ones and every win add confetti. Undo and resume stay quiet.
+- **Winner screen** — lists what each player unlocked for the first time in this match. Unnamed players see what the match itself earned.
+- **History → Achievements** — every named player's badges with their unlock date and a progress bar; then *All achievements*, always shown, with how to earn each one and who has (secrets stay hidden until someone earns them); then the easter eggs found on this device.
+
+### Easter eggs
+Five secrets hidden in the app, kept on the device (`localStorage`), each announced with a *Secret found!* toast the first time: tapping the logo, the Konami code on the setup screen (it toggles a colour-cycling accent), a player named after the old mascot, tapping the winner's trophy, and opening the app late at night.
+
+Confetti is hidden when the device asks for reduced motion.
+
+## 13. Languages
 
 - English and French, with the language auto-detected from the browser (French if the browser language is French, English otherwise).
 - Can be switched manually on the setup screen; the choice is remembered.
 - All UI texts, hints and rule explanations are translated.
 
-## 13. Saved data
+## 14. Saved data
 
 Everything is stored on the device, in the browser; nothing is sent anywhere.
 
@@ -205,11 +224,11 @@ Everything is stored on the device, in the browser; nothing is sent anywhere.
   - *Players:* each player's wins / matches and career stats across all saved matches — X01 average, highest visit, 180s, checkout rate, best checkout, best leg, and cricket MPR. Players are matched by name, ignoring case.
   - *Matches:* every finished match, most recent first, with its date, game mode, sides and results, and the winner highlighted. A match can be deleted.
 - **Leaving a match** — Quit or New game clears the saved match in progress. A quit match is not added to the history.
-- **Preferences** — the language, the last setup and the sound settings are remembered.
+- **Preferences** — the language, the last setup, the sound settings and the easter eggs found are remembered.
 - **Storage** — IndexedDB for matches, `localStorage` for preferences. The app asks the browser to keep this data persistent. Clearing the site data deletes it, and it is not synced between devices.
 - **Fail-safe** — if storage is unavailable (blocked, private mode, full), the app keeps working without saving.
 
-## 14. Mobile and display
+## 15. Mobile and display
 
 - Designed first for phones: compact layouts for game and setup screens on small screens.
 - Landscape layout for short viewports.
@@ -219,7 +238,7 @@ Everything is stored on the device, in the browser; nothing is sent anywhere.
 - **Works offline** — after the first visit, the app loads and plays with no network (a service worker caches it). Online, the latest version is always loaded.
 - **App icon** — a ghost in front of a dartboard, used as the browser tab icon and as the home-screen icon (iOS and Android). The app can be added to the home screen and opens full-screen.
 
-## 15. Technical overview
+## 16. Technical overview
 
 | Area | Details |
 | --- | --- |
@@ -250,6 +269,7 @@ src/
 │   ├── match-persistence.ts   saveProgress, resumeMatch, leaveMatch
 │   ├── history.ts             Player records across the match history
 │   ├── winning-darts.ts       The darts that would win now, for the aim highlight
+│   ├── achievements.ts        Achievements earned per player, from the match history
 │   └── caller.ts              What a darts caller can announce, and its mood
 ├── infrastructure/          Adapters to the browser
 │   ├── indexeddb-repository.ts   MatchRepository on IndexedDB
@@ -278,7 +298,7 @@ Design notes:
 - **Teams are sides** — the game rules score *sides*; a side is one player or a team. Who throws within a team is derived from the dart log, so undo, resume and history work unchanged ([ADR-005](docs/adr/005-teams-are-sides.md)).
 - **Tests** — unit tests for each game mode, a contract suite run against every mode, and use-case tests.
 
-## 16. Build, test and deploy
+## 17. Build, test and deploy
 
 | Command | Purpose |
 | --- | --- |
@@ -288,4 +308,4 @@ Design notes:
 | `npm run typecheck` | Type-check only |
 | `npm test` | Run the unit tests |
 
-CI/CD: the app is type-checked, tested and built on every push. **GitHub Pages** (`.github/workflows/pages.yml`) deploys `main` at the site root and `develop` under `/develop/`, each with its own storage. **GitLab Pages** (`.gitlab-ci.yml`) deploys the default branch.
+CI/CD: the app is type-checked, tested and built on every push. **GitHub Pages** (`.github/workflows/pages.yml`) deploys `main` at the site root, `develop` under `/develop/` and the UI rework proposal (`mobewb/rework-de-lui-avec-proposition`) under `/proposition/`, each with its own storage. **GitLab Pages** (`.gitlab-ci.yml`) deploys the default branch.

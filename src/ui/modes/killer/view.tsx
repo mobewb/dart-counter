@@ -1,6 +1,7 @@
 import type { KillerRecord, KillerStats } from '../../../application/modes'
 import { killer } from '../../../domain'
 import { useI18n, type Key } from '../../i18n'
+import { Orbit, Rivals, shownSide } from '../Orbit'
 import type { ModeView, ViewProps } from '../types'
 
 function useKillerView({ sides, state: match }: ViewProps<'killer'>) {
@@ -19,27 +20,41 @@ function useKillerView({ sides, state: match }: ViewProps<'killer'>) {
 
   return {
     info: <strong>{t('killer')}</strong>,
-    board: (
-      <section className="players" data-count={match.players.length}>
-        {match.players.map((p, i) => (
-          <article
-            key={i}
-            className={`pcard${i === match.currentPlayer && !finished ? ' is-active' : ''}${match.winner === i ? ' is-winner' : ''}${killer.isAlive(p) ? '' : ' is-out'}`}
-          >
-            <div className="pcard__name">{sides[i]}</div>
-            <div className="pcard__score">{p.number ?? '?'}</div>
-            <div className="killer-lives" aria-label={`${p.lives} ${t('lives')}`}>
-              {Array.from({ length: match.config.lives }, (_, life) => (
-                <i key={life} className={life < p.lives ? 'is-on' : ''} />
-              ))}
-            </div>
-            <div className="pcard__meta">
-              {!killer.isAlive(p) ? <span>{t('out')}</span> : p.killer ? <b className="killer-badge">{t('killerBadge')}</b> : <span>{t('notKiller')}</span>}
-            </div>
-          </article>
-        ))}
-      </section>
-    ),
+    board: (() => {
+      const shown = shownSide(match.winner, match.currentPlayer)
+      const lives = (p: typeof me) => (
+        <div className="killer-lives" role="img" aria-label={`${p.lives} ${t('lives')}`}>
+          {Array.from({ length: match.config.lives }, (_, life) => (
+            <i key={life} className={life < p.lives ? 'is-on' : ''} />
+          ))}
+        </div>
+      )
+      const status = (p: typeof me) => (!killer.isAlive(p) ? t('out') : p.killer ? <b className="killer-badge">{t('killerBadge')}</b> : t('notKiller'))
+      const p = match.players[shown]!
+      return (
+        <>
+          <Orbit
+            name={sides[shown]!}
+            value={p.number ?? '?'}
+            done={p.lives / match.config.lives}
+            hot
+            winner={match.winner === shown}
+            meta={<span>{status(p)}</span>}
+            extra={lives(p)}
+          />
+          <Rivals
+            rivals={match.players.flatMap((q, i) => i === shown ? [] : [{
+              name: sides[i]!,
+              value: q.number ?? '?',
+              winner: match.winner === i,
+              out: !killer.isAlive(q),
+              extra: lives(q),
+              meta: status(q),
+            }])}
+          />
+        </>
+      )
+    })(),
     turnExtras: !finished && (
       <span className="chip chip--checkout">
         {drawing ? t('drawNumber') : me.killer ? t('killerAim') : <>{t('aimAt')} <b>D{me.number}</b></>}

@@ -11,6 +11,11 @@ const miss: Dart = { segment: 0, multiplier: 1 }
 const config = (over: Partial<ClockConfig> = {}): ClockConfig => ({ playerCount: 2, sequence: CLOCK_SEQUENCE, ...over })
 
 describe('Around the Clock', () => {
+  it('throws first from the chosen starter', () => {
+    expect(newMatch(config()).currentPlayer).toBe(0)
+    expect(newMatch(config({ playerCount: 3, starter: 2 })).currentPlayer).toBe(2)
+  })
+
   it('goes from 1 to 20, then the bull', () => {
     expect(CLOCK_SEQUENCE).toEqual([...Array.from({ length: 20 }, (_, i) => i + 1), 25])
     expect(targetOf(newMatch(config()), 0)).toBe(1)

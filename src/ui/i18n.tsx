@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { loadLanguage, saveLanguage } from '../infrastructure/preferences'
 
 const dict = {
@@ -117,6 +117,40 @@ const dict = {
     suddenDeath: 'Sudden death',
     sayRoundLimit: 'Last round over! {name} takes it',
     saySuddenDeath: 'Sudden death!',
+    decrease: 'fewer',
+    increase: 'more',
+    playerName: 'Name of player',
+    changeTeam: 'Tap to change team',
+    inputMethod: 'Input',
+    multiplier: 'Multiplier',
+    cancel: 'Cancel',
+    delete: 'Delete',
+    winner: 'winner',
+    takesLife: 'takes a life',
+    legStarter: 'started this leg',
+    x01Tagline: 'Count down to zero',
+    cricketTagline: 'Close 15 to 20 and the bull',
+    crazyTagline: 'Random numbers, rerolled',
+    clockTagline: '1 to 20 in order',
+    killerTagline: 'Last one standing',
+    three21Tagline: 'Hit exactly 321',
+    achievements: 'Achievements',
+    unlocked: 'Unlocked!',
+    newAchievements: 'Unlocked this match',
+    secret: 'Secret',
+    secretHint: 'Keep throwing to find out',
+    easterEggs: 'Easter eggs',
+    eggsHint: 'Hidden around the app, found on this device.',
+    secretFound: 'Secret found!',
+    noAchievements: 'Name your players and finish a match to earn achievements.',
+    nightTagline: 'Last orders? One more leg.',
+    allAchievements: 'All achievements',
+    changeMode: 'Change',
+    switchLanguage: 'Language: English. Switch to French',
+    nobodyYet: 'nobody yet',
+    whoStarts: 'Who starts',
+    drawStarter: 'Draw',
+    startsFirst: '{name} throws first',
   },
   fr: {
     tagline: 'Comptez. Visez les doubles.',
@@ -233,6 +267,40 @@ const dict = {
     suddenDeath: 'Mort subite',
     sayRoundLimit: 'Dernier tour terminé ! {name} l\'emporte',
     saySuddenDeath: 'Mort subite !',
+    decrease: 'moins',
+    increase: 'plus',
+    playerName: 'Nom du joueur',
+    changeTeam: 'Touchez pour changer d\'équipe',
+    inputMethod: 'Saisie',
+    multiplier: 'Multiplicateur',
+    cancel: 'Annuler',
+    delete: 'Supprimer',
+    winner: 'vainqueur',
+    takesLife: 'enlève une vie',
+    legStarter: 'a commencé la manche',
+    x01Tagline: 'Descendez à zéro',
+    cricketTagline: 'Fermez du 15 au 20 et le bull',
+    crazyTagline: 'Numéros au hasard, retirés',
+    clockTagline: 'De 1 à 20 dans l\'ordre',
+    killerTagline: 'Le dernier debout gagne',
+    three21Tagline: 'Atteignez 321 pile',
+    achievements: 'Succès',
+    unlocked: 'Débloqué !',
+    newAchievements: 'Débloqués pendant la partie',
+    secret: 'Secret',
+    secretHint: 'Continuez à lancer pour le découvrir',
+    easterEggs: 'Secrets cachés',
+    eggsHint: 'Cachés dans l\'appli, trouvés sur cet appareil.',
+    secretFound: 'Secret trouvé !',
+    noAchievements: 'Nommez vos joueurs et terminez une partie pour gagner des succès.',
+    nightTagline: 'Dernière tournée ? Encore une manche.',
+    allAchievements: 'Tous les succès',
+    changeMode: 'Changer',
+    switchLanguage: 'Langue : français. Passer en anglais',
+    nobodyYet: 'personne pour l\'instant',
+    whoStarts: 'Qui commence',
+    drawStarter: 'Tirer au sort',
+    startsFirst: '{name} lance en premier',
   },
 }
 
@@ -255,6 +323,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     setLangState(next)
     saveLanguage(next)
   }
+  // Screen readers pick their voice from the page language.
+  useEffect(() => {
+    document.documentElement.lang = lang
+  }, [lang])
   const t = (key: Key) => dict[lang][key]
   return <I18nContext.Provider value={{ lang, setLang, t }}>{children}</I18nContext.Provider>
 }

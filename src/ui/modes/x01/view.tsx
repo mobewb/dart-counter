@@ -1,8 +1,7 @@
-import { useEffect } from 'react'
 import type { X01Record, X01Stats } from '../../../application/modes'
 import { x01 } from '../../../domain'
-import { dartLabel } from '../../dartLabel'
 import { useI18n, type Key } from '../../i18n'
+import { Orbit, Rivals, shownSide } from '../Orbit'
 import type { ModeView, ViewProps } from '../types'
 
 function useX01View({ setup, sides, state: match, events }: ViewProps<'x01'>) {
@@ -17,11 +16,6 @@ function useX01View({ setup, sides, state: match, events }: ViewProps<'x01'>) {
     : null
   const busted = events.some((e) => e.type === 'Bust')
 
-  // Keep the active player in view on small screens.
-  useEffect(() => {
-    document.querySelector('.pcard.is-active')?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' })
-  }, [match.currentPlayer])
-
   const showLegs = config.legsToWinSet > 1 || config.setsToWinMatch > 1
   const showSets = config.setsToWinMatch > 1
 
@@ -33,40 +27,53 @@ function useX01View({ setup, sides, state: match, events }: ViewProps<'x01'>) {
         {showLegs && <span>· {t('firstTo')} {config.legsToWinSet}{showSets ? ` / ${config.setsToWinMatch}` : ''}</span>}
       </>
     ),
-    board: (
-      <section className="players" data-count={match.players.length}>
-        {match.players.map((p, i) => (
-          <article key={i} className={`pcard${i === match.currentPlayer && !finished ? ' is-active' : ''}${match.winner === i ? ' is-winner' : ''}`}>
-            <div className="pcard__name">
-              {match.legStarter === i && <i className="dot" title="leg starter" />}
-              {sides[i]}
-            </div>
-            <div className="pcard__score">{p.remaining}</div>
-            <div className="pcard__meta">
-              {showLegs && (
-                <span>
-                  {showSets && <>{t('set')} <b>{p.sets}</b> · </>}
-                  {t('leg')} <b>{p.legs}</b>
-                </span>
-              )}
-              <span>{t('avg')} <b>{x01.threeDartAverage(p).toFixed(1)}</b></span>
-            </div>
-          </article>
-        ))}
-      </section>
-    ),
+    board: (() => {
+      const shown = shownSide(match.winner, match.currentPlayer)
+      const p = match.players[shown]!
+      const done = (q: typeof p) => 1 - q.remaining / config.startScore
+      return (
+        <>
+          <Orbit
+            name={sides[shown]!}
+            value={p.remaining}
+            done={done(p)}
+            starter={match.legStarter === shown}
+            winner={match.winner === shown}
+            meta={
+              <>
+                <span>{t('avg')} <b>{x01.threeDartAverage(p).toFixed(1)}</b></span>
+                {showLegs && (
+                  <span>
+                    {showSets && <>{t('set')} <b>{p.sets}</b> · </>}
+                    {t('leg')} <b>{p.legs}</b>
+                  </span>
+                )}
+              </>
+            }
+          />
+          <Rivals
+            rivals={match.players.flatMap((q, i) => i === shown ? [] : [{
+              name: sides[i]!,
+              value: q.remaining,
+              done: done(q),
+              starter: match.legStarter === i,
+              winner: match.winner === i,
+              meta: showLegs && <>{showSets && <>{t('set')} {q.sets} · </>}{t('leg')} {q.legs}</>,
+            }])}
+          />
+        </>
+      )
+    })(),
     turnExtras: (
       <>
-        {hint && (
-          <span className="chip chip--checkout">
-            {t('checkout')} <b>{hint.map((d) => dartLabel(d)).join(' · ')}</b>
-          </span>
-        )}
+        {/* The route itself fills the empty dart slots. */}
+        {hint && <span className="chip chip--checkout">{t('checkout')}</span>}
         {!current.in && <span className="chip">{t('notIn')}</span>}
       </>
     ),
     // The dart to throw now; the chip shows the rest of the route.
     aim: hint ? hint.slice(0, 1) : undefined,
+    plan: hint ?? undefined,
     afterTurn: busted && (
       <div className="bust" role="status">
         <strong>{t('bust')}</strong> {t('bustHint')}

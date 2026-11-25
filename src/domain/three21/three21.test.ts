@@ -15,6 +15,11 @@ const scores = (darts: Dart[], over?: Partial<Three21Config>) => replay(config(o
 const to300 = [t(20), t(20), t(20), miss, miss, miss, t(20), t(20)]
 
 describe('321', () => {
+  it('throws first from the chosen starter', () => {
+    expect(newMatch(config()).currentPlayer).toBe(0)
+    expect(newMatch(config({ playerCount: 3, starter: 2 })).currentPlayer).toBe(2)
+  })
+
   it('adds each dart to the score', () => {
     expect(scores([t(20), d(25), s(1)])).toEqual([111, 0])
   })

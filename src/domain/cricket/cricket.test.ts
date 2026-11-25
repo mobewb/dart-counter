@@ -21,6 +21,13 @@ const config = (over: Partial<CricketConfig> = {}): CricketConfig => ({
   ...over,
 })
 
+describe('start', () => {
+  it('throws first from the chosen starter', () => {
+    expect(newMatch(config()).currentPlayer).toBe(0)
+    expect(newMatch(config({ playerCount: 3, starter: 2 })).currentPlayer).toBe(2)
+  })
+})
+
 describe('marks', () => {
   it('adds one mark per multiplier', () => {
     const m = replay(config(), [d(20)])
